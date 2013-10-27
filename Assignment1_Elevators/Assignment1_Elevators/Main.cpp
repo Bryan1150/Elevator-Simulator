@@ -7,20 +7,6 @@
 
 int main()
 {
-	IOProgram io;
-	
-	io.Resume();
-	Sleep(1000);
-	io.Post(2000);
-	
-
-
-
-
-	Sleep(5000);
-	io.WaitForThread();
-
-
 	system("PAUSE");
 	return 0;
 }
