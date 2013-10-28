@@ -1,64 +1,73 @@
+/*****************************************************
+ * EECE 314 Assignment #1
+ * Authors: Kieren Wou & Ryan Wong
+ * Date: October 2013
+ *****************************************************/
 #include "Dispatcher.h"
 
 
+Dispatcher::Dispatcher()
+{}
 
-
-
-
-Dispatcher::Dispatcher() : m_exit(FALSE)
-{
-	
-}
-
-Dispatcher::Dispatcher(IOProgram* pIoProgram): m_pIoProgram(pIoProgram),m_exit(FALSE){}
+Dispatcher::Dispatcher(IOProgramPtr_t pIoProgram)
+	: m_pIoProgram(pIoProgram)
+	, m_bExit(FALSE)
+{}
 
 // Thread to read pipeline with commands from IOProgram
-int Dispatcher::ReadFromPipeline3(void *args){ 
-
-	CPipe		DCommands("DispatcherCommands", 1024);
-	struct UserCommands userCommands;
+int Dispatcher::ReadFromPipeline3(void *args)
+{ 
+	CPipe IoToDispatcher_pipeline("IoToDispatcherPipeline", 1024);
+	UserInputData_t userInput;
 
 	do{
 			
-		DCommands.Read(&userCommands, sizeof(struct UserCommands));
-		printf("Direction = %c and Floor = %c\n", userCommands.Direction,userCommands.Floor);
+		IoToDispatcher_pipeline.Read(&userInput, sizeof(UserInputData_t));
+		printf("Direction = %c and Floor = %c\n", userInput.direction,userInput.floor);
 
-		if(userCommands.Direction == 'E' && userCommands.Floor == 'E')
-		{ // if command is exit, then set exit flag and terminate this thread
-			printf("Posting Message\n");
-			m_pIoProgram->Post(3000); //3000 is defined as the exit command
-			m_exit = TRUE;
+		// "EE" used to terminate simulation
+		if(userInput.direction == 'E' && userInput.floor == 'E') 
+		{ 
+			BOOL bPostSuccessful = m_pIoProgram->Post(k_terminateSimulation);
+			printf("Posting Message. Status: %d\n", bPostSuccessful); 
+			if(bPostSuccessful)
+			{
+				m_bExit = TRUE;
+				break;
+			}
 		}
-	}while(!m_exit);
+	} while(1);
 	return 0;
 }
 
 int Dispatcher::main()
 {
 
-	CDataPool	dp1("ElevatorStatus1", sizeof(struct ElevatorStatus));
-	CDataPool	dp2("ElevatorStatus2", sizeof(struct ElevatorStatus));
-	CPipe		ECommands1("Elevator1Commands", 1024);
-	CPipe		ECommands2("Elevator2Commands", 1024);
-	CPipe		DCommands("DispatcherCommands", 1024);
+	CDataPool elevator1_datapool("Elevator1Status", sizeof(ElevatorStatus_t));
+	CDataPool elevator2_datapool("Elevator2Status", sizeof(ElevatorStatus_t));
+	
+	CPipe ECommands1("Elevator1Commands", 1024);
+	CPipe ECommands2("Elevator2Commands", 1024);
+	CPipe IoToDispatcher_pipeline("DispatcherCommands", 1024);
+	
 	ClassThread<Dispatcher>	 IoToDispatcherPipeline(this,&Dispatcher::ReadFromPipeline3,ACTIVE, NULL);
 
-	//struct ElevatorStatus		*EStatus1 = (struct ElevatorStatus*)(dp1.LinkDataPool());
-	//struct ElevatorStatus		*EStatus2 = (struct ElevatorStatus*)(dp2.LinkDataPool());
+	//ElevatorStatusPtr_t	elevator1Status = (ElevatorStatusPtr_t)(elevator1_datapool.LinkDataPool());
+	//ElevatorStatusPtr_t	elevator2Status = (ElevatorStatusPtr_t)(elevator2_datapool.LinkDataPool());
 
 	do{
-
-
-		if(m_exit == TRUE)
+		if(m_bExit)
 		{
 			printf("breaking from dispatcher loop\n");
-			break;
+			break; 
 		}
-	}while(1);
+	} while(1);
 
 	IoToDispatcherPipeline.WaitForThread();
 	printf("Exiting dispatcher\n");
-	//delete EStatus1;
-	//delete EStatus2;
+
+	//delete elevator1_datapool;
+	//delete elevator2_datapool;
+
 	return 0;
 }

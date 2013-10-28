@@ -1,77 +1,85 @@
-#include "IOProgram.h"
+/*****************************************************
+ * EECE 314 Assignment #1
+ * Authors: Kieren Wou & Ryan Wong
+ * Date: October 2013
+ *****************************************************/
 #include <conio.h>
 
-IOProgram::IOProgram(): m_exit(FALSE){}
+#include "IOProgram.h"
+#include "Dispatcher.h"
 
 
-int IOProgram::ReadFromMailbox(void* args)
-{
-	UINT		Message;	//variable for message command
-	CMailbox*	MyMailBox = (CMailbox*)args;		
+IOProgram::IOProgram()
+{}
 
-	do{
-		
-		if(MyMailBox->TestForMessage() == TRUE) 
-		{		
-				Message = MyMailBox->GetMessage() ;	
-				printf("Message = %d\n", Message);
-				if(Message == 3000)	
-				{			
-					printf("Received Message 3000.....\n") ;
-					m_exit = TRUE;
-				}
-			
-		}
-		else
-		{
-			printf("Mailbox is empty\n");
-			Sleep(150);
-		}
-	}while(!m_exit);
-	printf("ReadFromMailbox thread terminating...\n");
-	return 0;
-}
 
 int IOProgram::main()
 {
-	CDataPool	dp1("ElevatorStatus1", sizeof(struct ElevatorStatus));
-	CDataPool	dp2("ElevatorStatus2", sizeof(struct ElevatorStatus));
-	CPipe		DCommands("DispatcherCommands", 1024);
-	CMailbox	MyMailbox;
-	ClassThread<IOProgram>	DispatcherToIoMailbox(this, &IOProgram::ReadFromMailbox, ACTIVE, &MyMailbox);
+	CDataPool elevator1_datapool("Elevator1Status", sizeof(ElevatorStatus_t));
+	CDataPool elevator2_datapool("Elevator2Status", sizeof(ElevatorStatus_t));
 	
+	CPipe IoToDispatcher_pipeline("IoToDispatcherPipeline", 1024);
+	
+	CMailbox DispatcherToIo_mailbox;
 
-	struct UserCommands userCommands;
-	//struct ElevatorStatus		*EStatus1 = (struct ElevatorStatus*)(dp1.LinkDataPool());
-	//struct ElevatorStatus		*EStatus2 = (struct ElevatorStatus*)(dp2.LinkDataPool());
+	UserInputData_t userInput;
+
+	//ElevatorStatusPtr_t	elevator1Status = (ElevatorStatusPtr_t)(elevator1_datapool.LinkDataPool());
+	//ElevatorStatusPtr_t	elevator2Status = (ElevatorStatusPtr_t)(elevator2_datapool.LinkDataPool());
 	
 	do{
-		userCommands.Direction = _getch();
-		_putch(userCommands.Direction);
-		userCommands.Floor = _getch();
-		_putch(userCommands.Floor);
+		userInput.direction = _getch();
+		_putch(userInput.direction);
+		userInput.floor = _getch();
+		_putch(userInput.floor);
+
 		printf("\nReceived two values\n");
-		if( userCommands.Direction == 'U' || userCommands.Direction == 'D' || userCommands.Direction == 'E')
+		
+		if( userInput.direction == 'U' || userInput.direction == 'D' || userInput.direction == 'E')
 		{
-			if( ((userCommands.Direction == 'U' || userCommands.Direction == 'D') && (userCommands.Floor <= '9' && userCommands.Floor >= '0' ) ) || ( userCommands.Direction == 'E' && userCommands.Floor == 'E'))
+			
+			if( ((userInput.direction == 'U' || userInput.direction == 'D') && 
+				(userInput.floor <= '9' && userInput.floor >= '0' )) || 
+				(userInput.direction == 'E' && userInput.floor == 'E') )
 			{
 				printf("Sending commands\n");
-				DCommands.Write(&userCommands, sizeof(struct UserCommands));
+				IoToDispatcher_pipeline.Write(&userInput, sizeof(UserInputData_t));
+				
+				if(userInput.direction == 'E' && userInput.floor == 'E')
+					break;
 			}
 			else
+			{
 				printf("Error: invalid command\n");
-		}
-		else
-				printf("Error: invalid command\n");
-
+			}
 		
+		}
+		
+		else
+		{
+			printf("Error: invalid command\n");
+		}
+	
+	} while(1);
 
-	}while(!m_exit);
+	do{
+		if(DispatcherToIo_mailbox.TestForMessage()) 
+		{		
+				UINT message = DispatcherToIo_mailbox.GetMessage() ;	
+				printf("Message = %d\n", message);
+				if(message == k_terminateSimulation)	
+				{			
+					printf("Received TERMINATE Message.....\n") ;
+					break;
+				}
+			
+		}
+	} while(1);
 
-	DispatcherToIoMailbox.WaitForThread();
 	printf("Exiting from IO\n");
-	//delete EStatus1;
-	//delete EStatus2;
+
+	//delete elevator1Status;
+	//delete elevator2Status;
 
 	return 0;
 }

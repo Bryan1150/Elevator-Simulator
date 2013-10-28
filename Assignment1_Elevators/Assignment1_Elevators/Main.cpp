@@ -1,19 +1,27 @@
+/*****************************************************
+ * EECE 314 Assignment #1
+ * Authors: Kieren Wou & Ryan Wong
+ * Date: October 2013
+ *****************************************************/
 #include <iostream>
+#include <memory>
+
 #include "..\..\..\rt.h"
 
 #include "Dispatcher.h" //include active classes header files
 #include "Elevator.h"
 #include "IOProgram.h"
 
+
 int main()
 {
-	IOProgram ioProgram;
-	Dispatcher dispatcher(&ioProgram);
+	IOProgramPtr_t pIoProgram = std::make_shared<IOProgram>();
+	Dispatcher dispatcher(pIoProgram);
 
-	ioProgram.Resume();
+	pIoProgram->Resume();
 	dispatcher.Resume();
 
-	ioProgram.WaitForThread();
+	pIoProgram->WaitForThread();
 	dispatcher.WaitForThread();
 
 	system("PAUSE");
