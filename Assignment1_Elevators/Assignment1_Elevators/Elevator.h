@@ -4,6 +4,10 @@
 #ifndef ELEVATOR_H
 #define ELEVATOR_H
 
+struct ElevatorStatus{		//status for elevator struct
+
+};
+
 class Elevator : public ActiveClass
 {
 public:

@@ -7,6 +7,15 @@
 
 int main()
 {
+	IOProgram ioProgram;
+	Dispatcher dispatcher(&ioProgram);
+
+	ioProgram.Resume();
+	dispatcher.Resume();
+
+	ioProgram.WaitForThread();
+	dispatcher.WaitForThread();
+
 	system("PAUSE");
 	return 0;
 }
