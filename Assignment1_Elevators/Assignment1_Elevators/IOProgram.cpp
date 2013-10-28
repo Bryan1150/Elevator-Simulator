@@ -19,7 +19,7 @@ int IOProgram::main()
 	CDataPool elevator2_datapool("Elevator2Status", sizeof(ElevatorStatus_t));
 	
 	CPipe IoToDispatcher_pipeline("IoToDispatcherPipeline", 1024);
-	
+	int keys_pressed = 0;
 	CMailbox DispatcherToIo_mailbox;
 
 	UserInputData_t userInput;
@@ -28,12 +28,24 @@ int IOProgram::main()
 	//ElevatorStatusPtr_t	elevator2Status = (ElevatorStatusPtr_t)(elevator2_datapool.LinkDataPool());
 	
 	do{
-		if(TEST_FOR_KEYBOARD() && TEST_FOR_KEYBOARD())
+		if(TEST_FOR_KEYBOARD())		//Test for keyboard inputs
 		{
+			if(keys_pressed == 0)
+			{
 				userInput.direction = _getch();
 				_putch(userInput.direction);
+			}
+			else
+			{
 				userInput.floor = _getch();
 				_putch(userInput.floor);
+			}
+			++keys_pressed;
+		}
+		//printf("keys pressed = %d\n", keys_pressed);
+		if(keys_pressed == 2)
+		{
+				printf("\nEntered Test\n");
 		
 			printf("\nReceived two values\n");
 		
@@ -56,6 +68,11 @@ int IOProgram::main()
 				}
 		
 			}
+			else
+			{
+				printf("Error: invalid command\n");
+			}
+			keys_pressed = 0;
 		}
 		/*else
 		{
@@ -73,6 +90,8 @@ int IOProgram::main()
 				}
 			
 		}
+	
+		
 	} while(!m_exit);
 
 	
