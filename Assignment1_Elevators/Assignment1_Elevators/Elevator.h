@@ -8,13 +8,21 @@
 
 #include "..\..\..\rt.h"
 
+#define OPEN 2;
+#define CLOSED 1;
+#define STATIONARY 0;
+#define UP	1;
+#define DOWN 0;
+
 #ifndef ELEVATOR_H
 #define ELEVATOR_H
 
 typedef struct {		
 
 	//status for elevator struct
-
+	int doorStatus;
+	int direction;
+	int floorNumber;
 } ElevatorStatus_t;
 
 typedef ElevatorStatus_t* ElevatorStatusPtr_t;

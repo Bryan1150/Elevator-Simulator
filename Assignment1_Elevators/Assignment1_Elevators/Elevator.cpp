@@ -24,9 +24,16 @@ int Elevator::main()
 	CPipe		ECommands1("Elevator1Commands", 1024);
 	CPipe		ECommands2("Elevator2Commands", 1024);
 
-	//ElevatorStatusPtr_t	elevator1Status = (ElevatorStatusPtr_t)(elevator1_datapool.LinkDataPool());
-	//ElevatorStatusPtr_t	elevator2Status = (ElevatorStatusPtr_t)(elevator2_datapool.LinkDataPool());
+	ElevatorStatusPtr_t	elevator1Status = (ElevatorStatusPtr_t)(elevator1_datapool.LinkDataPool());
+	ElevatorStatusPtr_t	elevator2Status = (ElevatorStatusPtr_t)(elevator2_datapool.LinkDataPool());
 
+	elevator1Status->direction = STATIONARY;
+	elevator1Status->doorStatus = CLOSED;
+	elevator1Status->floorNumber = 0;
+
+	elevator2Status->direction = STATIONARY;
+	elevator2Status->doorStatus = CLOSED;
+	elevator2Status->floorNumber = 0;
 
 	//delete elevator1Status;
 	//delete elevator2Status;
