@@ -1,0 +1,41 @@
+# semaphore names #
+
+dispatcherToElevator1_consumer
+dispatcherToElevator1_producer
+dispatcherToElevator2_consumer
+dispatcherToElevator2_producer
+elevator1ToIO_consumer
+elevator1ToIO_producer
+elevator2ToIO_consumer
+elevator2ToIO_producer
+
+
+# bool #
+
+bool bNameOfVariable;
+
+
+# pointer #
+
+typedef ClassObject* ClassObjectPtr_t;
+ClassObjectPtr_t pObject;
+
+
+# static const #
+
+static int const k_variableName = 999;
+- use static const variables in place of hard-coded digits when possible
+
+# passing arguments #
+
+int func(int val); 		#PBV
+int func(int& val); 		#PBR
+int func(int const& val); 	#PBCR
+
+
+# misc. notes #
+
+- methods always begin with capital letter
+- variables always begin with lower case letter
+- all names follow camelCase convention
+- create methods/functions or even entire classes to modularize code
