@@ -30,6 +30,8 @@ public:
 	int ReadFromMailbox(void* args);
 
 private:
+
+	bool m_exit;
 	int main();
 
 };
