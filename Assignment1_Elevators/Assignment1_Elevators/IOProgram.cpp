@@ -12,6 +12,23 @@
 IOProgram::IOProgram() : m_exit(FALSE)
 {}
 
+int IOProgram::IsValidCommand(UserInputData_t userInput) const
+{
+	int isValid = 0;
+
+	if( userInput.direction == 'U' || userInput.direction == 'D' || userInput.direction == 'E')
+	{
+			
+				if( ((userInput.direction == 'U' || userInput.direction == 'D') && 
+					(userInput.floor <= '9' && userInput.floor >= '0' )) || 
+					(userInput.direction == 'E' && userInput.floor == 'E') )
+				{
+					isValid = 1;
+				}
+
+	}
+	return isValid;
+}
 
 int IOProgram::main()
 {
@@ -47,14 +64,9 @@ int IOProgram::main()
 		{
 				printf("\nEntered Test\n");
 		
-			printf("\nReceived two values\n");
+				printf("\nReceived two values\n");
 		
-			if( userInput.direction == 'U' || userInput.direction == 'D' || userInput.direction == 'E')
-			{
-			
-				if( ((userInput.direction == 'U' || userInput.direction == 'D') && 
-					(userInput.floor <= '9' && userInput.floor >= '0' )) || 
-					(userInput.direction == 'E' && userInput.floor == 'E') )
+				if(IsValidCommand(userInput))
 				{
 					printf("Sending commands\n");
 					IoToDispatcher_pipeline.Write(&userInput, sizeof(UserInputData_t));
@@ -66,19 +78,16 @@ int IOProgram::main()
 				{
 					printf("Error: invalid command\n");
 				}
-		
-			}
-			else
-			{
-				printf("Error: invalid command\n");
-			}
-			keys_pressed = 0;
-		}
+				keys_pressed = 0; //reset the number of keys pressed value
+		}	
 		/*else
 		{
-			printf("Error: invalid command\n");
+				printf("Error: invalid command\n");
 		}*/
-	
+			
+		
+
+
 		if(DispatcherToIo_mailbox.TestForMessage()) 
 		{		
 				UINT message = DispatcherToIo_mailbox.GetMessage() ;	

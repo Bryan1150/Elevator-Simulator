@@ -28,6 +28,7 @@ public:
 	IOProgram(); //default constructor
 
 	int ReadFromMailbox(void* args);
+	int IsValidCommand(UserInputData_t userInput) const;
 
 private:
 
