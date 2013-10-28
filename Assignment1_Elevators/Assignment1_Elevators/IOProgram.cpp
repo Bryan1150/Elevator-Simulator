@@ -9,7 +9,7 @@
 #include "Dispatcher.h"
 
 
-IOProgram::IOProgram()
+IOProgram::IOProgram() : m_exit(FALSE)
 {}
 
 
@@ -28,41 +28,40 @@ int IOProgram::main()
 	//ElevatorStatusPtr_t	elevator2Status = (ElevatorStatusPtr_t)(elevator2_datapool.LinkDataPool());
 	
 	do{
-		userInput.direction = _getch();
-		_putch(userInput.direction);
-		userInput.floor = _getch();
-		_putch(userInput.floor);
-
-		printf("\nReceived two values\n");
-		
-		if( userInput.direction == 'U' || userInput.direction == 'D' || userInput.direction == 'E')
+		if(TEST_FOR_KEYBOARD() && TEST_FOR_KEYBOARD())
 		{
+				userInput.direction = _getch();
+				_putch(userInput.direction);
+				userInput.floor = _getch();
+				_putch(userInput.floor);
+		
+			printf("\nReceived two values\n");
+		
+			if( userInput.direction == 'U' || userInput.direction == 'D' || userInput.direction == 'E')
+			{
 			
-			if( ((userInput.direction == 'U' || userInput.direction == 'D') && 
-				(userInput.floor <= '9' && userInput.floor >= '0' )) || 
-				(userInput.direction == 'E' && userInput.floor == 'E') )
-			{
-				printf("Sending commands\n");
-				IoToDispatcher_pipeline.Write(&userInput, sizeof(UserInputData_t));
+				if( ((userInput.direction == 'U' || userInput.direction == 'D') && 
+					(userInput.floor <= '9' && userInput.floor >= '0' )) || 
+					(userInput.direction == 'E' && userInput.floor == 'E') )
+				{
+					printf("Sending commands\n");
+					IoToDispatcher_pipeline.Write(&userInput, sizeof(UserInputData_t));
 				
-				if(userInput.direction == 'E' && userInput.floor == 'E')
-					break;
-			}
-			else
-			{
-				printf("Error: invalid command\n");
-			}
+					/*if(userInput.direction == 'E' && userInput.floor == 'E')
+						m_exit = TRUE;*/
+				}
+				else
+				{
+					printf("Error: invalid command\n");
+				}
 		
+			}
 		}
-		
-		else
+		/*else
 		{
 			printf("Error: invalid command\n");
-		}
+		}*/
 	
-	} while(1);
-
-	do{
 		if(DispatcherToIo_mailbox.TestForMessage()) 
 		{		
 				UINT message = DispatcherToIo_mailbox.GetMessage() ;	
@@ -70,11 +69,13 @@ int IOProgram::main()
 				if(message == k_terminateSimulation)	
 				{			
 					printf("Received TERMINATE Message.....\n") ;
-					break;
+					m_exit = TRUE;
 				}
 			
 		}
-	} while(1);
+	} while(!m_exit);
+
+	
 
 	printf("Exiting from IO\n");
 
