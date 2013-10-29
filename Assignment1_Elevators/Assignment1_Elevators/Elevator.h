@@ -51,16 +51,16 @@ public:
 	void UpdateElevatorStatus(ElevatorStatusPtr_t elevatorStatus, int direction, int doorStatus, int floorNumber) const;
 	void OpenElevatorDoors(ElevatorStatusPtr_t elevatorStatus) const;
 	void CloseElevatorDoors(ElevatorStatusPtr_t elevatorStatus) const;
-
+	int  ReadCommandsFromPipeline(void* args);
 private:
 	int main();
 
-	CSemaphore* m_dispatcherToElevator_consumer;
-	CSemaphore* m_dispatcherToElevator_producer;
-	CSemaphore* m_elevatorToIO_consumer;
-	CSemaphore* m_elevatorToIO_producer;
-	CDataPool*  m_elevatorDatapool;
-	CPipe*		m_elevatorCommands;
+	CSemaphore* m_pDispatcherToElevator_consumer;
+	CSemaphore* m_pDispatcherToElevator_producer;
+	CSemaphore* m_pElevatorToIO_consumer;
+	CSemaphore* m_pElevatorToIO_producer;
+	CDataPool*  m_pElevatorDatapool;
+	CPipe*		m_pElevatorCommands;
 
 	int m_elevatorNumber;
 

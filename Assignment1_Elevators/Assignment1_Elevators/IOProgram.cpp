@@ -12,10 +12,8 @@
 IOProgram::IOProgram() : m_exit(FALSE)
 {}
 
-int IOProgram::IsValidCommand(UserInputData_t userInput) const
+bool IOProgram::IsValidCommand(UserInputData_t userInput) const
 {
-	int isValid = 0;
-
 	if( (userInput.direction == 'U' || userInput.direction == 'D' || userInput.direction == 'E' ||
 		userInput.direction == '1' || userInput.direction == '2' || userInput.direction == 'F' || 
 		userInput.direction == 'C' ) )
@@ -24,24 +22,24 @@ int IOProgram::IsValidCommand(UserInputData_t userInput) const
 				if( (userInput.direction == 'U' || userInput.direction == 'D') &&  // The command is for calling the elevator
 					(userInput.floor <= '9' && userInput.floor >= '0' ) )
 				{
-					isValid = 1;
+					return TRUE;
 				}
 				else if( (userInput.direction == '1' || userInput.direction == '2') &&  //the command is being made from within the elevator
 						  (userInput.floor <= '9' && userInput.floor >= '0' ) )
 				{
-					isValid = 1;
+					return TRUE;
 				}
 				else if( (userInput.direction == 'C' || userInput.direction == 'F') &&   //the command is being made to detect or clear a fault
 					(userInput.floor == '1' || userInput.floor == '2') )
 				{
-					isValid = 1;
+					return TRUE;
 				}
 				else if( userInput.direction == 'E' && userInput.floor == 'E') //the command is to terminate the simluation
 				{
-					isValid =  1;
+					return TRUE;
 				}
 	}
-	return isValid;
+	return FALSE;
 }
 
 //This function is to clear lines in the console

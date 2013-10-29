@@ -9,46 +9,48 @@
 Elevator::Elevator() 
 	: m_elevatorNumber(0) // FIXME kwou: change default value
 {
-	m_dispatcherToElevator_consumer = new CSemaphore("dispatcherToElevator_consumer",1,1);
-	m_dispatcherToElevator_producer = new CSemaphore("dispatcherToElevator_consumer",0,1);
-	m_elevatorToIO_consumer = new CSemaphore("elevatorToIO_consumer",1,1);
-	m_elevatorToIO_producer = new CSemaphore("elevatorToIO_producer",0,1);
-	m_elevatorDatapool = new CDataPool("dataPool",sizeof(ElevatorStatus_t));
-	m_elevatorCommands = new CPipe("elevatorCommands", 1024);
+	m_pDispatcherToElevator_consumer = new CSemaphore("dispatcherToElevator_consumer",1,1);
+	m_pDispatcherToElevator_producer = new CSemaphore("dispatcherToElevator_consumer",0,1);
+	m_pElevatorToIO_consumer = new CSemaphore("elevatorToIO_consumer",1,1);
+	m_pElevatorToIO_producer = new CSemaphore("elevatorToIO_producer",0,1);
+	m_pElevatorDatapool = new CDataPool("dataPool",sizeof(ElevatorStatus_t));
+	m_pElevatorCommands = new CPipe("elevatorCommands", 1024);
 
 } 
 
 Elevator::Elevator(int num, InterprocessCommTypeNames_t interprocessCommTypeNames) 
 	: m_elevatorNumber(num)
 {
-	m_dispatcherToElevator_consumer = new CSemaphore(interprocessCommTypeNames.dispatcherToElevator_consumer,1,1);
-	m_dispatcherToElevator_producer = new CSemaphore(interprocessCommTypeNames.dispatcherToElevator_consumer,0,1);
-	m_elevatorToIO_consumer = new CSemaphore(interprocessCommTypeNames.elevatorToIO_consumer,1,1);
-	m_elevatorToIO_producer = new CSemaphore(interprocessCommTypeNames.elevatorToIO_producer,0,1);
-	m_elevatorDatapool = new CDataPool(interprocessCommTypeNames.dataPool,sizeof(ElevatorStatus_t));
-	m_elevatorCommands = new CPipe(interprocessCommTypeNames.elevatorCommands, 1024);
+	m_pDispatcherToElevator_consumer = new CSemaphore(interprocessCommTypeNames.dispatcherToElevator_consumer,1,1);
+	m_pDispatcherToElevator_producer = new CSemaphore(interprocessCommTypeNames.dispatcherToElevator_consumer,0,1);
+	m_pElevatorToIO_consumer = new CSemaphore(interprocessCommTypeNames.elevatorToIO_consumer,1,1);
+	m_pElevatorToIO_producer = new CSemaphore(interprocessCommTypeNames.elevatorToIO_producer,0,1);
+	m_pElevatorDatapool = new CDataPool(interprocessCommTypeNames.dataPool,sizeof(ElevatorStatus_t));
+	m_pElevatorCommands = new CPipe(interprocessCommTypeNames.elevatorCommands, 1024);
 	
 }
 
 Elevator::~Elevator()
 {
-	delete m_dispatcherToElevator_consumer;
-	delete m_dispatcherToElevator_producer;
-	delete m_elevatorToIO_consumer;
-	delete m_elevatorToIO_producer;
-	delete m_elevatorDatapool;
-	delete m_elevatorCommands;
+	delete m_pDispatcherToElevator_consumer;
+	delete m_pDispatcherToElevator_producer;
+	delete m_pElevatorToIO_consumer;
+	delete m_pElevatorToIO_producer;
+	delete m_pElevatorDatapool;
+	delete m_pElevatorCommands;
 }
+
+//
 
 //Initiliazes the default values for the Elevator
 void Elevator::UpdateElevatorStatus(ElevatorStatusPtr_t elevatorStatus, int direction, int doorStatus, int floorNumber) const
 {
 	
-		m_elevatorToIO_consumer->Wait();
+		m_pElevatorToIO_consumer->Wait();
 		elevatorStatus->direction = direction;
 		elevatorStatus->doorStatus = doorStatus;
 		elevatorStatus->floorNumber = floorNumber;
-		m_elevatorToIO_producer->Signal();
+		m_pElevatorToIO_producer->Signal();
 
 	/*if(m_elevatorNumber == 1)
 		MOVE_CURSOR(10,10);
@@ -62,7 +64,7 @@ void Elevator::UpdateElevatorStatus(ElevatorStatusPtr_t elevatorStatus, int dire
 int Elevator::main()
 {
 
-	ElevatorStatusPtr_t	elevatorStatus = (ElevatorStatusPtr_t)(m_elevatorDatapool->LinkDataPool());
+	ElevatorStatusPtr_t	elevatorStatus = (ElevatorStatusPtr_t)(m_pElevatorDatapool->LinkDataPool());
 	
 	int floorNumber;
 
