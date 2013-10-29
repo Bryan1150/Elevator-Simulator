@@ -30,6 +30,7 @@ private:
 	int main(); 
 	
 	IOProgramPtr_t m_pIoProgram;
+	ElevatorStatusPtr_t	m_pElevator1Status, m_pElevator2Status;
 	bool m_bExit;
 
 };

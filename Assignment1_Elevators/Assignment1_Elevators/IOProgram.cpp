@@ -80,7 +80,7 @@ int IOProgram::main()
 	CSemaphore elevator2ToIO_consumer("Elevator2ToIOConsumer",1,1);
 	CSemaphore elevator2ToIO_producer("Elevator2ToIOProducer",0,1);
 
-	CPipe IoToDispatcher_pipeline("IoToDispatcherPipeline", 1024);
+	CPipe IoToDispatcher_pipeline(k_ioToDispatcherPipeline, 1024);
 	int keys_pressed = 0;
 	CMailbox DispatcherToIo_mailbox;
 

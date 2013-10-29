@@ -18,19 +18,19 @@ int main()
 	CMutex	screenMutex("PrintToScreen");
 	InterprocessCommTypeNames_t elevator1InterprocessNames,elevator2InterprocessNames;
 
-	elevator1InterprocessNames.dispatcherToElevator_consumer = "DispatcherToElevator1Consumer";
-	elevator1InterprocessNames.dispatcherToElevator_producer = "DispatcherToElevator1Producer";
-	elevator1InterprocessNames.elevatorToIO_consumer = "Elevator1ToIOConsumer";
-	elevator1InterprocessNames.elevatorToIO_producer = "Elevator1ToIOProducer";
-	elevator1InterprocessNames.dataPool = "Elevator1Status";
-	elevator1InterprocessNames.elevatorCommands = "Elevator1Commands";
+	elevator1InterprocessNames.dispatcherToElevator_consumer = k_dispatcherToElevator1_consumer;
+	elevator1InterprocessNames.dispatcherToElevator_producer = k_dispatcherToElevator1_producer;
+	elevator1InterprocessNames.elevatorToIO_consumer = k_elevator1ToIO_consumer;
+	elevator1InterprocessNames.elevatorToIO_producer = k_elevator1ToIO_producer;
+	elevator1InterprocessNames.dataPool = k_elevator1StatusDataPool;
+	elevator1InterprocessNames.elevatorCommands = k_elevator1Commands;
 
-	elevator2InterprocessNames.dispatcherToElevator_consumer = "DispatcherToElevator2Consumer";
-	elevator2InterprocessNames.dispatcherToElevator_producer = "DispatcherToElevator2Producer";
-	elevator2InterprocessNames.elevatorToIO_consumer = "Elevator2ToIOConsumer";
-	elevator2InterprocessNames.elevatorToIO_producer = "Elevator2ToIOProducer";
-	elevator2InterprocessNames.dataPool = "Elevator2Status";
-	elevator2InterprocessNames.elevatorCommands = "Elevator2Commands";
+	elevator2InterprocessNames.dispatcherToElevator_consumer = k_dispatcherToElevator2_consumer;
+	elevator2InterprocessNames.dispatcherToElevator_producer = k_dispatcherToElevator2_producer;
+	elevator2InterprocessNames.elevatorToIO_consumer = k_elevator2ToIO_consumer;
+	elevator2InterprocessNames.elevatorToIO_producer = k_elevator2ToIO_producer;
+	elevator2InterprocessNames.dataPool = k_elevator2StatusDataPool;
+	elevator2InterprocessNames.elevatorCommands = k_elevator2Commands;
 
 
 	Elevator	elevator1(1,elevator1InterprocessNames);

@@ -66,17 +66,25 @@ int Elevator::main()
 
 	ElevatorStatusPtr_t	elevatorStatus = (ElevatorStatusPtr_t)(m_pElevatorDatapool->LinkDataPool());
 	
-	int floorNumber;
+	//int floorNumber;
+	
 
+	if(m_elevatorNumber == 1)
+		UpdateElevatorStatus(elevatorStatus, k_idle, k_closed, 0); // initlialize elevator
 
-	UpdateElevatorStatus(elevatorStatus, k_idle, k_closed, 0); // initlialize elevator
+	else if(m_elevatorNumber == 2)
+		UpdateElevatorStatus(elevatorStatus, k_up, k_open, 9); 
 	do{
 
 		Sleep(1500);
-		if(elevatorStatus->floorNumber < k_maxFloorNumber)
-			floorNumber = (elevatorStatus->floorNumber)+1;
+		if(elevatorStatus->floorNumber < k_maxFloorNumber && m_elevatorNumber == 1)
+			UpdateElevatorStatus(elevatorStatus, elevatorStatus->direction, elevatorStatus->doorStatus, elevatorStatus->floorNumber+1);
+
+		if(elevatorStatus->floorNumber > k_minFloorNumber && m_elevatorNumber == 2)
+			UpdateElevatorStatus(elevatorStatus, elevatorStatus->direction, elevatorStatus->doorStatus, elevatorStatus->floorNumber-1);
+			//floorNumber = (elevatorStatus->floorNumber)+1;
 	
-		UpdateElevatorStatus(elevatorStatus, k_idle, k_closed, floorNumber);
+		
 
 
 	}while(1);

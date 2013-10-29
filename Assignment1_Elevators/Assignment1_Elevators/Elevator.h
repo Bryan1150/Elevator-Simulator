@@ -21,6 +21,22 @@ static int const k_up = 1;
 static int const k_down = 2;
 static int const k_maxFloorNumber = 9;
 static int const k_minFloorNumber = 0;
+
+static string const k_ioToDispatcherPipeline = "IoToDispatcherPipeline";
+
+static string const k_dispatcherToElevator1_consumer = "DispatcherToElevator1Consumer";
+static string const k_dispatcherToElevator1_producer = "DispatcherToElevator1Producer";
+static string const k_elevator1ToIO_consumer = "Elevator1ToIOConsumer";
+static string const k_elevator1ToIO_producer = "Elevator1ToIOProducer";
+static string const k_elevator1StatusDataPool = "Elevator1Status";
+static string const k_elevator1Commands = "Elevator1Commands";
+
+static string const k_dispatcherToElevator2_consumer = "DispatcherToElevator2Consumer";
+static string const k_dispatcherToElevator2_producer = "DispatcherToElevator2Producer";
+static string const k_elevator2ToIO_consumer = "Elevator2ToIOConsumer";
+static string const k_elevator2ToIO_producer = "Elevator2ToIOProducer";
+static string const k_elevator2StatusDataPool = "Elevator2Status";
+static string const k_elevator2Commands = "Elevator2Commands";
 typedef struct {		
 
 	//status for elevator struct

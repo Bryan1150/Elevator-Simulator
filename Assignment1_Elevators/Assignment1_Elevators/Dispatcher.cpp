@@ -12,12 +12,18 @@ Dispatcher::Dispatcher()
 Dispatcher::Dispatcher(IOProgramPtr_t pIoProgram)
 	: m_pIoProgram(pIoProgram)  // have a pointer to the IOProgram object so that the dispatcher can post to its mailbox
 	, m_bExit(FALSE)
-{}
+{
+	CDataPool elevator1_datapool(k_elevator1StatusDataPool, sizeof(ElevatorStatus_t));
+	CDataPool elevator2_datapool(k_elevator2StatusDataPool, sizeof(ElevatorStatus_t));
+
+	m_pElevator1Status = (ElevatorStatusPtr_t)(elevator1_datapool.LinkDataPool());
+	m_pElevator2Status = (ElevatorStatusPtr_t)(elevator2_datapool.LinkDataPool());
+}
 
 //Thread to write commands to pipeline 1 (elevator 1)
 int Dispatcher::WriteToPipeline1(void* args)
 {
-	CPipe ECommands1("Elevator1Commands", 1024);
+	CPipe ECommands1(k_elevator1Commands, 1024);
 	
 
 	return 0;
@@ -26,7 +32,7 @@ int Dispatcher::WriteToPipeline1(void* args)
 //Thread to write commands to pipeline 2 (elevator 2)
 int Dispatcher::WriteToPipeline2(void* args)
 {
-	CPipe ECommands2("Elevator2Commands", 1024);
+	CPipe ECommands2(k_elevator1Commands, 1024);
 
 	return 0;
 }
@@ -34,7 +40,7 @@ int Dispatcher::WriteToPipeline2(void* args)
 // Thread to read pipeline with commands from IOProgram
 int Dispatcher::ReadFromPipeline3(void *args)
 { 
-	CPipe IoToDispatcher_pipeline("IoToDispatcherPipeline", 1024);
+	CPipe IoToDispatcher_pipeline(k_ioToDispatcherPipeline, 1024);
 	UserInputData_t userInput;
 
 	do{
@@ -61,8 +67,8 @@ int Dispatcher::ReadFromPipeline3(void *args)
 int Dispatcher::main()
 {
 
-	CDataPool elevator1_datapool("Elevator1Status", sizeof(ElevatorStatus_t));
-	CDataPool elevator2_datapool("Elevator2Status", sizeof(ElevatorStatus_t));
+	/*CDataPool elevator1_datapool("Elevator1Status", sizeof(ElevatorStatus_t));
+	CDataPool elevator2_datapool("Elevator2Status", sizeof(ElevatorStatus_t));*/
 
 	CSemaphore dispatcherToElevator1_consumer("DispatcherToElevator1Consumer",1,1);
 	CSemaphore dispatcherToElevator1_producer("DispatcherToElevator1Producer",0,1);
@@ -76,8 +82,8 @@ int Dispatcher::main()
 	ClassThread<Dispatcher>	 DispatcherToElevator1Pipeline(this,&Dispatcher::WriteToPipeline1,ACTIVE, NULL);
 	ClassThread<Dispatcher>	 DispatcherToElevator2Pipeline(this,&Dispatcher::WriteToPipeline2,ACTIVE, NULL);
 
-	ElevatorStatusPtr_t	elevator1Status = (ElevatorStatusPtr_t)(elevator1_datapool.LinkDataPool());
-	ElevatorStatusPtr_t	elevator2Status = (ElevatorStatusPtr_t)(elevator2_datapool.LinkDataPool());
+	/*ElevatorStatusPtr_t	elevator1Status = (ElevatorStatusPtr_t)(elevator1_datapool.LinkDataPool());
+	ElevatorStatusPtr_t	elevator2Status = (ElevatorStatusPtr_t)(elevator2_datapool.LinkDataPool());*/
 
 	do{
 		if(m_bExit)
