@@ -22,7 +22,9 @@ public:
 	Dispatcher(); //default constructor
 	Dispatcher(IOProgramPtr_t pIoProgram); //overloader constructor
 
-	int ReadFromPipeline3(void *args); //Thread for reading from pipeline3 
+	int ReadFromPipeline3(void* args); //Thread for reading from pipeline3 
+	int WriteToPipeline1(void* args);
+	int WriteToPipeline2(void* args);
 
 private:
 	int main(); 

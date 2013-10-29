@@ -16,6 +16,13 @@
 
 int main()
 {
+	CMutex	screenMutex("PrintToScreen");
+	Elevator	elevator1(1);
+	Elevator	elevator2(2);
+
+	elevator1.Resume();
+	elevator2.Resume();
+	Sleep(1000);
 	IOProgramPtr_t pIoProgram = std::make_shared<IOProgram>();
 	Dispatcher dispatcher(pIoProgram);
 

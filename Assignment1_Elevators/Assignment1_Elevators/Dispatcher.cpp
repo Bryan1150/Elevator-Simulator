@@ -10,9 +10,25 @@ Dispatcher::Dispatcher()
 {}
 
 Dispatcher::Dispatcher(IOProgramPtr_t pIoProgram)
-	: m_pIoProgram(pIoProgram)
+	: m_pIoProgram(pIoProgram)  // have a pointer to the IOProgram object so that the dispatcher can post to its mailbox
 	, m_bExit(FALSE)
 {}
+
+//Thread to write commands to pipeline 1 (elevator 1)
+int Dispatcher::WriteToPipeline1(void* args)
+{
+
+
+	return 0;
+}
+
+//Thread to write commands to pipeline 2 (elevator 2)
+int Dispatcher::WriteToPipeline2(void* args)
+{
+
+
+	return 0;
+}
 
 // Thread to read pipeline with commands from IOProgram
 int Dispatcher::ReadFromPipeline3(void *args)
@@ -23,6 +39,7 @@ int Dispatcher::ReadFromPipeline3(void *args)
 	do{
 			
 		IoToDispatcher_pipeline.Read(&userInput, sizeof(UserInputData_t));
+		MOVE_CURSOR(0,1);
 		printf("Direction = %c and Floor = %c\n", userInput.direction,userInput.floor);
 
 		// "EE" used to terminate simulation
@@ -45,7 +62,12 @@ int Dispatcher::main()
 
 	CDataPool elevator1_datapool("Elevator1Status", sizeof(ElevatorStatus_t));
 	CDataPool elevator2_datapool("Elevator2Status", sizeof(ElevatorStatus_t));
-	
+
+	CSemaphore dispatcherToElevator1_consumer("DispatcherToElevator1Consumer",1,1);
+	CSemaphore dispatcherToElevator1_producer("DispatcherToElevator1Producer",0,1);
+	CSemaphore dispatcherToElevator2_consumer("DispatcherToElevator2Consumer",1,1);
+	CSemaphore dispatcherToElevator2_producer("DispatcherToElevator2Producer",0,1);
+
 	CPipe ECommands1("Elevator1Commands", 1024);
 	CPipe ECommands2("Elevator2Commands", 1024);
 	CPipe IoToDispatcher_pipeline("DispatcherCommands", 1024);

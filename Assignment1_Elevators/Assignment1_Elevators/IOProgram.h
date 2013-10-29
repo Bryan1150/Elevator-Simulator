@@ -29,7 +29,10 @@ public:
 
 	int ReadFromMailbox(void* args);
 	int IsValidCommand(UserInputData_t userInput) const;
+	void ClearLines(int lines) const; //clear lines in console
 
+	void UpdateElevatorStatus(ElevatorStatus_t elevatorStatus, int elevatorNumber) const;
+	
 private:
 
 	bool m_exit;
