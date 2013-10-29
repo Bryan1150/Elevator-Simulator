@@ -28,8 +28,12 @@ public:
 	IOProgram(); //default constructor
 
 	int ReadFromMailbox(void* args);
-	int IsValidCommand(UserInputData_t userInput) const;
+	bool IsValidCommand(UserInputData_t userInput) const;
+	void ClearLines(int lines) const; //clear lines in console
 
+	void UpdateElevatorStatus(ElevatorStatus_t elevatorStatus, int elevatorNumber) const;
+	void PrintElevatorStatus1(ElevatorStatus_t localElevator1Status) const;
+	void PrintElevatorStatus2(ElevatorStatus_t localElevator2Status) const;
 private:
 
 	bool m_exit;
