@@ -60,6 +60,9 @@ ipch/
 *.vsp
 *.vspx
 
+#Visual Studio Settings
+visual\ studio\ 2010/
+
 # Guidance Automation Toolkit
 *.gpState
 
