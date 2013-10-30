@@ -1,0 +1,196 @@
+/*
+FS = (N + 2) - d    	// towards call; call in same direction
+FS = (N + 1) - d 		// towards call; call in opposite direction
+FS = 1					// away from point of call
+						// FS is "figure of suitability"
+*/
+
+Elevator:
+	- state:
+		- direction:
+			UP,DOWN,IDLE
+		- door:
+			OPEN,CLOSE
+	- floor: (current)
+		0,1,2,3,4,5,6,7,8,9	
+
+Request:
+	- direction:
+		UP, DOWN 	
+	- floor:
+		0,1,2,3,4,5,6,7,8,9
+	- elevatorId
+		0,1,..,n
+
+
+// Request sent from IO to Dispatcher
+// Dispatcher adds all requests into a vector
+
+FloorReqVect.push_back(Request);
+
+for(auto itFloor = FloorReqVect.begin(); itFloor != FloorReqVect.end(); ++itFloor)
+{
+	for(auto itLift = ElevatorVect.begin(); itList != ElevatorVect.end(); ++itLift)
+	{
+		if( Elevator.IsIdle() )
+		{
+			if( Request.floor > Elevator.floor )
+			{
+				if( Request.direction == UP )
+				{
+					use TowardsCallSameDir();
+				}
+				else if( Request.direction == DOWN )
+				{
+					use TowardsCallDiffDir();
+				}
+			}
+			else if( Request.floor < Elevator.floor )
+			{
+				if( Request.direction == DOWN )
+				{
+					use TowardsCallSameDir();
+				} 
+				else if( Request.direction == UP )
+				{
+					use TowardsCallDiffDir();
+				}
+			}
+			else if( Request.floor == Elevator.floor )
+			{
+				use TowardsCallSameDir();
+			}
+
+			continue to top of loop;
+		}
+
+		if( Elevator.direction == Request.direction )
+		{
+			if( Elevator.direction == UP )
+			{
+				if( Request.floor >= Elevator.floor )
+				{
+					use TowardsCallSameDir();
+				}
+				else if( Request.floor < Elevator.floor )
+				{
+					use AwayFromCall();
+				}
+			}
+			else if( Elevator.direction == DOWN )
+			{
+				if( Request.floor <= Elevator.floor )
+				{
+					use TowardsCallSameDir();
+				}
+				else if( Request.floor > Elevator.floor )
+				{
+					use AwayFromCall();
+				}
+			}
+
+			continue to top of loop;
+		}
+
+		else // Elevator.direction and Request.direction are opposites
+		{
+			if( Elevator.direction == UP )
+			{
+				if( Request.floor >= Elevator.floor )
+				{
+					use TowardsCallDiffDir();
+				}
+				else if( Request.floor < Elevator.floor )
+				{
+					use AwayFromCall();
+				}
+			}
+			else if( Elevator.direction == DOWN )
+			{
+				if( Request.floor <= Elevator.floor )
+				{
+					use TowardsCallDiffDir();
+				}
+				else if( Request.floor > Elevator.floor )
+				{
+					use AwayFromCall();
+				}
+			}
+
+			continue to top of loop;
+		}
+	}
+}
+
+// NOTE:
+typedef int FS_t;
+typedef std::map<FS_t, FloorRequest_t> FSToFloorReqMap_t;
+FSToFloorReqMap_t m_FSTofloorReqMap;
+
+void TowardsCallSameDir(FloorRequest_t const& itFloor, Elevator_t const& itLift)
+{
+	FS = (k_numFloorsMinusOne + 2) - abs(itFloor->floor - itLift->floor);
+	
+	InsertFSIntoMap(FS);
+}
+
+void TowardsCallDiffDir(FloorRequest_t const& itFloor, Elevator_t const& itLift)
+{
+	FS = (k_numFloorsMinusOne + 1) - abs(itFloor->floor - itLift->floor);
+
+	InsertFSIntoMap(FS);
+}
+
+void AwayFromCall(FloorRequest_t const& itFloor, Elevator_t const& itLift)
+{
+	FS = 1;
+
+	InsertFSIntoMap(FS);
+}
+
+void InsertFSIntoMap(FS_t const& FS)
+{
+	auto it = m_floorReqToFSMap.find(FS);
+	if( it == m_floorReqToFSMap.end() )
+	{
+		m_FSToFloorReqMap.insert(std::make_pair(FS, itFloor));
+	}
+	// if there is already an existing FS value in the map, we need to check the priorities:
+	// * for multiple OUTSIDE requests, take the floor closest to the elevator
+	// * for multiple INSIDE requests, take the floor closest to the elevator
+	// * INSIDE requests get priority over OUTSIDE requests
+	else 
+	{
+		if( it->second->elevatorId.empty() ) // map has an OUTSIDE request
+		{
+			if( !itFloor->elevatorId.empty() ) // next entry is an INSIDE request, so overwrite the map entry
+			{
+				m_FSToFloorReqMap.erase(it);
+				m_FSToFloorReqMap.insert(std::make_pair(FS, itFloor));
+			}
+			else // next entry is an OUTSIDE request, so take closest floor to the elevator
+			{
+				if( abs(itLift->floor - it->second->floor) > abs(itLift->floor - itFloor->floor) )
+				{
+					m_FSToFloorReqMap.erase(it);
+					m_FSToFloorReqMap.insert(std::make_pair(FS, itFloor));
+				}
+				// do nothing if the elevator is closer to the request already in the map
+			}
+		} 
+		else // map has an INSIDE request
+		{
+			if( !itFloor->elevatorId.empty() ) // next entry is an INSIDE request
+			{
+				if( abs(itLift->floor - it->second->floor) > abs(itLift->floor - itFloor->floor) ) // since both are INSIDE requests, take the one with the floor closest to the elevator
+				{
+					m_FSToFloorReqMap.erase(it);
+					m_FSToFloorReqMap.insert(std::make_pair(FS, itFloor));
+				}
+				// do nothing if the elevator is closer to the request already in the map
+			}
+			// do nothing if next entry is an OUSIDE request, since it has lower priority
+		}
+	}
+
+}
