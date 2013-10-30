@@ -41,8 +41,8 @@ int main()
 	elevator1.Resume();
 	elevator2.Resume();
 	Sleep(1000);
-	IOProgramPtr_t pIoProgram = std::make_shared<IOProgram>();
-	Dispatcher dispatcher(pIoProgram);
+	IOProgramPtr_t pIoProgram = std::make_shared<IOProgram>(2);
+	Dispatcher dispatcher(pIoProgram,2);
 
 	pIoProgram->Resume();
 	dispatcher.Resume();

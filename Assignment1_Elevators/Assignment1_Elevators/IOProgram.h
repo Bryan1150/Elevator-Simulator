@@ -29,16 +29,24 @@ class IOProgram : public ActiveClass
 public:
 	IOProgram(); //default constructor
 
+	IOProgram(int numberOfElevators);
 	int ReadFromMailbox(void* args);
 	bool IsValidCommand(UserInputData_t userInput) const;
 	void ClearLines(int lines) const; //clear lines in console
 
+	int CollectElevatorStatus(void* args);
 	void UpdateElevatorStatus(ElevatorStatus_t elevatorStatus, int elevatorNumber) const;
+	/*void PrintElevatorStatus(ElevatorStatus_t localElevatorStatus, int elevatorNumber) const;
 	void PrintElevatorStatus1(ElevatorStatus_t localElevator1Status) const;
-	void PrintElevatorStatus2(ElevatorStatus_t localElevator2Status) const;
+	void PrintElevatorStatus2(ElevatorStatus_t localElevator2Status) const;*/
 private:
 
+	CDataPool* m_pElevatorDataPool[100];
+	ElevatorStatusPtr_t m_pElevatorStatus[100];
+	ElevatorStatus_t m_localElevatorStatus[100];
+	CMutex*	m_screenMutex;
 	bool m_exit;
+	int m_numberOfElevators;
 	int main();
 
 };

@@ -20,16 +20,17 @@ class Dispatcher : public ActiveClass
 {
 public:
 	Dispatcher(); //default constructor
-	Dispatcher(IOProgramPtr_t pIoProgram); //overloader constructor
+	Dispatcher(IOProgramPtr_t pIoProgram, int numberOfElevators); //overloader constructor
 
 	int ReadFromPipeline3(void* args); //Thread for reading from pipeline3 
-	int WriteToPipeline1(void* args);
+	int DispatcherToElevator(void* args);
 	int WriteToPipeline2(void* args);
 
 private:
 	int main(); 
-	
+	int m_numberOfElevators;
 	IOProgramPtr_t m_pIoProgram;
+	
 	ElevatorStatusPtr_t	m_pElevator1Status, m_pElevator2Status;
 	bool m_bExit;
 

@@ -6,14 +6,17 @@
  *	 Ryan Wong	47307103
  *****************************************************/
 #include "Dispatcher.h"
-
+#include <memory>
+#include <sstream>
+#include <vector>
 
 Dispatcher::Dispatcher()
 {}
 
-Dispatcher::Dispatcher(IOProgramPtr_t pIoProgram)
+Dispatcher::Dispatcher(IOProgramPtr_t pIoProgram, int numberOfElevators)
 	: m_pIoProgram(pIoProgram)  // have a pointer to the IOProgram object so that the dispatcher can post to its mailbox
 	, m_bExit(FALSE)
+	, m_numberOfElevators(numberOfElevators)
 {
 	CDataPool elevator1_datapool(k_elevator1StatusDataPool, sizeof(ElevatorStatus_t));
 	CDataPool elevator2_datapool(k_elevator2StatusDataPool, sizeof(ElevatorStatus_t));
@@ -23,11 +26,18 @@ Dispatcher::Dispatcher(IOProgramPtr_t pIoProgram)
 }
 
 //Thread to write commands to pipeline 1 (elevator 1)
-int Dispatcher::WriteToPipeline1(void* args)
+int Dispatcher::DispatcherToElevator(void* args)
 {
-	CPipe ECommands1(k_elevator1Commands, 1024);
 	
+	std::stringstream ss;
+	int x = *(int*)args;
+	ss << x;
+	std::string elevatorNumber = ss.str();
+	CPipe elevatorCommands1("Elevator"+elevatorNumber+"Commands", 1024);
+	do{
 
+			//printf("%c\n",elevatorNumber);
+	}while(1);
 	return 0;
 }
 
@@ -80,9 +90,23 @@ int Dispatcher::main()
 	
 	CPipe IoToDispatcher_pipeline("DispatcherCommands", 1024);
 	
+	std::vector<ClassThread<Dispatcher>*> dispatcherToElevatorVect;
+	int xArray[100];
+
+
+	for( int i = 1; i <= m_numberOfElevators; i++)
+	{
+		xArray[i-1] = i+10;
+		if( i - 1 >= 0)
+		{	
+			ClassThread<Dispatcher>* pDispatcherToElevator= new ClassThread<Dispatcher>(this,&Dispatcher::DispatcherToElevator, ACTIVE, &xArray[i-1]);
+			dispatcherToElevatorVect.push_back(pDispatcherToElevator);
+		}
+	}//add delete in for the pointers in the vectors
 	ClassThread<Dispatcher>	 IoToDispatcherPipeline(this,&Dispatcher::ReadFromPipeline3,ACTIVE, NULL);
-	ClassThread<Dispatcher>	 DispatcherToElevator1Pipeline(this,&Dispatcher::WriteToPipeline1,ACTIVE, NULL);
-	ClassThread<Dispatcher>	 DispatcherToElevator2Pipeline(this,&Dispatcher::WriteToPipeline2,ACTIVE, NULL);
+
+	//ClassThread<Dispatcher>	 DispatcherToElevator1Pipeline(this,&Dispatcher::DispatcherToElevator,ACTIVE, NULL);
+	//ClassThread<Dispatcher>	 DispatcherToElevator2Pipeline(this,&Dispatcher::WriteToPipeline2,ACTIVE, NULL);
 
 	/*ElevatorStatusPtr_t	elevator1Status = (ElevatorStatusPtr_t)(elevator1_datapool.LinkDataPool());
 	ElevatorStatusPtr_t	elevator2Status = (ElevatorStatusPtr_t)(elevator2_datapool.LinkDataPool());*/

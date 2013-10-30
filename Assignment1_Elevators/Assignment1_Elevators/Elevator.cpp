@@ -6,7 +6,7 @@
  *	 Ryan Wong	47307103
  *****************************************************/
 #include "Elevator.h"
-
+#include <sstream>
 
 Elevator::Elevator() 
 	: m_elevatorNumber(0) // FIXME kwou: change default value
@@ -23,12 +23,32 @@ Elevator::Elevator()
 Elevator::Elevator(int num, InterprocessCommTypeNames_t interprocessCommTypeNames) 
 	: m_elevatorNumber(num)
 {
-	m_pDispatcherToElevator_consumer = new CSemaphore(interprocessCommTypeNames.dispatcherToElevator_consumer,1,1);
-	m_pDispatcherToElevator_producer = new CSemaphore(interprocessCommTypeNames.dispatcherToElevator_consumer,0,1);
-	m_pElevatorToIO_consumer = new CSemaphore(interprocessCommTypeNames.elevatorToIO_consumer,1,1);
-	m_pElevatorToIO_producer = new CSemaphore(interprocessCommTypeNames.elevatorToIO_producer,0,1);
-	m_pElevatorDatapool = new CDataPool(interprocessCommTypeNames.dataPool,sizeof(ElevatorStatus_t));
-	m_pElevatorCommands = new CPipe(interprocessCommTypeNames.elevatorCommands, 1024);
+	std::stringstream ss;
+	std::string s_elevatorNumber;
+	ss << m_elevatorNumber;
+	s_elevatorNumber = ss.str();
+
+	m_pDispatcherToElevator_consumer = new CSemaphore("DispatcherToElevator"+s_elevatorNumber+"Consumer",1,1);
+	m_pDispatcherToElevator_producer = new CSemaphore("DispatcherToElevator"+s_elevatorNumber+"Producer",0,1);
+	m_pElevatorToIO_consumer = new CSemaphore("Elevator"+s_elevatorNumber+"ToIOConsumer",1,1);
+	m_pElevatorToIO_producer = new CSemaphore("Elevator"+s_elevatorNumber+"ToIOProducer",0,1);
+	m_pElevatorDatapool = new CDataPool("Elevator"+s_elevatorNumber+"Status",sizeof(ElevatorStatus_t));
+	m_pElevatorCommands = new CPipe("Elevator"+s_elevatorNumber+"Commands", 1024);
+
+	//m_pDispatcherToElevator_consumer = new CSemaphore(interprocessCommTypeNames.dispatcherToElevator_consumer,1,1);
+	//m_pDispatcherToElevator_producer = new CSemaphore(interprocessCommTypeNames.dispatcherToElevator_consumer,0,1);
+	//m_pElevatorToIO_consumer = new CSemaphore(interprocessCommTypeNames.elevatorToIO_consumer,1,1);
+	//m_pElevatorToIO_producer = new CSemaphore(interprocessCommTypeNames.elevatorToIO_producer,0,1);
+	//m_pElevatorDatapool = new CDataPool(interprocessCommTypeNames.dataPool,sizeof(ElevatorStatus_t));
+	//m_pElevatorCommands = new CPipe(interprocessCommTypeNames.elevatorCommands, 1024);
+
+//	static std::string const k_dispatcherToElevator1_consumer = "DispatcherToElevator1Consumer";
+//static std::string const k_dispatcherToElevator1_producer = "DispatcherToElevator1Producer";
+//static std::string const k_elevator1ToIO_consumer = "Elevator1ToIOConsumer";
+//static std::string const k_elevator1ToIO_producer = "Elevator1ToIOProducer";
+//static std::string const k_elevator1StatusDataPool = "Elevator1Status";
+//static std::string const k_elevator1Commands = "Elevator1Commands";
+
 	
 }
 
@@ -78,7 +98,7 @@ int Elevator::main()
 		UpdateElevatorStatus(elevatorStatus, k_up, k_open, 9); 
 	do{
 
-		Sleep(1500);
+		Sleep(1000);
 		if(elevatorStatus->floorNumber < k_maxFloorNumber && m_elevatorNumber == 1)
 			UpdateElevatorStatus(elevatorStatus, elevatorStatus->direction, elevatorStatus->doorStatus, elevatorStatus->floorNumber+1);
 

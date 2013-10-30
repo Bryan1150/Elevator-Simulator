@@ -6,14 +6,42 @@
  *	 Ryan Wong	47307103
  *****************************************************/
 #include <conio.h>
+#include <sstream>
+#include <vector>
 
 #include "IOProgram.h"
 #include "Dispatcher.h"
 
 
 IOProgram::IOProgram() : m_exit(FALSE)
-{}
+{
+	m_screenMutex = new CMutex("PrintToScreen");
+}
 
+IOProgram::IOProgram(int numberOfElevators) 
+	: m_exit(FALSE)
+	, m_numberOfElevators(numberOfElevators)
+{
+	m_screenMutex = new CMutex("PrintToScreen");
+	std::stringstream ss;
+	std::string elevatorNumber;
+	for(int i = 1; i <= m_numberOfElevators; ++i)
+	{
+		ss << i;
+		elevatorNumber = ss.str();
+		m_pElevatorDataPool[i-1] = new CDataPool("Elevator"+elevatorNumber+"Status",sizeof(ElevatorStatus_t)); 
+		ss.str("");
+		//printf("Created %d datapools in IO Program\n", i);
+	}
+
+	for(int i = 1; i <= m_numberOfElevators; ++i)
+	{
+		ss << i;
+		elevatorNumber = ss.str();
+		m_pElevatorStatus[i-1] = (ElevatorStatusPtr_t)(m_pElevatorDataPool[i-1]->LinkDataPool());		//link to datapools of elevator statuses
+		//printf("Created %d datapool link in IO Program\n", i);
+	}
+}
 bool IOProgram::IsValidCommand(UserInputData_t userInput) const
 {
 	if( (userInput.direction == 'U' || userInput.direction == 'D' || userInput.direction == 'E' ||
@@ -47,35 +75,62 @@ bool IOProgram::IsValidCommand(UserInputData_t userInput) const
 //This function is to clear lines in the console
 void IOProgram::ClearLines(int lines) const
 {
-	CMutex	screenMutex("PrintToScreen");
-	screenMutex.Wait();
+
+	m_screenMutex->Wait();
 	for(int i = 0; i < lines; ++i)
 	{
 		MOVE_CURSOR(0,i);
 		for(int i = 0; i < 256; ++i)
 			printf(" ");
 	}
-	screenMutex.Signal();
+	m_screenMutex->Signal();
 }
 
 void IOProgram::UpdateElevatorStatus(ElevatorStatus_t elevatorStatus, int elevatorNumber) const
 {
-	if(elevatorNumber == 1)
-		MOVE_CURSOR(0,12);
-	else if(elevatorNumber == 2)
-		MOVE_CURSOR(0,20);
+	m_screenMutex->Wait();	
+		MOVE_CURSOR(0,elevatorNumber*10);
 
 	printf("Elevator %d\n"
 		"Direction: %d\n"
 		"Door Status: %d\n"
 		"Floor Number: %d\n", elevatorNumber,elevatorStatus.direction,elevatorStatus.doorStatus,elevatorStatus.floorNumber);
+	m_screenMutex->Signal();
 
+}
+int IOProgram::CollectElevatorStatus(void* args)
+{
+	std::stringstream ss;
+	int x = *(int*)args;
+	ss << x;
+	std::string elevatorNumber = ss.str();
 
+	CSemaphore elevatorToIO_consumer("Elevator"+elevatorNumber+"ToIOConsumer",1,1);
+	CSemaphore elevatorToIO_producer("Elevator"+elevatorNumber+"ToIOProducer",0,1);
+	do{
+		if(elevatorToIO_producer.Read() > 0) // elevator 1 produced data
+			{
+			  if(x-1>=0)
+			  {
+				elevatorToIO_producer.Wait();
+				//printf("Copying data from elevator1Status in IO program\n");
+				m_localElevatorStatus[x-1].direction = m_pElevatorStatus[x-1]->direction;
+				m_localElevatorStatus[x-1].doorStatus = m_pElevatorStatus[x-1]->doorStatus;
+				m_localElevatorStatus[x-1].floorNumber = m_pElevatorStatus[x-1]->floorNumber;
+				elevatorToIO_consumer.Signal();
+				UpdateElevatorStatus(m_localElevatorStatus[x-1],x);	//update visual for elevator 1
+			  }
+			}
+	}while(1);
+	return 0;
 }
 int IOProgram::main()
 {
-	CDataPool elevator1_datapool("Elevator1Status", sizeof(ElevatorStatus_t));
-	CDataPool elevator2_datapool("Elevator2Status", sizeof(ElevatorStatus_t));
+	
+	
+	
+	/*CDataPool elevator1_datapool("Elevator1Status", sizeof(ElevatorStatus_t));
+	CDataPool elevator2_datapool("Elevator2Status", sizeof(ElevatorStatus_t));*/
 	
 	CSemaphore elevator1ToIO_consumer("Elevator1ToIOConsumer",1,1);
 	CSemaphore elevator1ToIO_producer("Elevator1ToIOProducer",0,1);
@@ -87,11 +142,29 @@ int IOProgram::main()
 	CMailbox DispatcherToIo_mailbox;
 
 	UserInputData_t userInput; // Struct for holdering user input
+	
+	
+	std::vector<ClassThread<IOProgram>*> collectElevatorStatusVect;
+	int xArray[100];
 
-	ElevatorStatusPtr_t	elevator1Status = (ElevatorStatusPtr_t)(elevator1_datapool.LinkDataPool());		//link to datapools of elevator statuses
-	ElevatorStatusPtr_t	elevator2Status = (ElevatorStatusPtr_t)(elevator2_datapool.LinkDataPool());
 
-	ElevatorStatus_t localElevator1Status, localElevator2Status; // local data structures of elevator status
+	for( int i = 1; i <= m_numberOfElevators; i++)
+	{
+		xArray[i-1] = i;
+		if( i - 1 >= 0)
+		{	
+			ClassThread<IOProgram>* pCollectElevatorStatus= new ClassThread<IOProgram>(this,&IOProgram::CollectElevatorStatus, ACTIVE, &xArray[i-1]);
+			collectElevatorStatusVect.push_back(pCollectElevatorStatus);
+			//printf("Created %d threads in IOProgram\n", i);
+			//Sleep(500);
+		}//add delete in for the pointers in the vectors //add waitfor thread at the end
+	}
+	
+
+	/*ElevatorStatusPtr_t	elevator1Status = 
+	ElevatorStatusPtr_t	elevator2Status = (ElevatorStatusPtr_t)(elevator2_datapool.LinkDataPool());*/
+
+	//ElevatorStatus_t localElevator1Status, localElevator2Status; // local data structures of elevator status
 
 	MOVE_CURSOR(0,0);
 	printf("Enter Commands: ");
@@ -136,31 +209,31 @@ int IOProgram::main()
 
 		//printf("Elevator 1: Direction=%d , Status=%d, Floor Number =%d\n",elevator1Status->direction,elevator1Status->doorStatus,elevator1Status->floorNumber);
 		//printf("Elevator 2: Direction=%d , Status=%d, Floor Number =%d\n",elevator2Status->direction,elevator2Status->doorStatus,elevator2Status->floorNumber);
-		if(elevator1ToIO_producer.Read() > 0) // elevator 1 produced data
-		{
-			
-			elevator1ToIO_producer.Wait();
-			//printf("Copying data from elevator1Status in IO program\n");
-			localElevator1Status.direction = elevator1Status->direction;
-			localElevator1Status.doorStatus = elevator1Status->doorStatus;
-			localElevator1Status.floorNumber = elevator1Status->floorNumber;
-			elevator1ToIO_consumer.Signal();
-			UpdateElevatorStatus(localElevator1Status,1);	//update visual for elevator 1
+		//if(elevator1ToIO_producer.Read() > 0) // elevator 1 produced data
+		//{
+		//	
+		//	elevator1ToIO_producer.Wait();
+		//	//printf("Copying data from elevator1Status in IO program\n");
+		//	m_localElevatorStatus[0].direction = m_pElevatorStatus[0]->direction;
+		//	m_localElevatorStatus[0].doorStatus = m_pElevatorStatus[0]->doorStatus;
+		//	m_localElevatorStatus[0].floorNumber = m_pElevatorStatus[0]->floorNumber;
+		//	elevator1ToIO_consumer.Signal();
+		//	UpdateElevatorStatus(m_localElevatorStatus[0],1);	//update visual for elevator 1
 
-		}
+		//}
 
-		if(elevator2ToIO_producer.Read() > 0) // elevator 2 produced data
-		{
-			
-			elevator2ToIO_producer.Wait();
-			//printf("Copying data from elevator2Status in IO program\n");
-			localElevator2Status.direction = elevator2Status->direction;
-			localElevator2Status.doorStatus = elevator2Status->doorStatus;
-			localElevator2Status.floorNumber = elevator2Status->floorNumber;
-			elevator2ToIO_consumer.Signal();
-			UpdateElevatorStatus(localElevator2Status,2);	//update visual for elevator 2
+		//if(elevator2ToIO_producer.Read() > 0) // elevator 2 produced data
+		//{
+		//	
+		//	elevator2ToIO_producer.Wait();
+		//	//printf("Copying data from elevator2Status in IO program\n");
+		//	m_localElevatorStatus[1].direction = m_pElevatorStatus[1]->direction;
+		//	m_localElevatorStatus[1].doorStatus = m_pElevatorStatus[1]->doorStatus;
+		//	m_localElevatorStatus[1].floorNumber = m_pElevatorStatus[1]->floorNumber;
+		//	elevator2ToIO_consumer.Signal();
+		//	UpdateElevatorStatus(m_localElevatorStatus[1],2);	//update visual for elevator 2
 
-		}
+		//}
 		/*else
 		{
 				printf("Error: invalid command\n");
