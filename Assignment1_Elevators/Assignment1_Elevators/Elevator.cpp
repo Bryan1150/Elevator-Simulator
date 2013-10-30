@@ -96,6 +96,10 @@ int Elevator::main()
 
 	else if(m_elevatorNumber == 2)
 		UpdateElevatorStatus(elevatorStatus, k_up, k_open, 9); 
+	else if(m_elevatorNumber == 3)
+		UpdateElevatorStatus(elevatorStatus, k_up, k_closed, 4); 
+
+	Sleep(1000);
 	do{
 
 		Sleep(1000);
@@ -106,8 +110,10 @@ int Elevator::main()
 			UpdateElevatorStatus(elevatorStatus, elevatorStatus->direction, elevatorStatus->doorStatus, elevatorStatus->floorNumber-1);
 			//floorNumber = (elevatorStatus->floorNumber)+1;
 	
-		
-
+		if(elevatorStatus->floorNumber > k_minFloorNumber && m_elevatorNumber == 3){
+			Sleep(500);
+			UpdateElevatorStatus(elevatorStatus, elevatorStatus->direction, elevatorStatus->doorStatus, elevatorStatus->floorNumber-1);
+		}
 
 	}while(1);
 	//delete elevator1Status;

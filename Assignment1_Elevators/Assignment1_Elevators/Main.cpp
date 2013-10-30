@@ -17,7 +17,7 @@
 int main()
 {
 	CMutex	screenMutex("PrintToScreen");
-	InterprocessCommTypeNames_t elevator1InterprocessNames,elevator2InterprocessNames;
+	InterprocessCommTypeNames_t elevator1InterprocessNames,elevator2InterprocessNames,elevator3InterprocessNames;
 
 	elevator1InterprocessNames.dispatcherToElevator_consumer = k_dispatcherToElevator1_consumer;
 	elevator1InterprocessNames.dispatcherToElevator_producer = k_dispatcherToElevator1_producer;
@@ -33,16 +33,24 @@ int main()
 	elevator2InterprocessNames.dataPool = k_elevator2StatusDataPool;
 	elevator2InterprocessNames.elevatorCommands = k_elevator2Commands;
 
+	elevator3InterprocessNames.dispatcherToElevator_consumer = k_dispatcherToElevator2_consumer;
+	elevator3InterprocessNames.dispatcherToElevator_producer = k_dispatcherToElevator2_producer;
+	elevator3InterprocessNames.elevatorToIO_consumer = k_elevator2ToIO_consumer;
+	elevator3InterprocessNames.elevatorToIO_producer = k_elevator2ToIO_producer;
+	elevator3InterprocessNames.dataPool = k_elevator2StatusDataPool;
+	elevator3InterprocessNames.elevatorCommands = k_elevator2Commands;
+
 
 	Elevator	elevator1(1,elevator1InterprocessNames);
 	Elevator	elevator2(2,elevator2InterprocessNames);
-
+	Elevator	elevator3(3,elevator3InterprocessNames);
 
 	elevator1.Resume();
 	elevator2.Resume();
+	elevator3.Resume();
 	Sleep(1000);
-	IOProgramPtr_t pIoProgram = std::make_shared<IOProgram>(2);
-	Dispatcher dispatcher(pIoProgram,2);
+	IOProgramPtr_t pIoProgram = std::make_shared<IOProgram>(3);
+	Dispatcher dispatcher(pIoProgram,3);
 
 	pIoProgram->Resume();
 	dispatcher.Resume();
