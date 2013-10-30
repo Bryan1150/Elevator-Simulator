@@ -72,8 +72,9 @@ void Elevator::UpdateElevatorStatus(ElevatorStatusPtr_t elevatorStatus, int dire
 		elevatorStatus->direction = direction;
 		elevatorStatus->doorStatus = doorStatus;
 		elevatorStatus->floorNumber = floorNumber;
+		
 		m_pElevatorToIO_producer->Signal();
-
+		
 	/*if(m_elevatorNumber == 1)
 		MOVE_CURSOR(10,10);
 	else if(m_elevatorNumber == 2)

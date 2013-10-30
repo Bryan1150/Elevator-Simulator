@@ -89,7 +89,7 @@ void IOProgram::ClearLines(int lines) const
 void IOProgram::UpdateElevatorStatus(ElevatorStatus_t elevatorStatus, int elevatorNumber) const
 {
 	m_screenMutex->Wait();	
-		MOVE_CURSOR(0,elevatorNumber*10);
+		MOVE_CURSOR(0,elevatorNumber*5+5);
 
 	printf("Elevator %d\n"
 		"Direction: %d\n"
@@ -166,20 +166,28 @@ int IOProgram::main()
 
 	//ElevatorStatus_t localElevator1Status, localElevator2Status; // local data structures of elevator status
 
+	m_screenMutex->Wait();
 	MOVE_CURSOR(0,0);
 	printf("Enter Commands: ");
+	m_screenMutex->Signal();
 	do{
 		if(TEST_FOR_KEYBOARD())		//Test for keyboard inputs
 		{
 			if(keys_pressed == 0)
 			{
 				userInput.direction = _getch();
+				m_screenMutex->Wait();
+				MOVE_CURSOR(17,0);
 				_putch(userInput.direction);
+				m_screenMutex->Signal();
 			}
 			else
 			{
 				userInput.floor = _getch();
+				m_screenMutex->Wait();
+				MOVE_CURSOR(18,0);
 				_putch(userInput.floor);
+				m_screenMutex->Signal();
 			}
 			++keys_pressed;
 		}
@@ -248,8 +256,11 @@ int IOProgram::main()
 				printf("Message = %d\n", message);
 				if(message == k_terminateSimulation)	
 				{			
+					m_screenMutex->Wait();
+					MOVE_CURSOR(0,3);
 					printf("Received TERMINATE Message.....\n") ;
 					m_exit = TRUE;
+					m_screenMutex->Signal();
 				}
 			
 		}
