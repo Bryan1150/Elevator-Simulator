@@ -1,7 +1,9 @@
 /*****************************************************
  * EECE 314 Assignment #1
- * Authors: Kieren Wou & Ryan Wong
  * Date: October 2013
+ * Authors: 
+ *	 Kieren Wou	54724117
+ *	 Ryan Wong	47307103
  *****************************************************/
 #include "Dispatcher.h"
 

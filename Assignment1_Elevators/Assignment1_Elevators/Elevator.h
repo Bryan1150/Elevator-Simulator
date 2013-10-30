@@ -1,42 +1,20 @@
 /*****************************************************
  * EECE 314 Assignment #1
- * Authors: Kieren Wou & Ryan Wong
  * Date: October 2013
+ * Authors: 
+ *	 Kieren Wou	54724117
+ *	 Ryan Wong	47307103
  *****************************************************/
 #include <iostream>
 #include <memory>
 
 #include "..\..\..\rt.h"
-
-
+#include "GlobalVariableDecl.h"
 
 
 #ifndef ELEVATOR_H
 #define ELEVATOR_H
 
-static int const k_open = 1;
-static int const k_closed = 0;
-static int const k_idle = 0;
-static int const k_up = 1;
-static int const k_down = 2;
-static int const k_maxFloorNumber = 9;
-static int const k_minFloorNumber = 0;
-
-static string const k_ioToDispatcherPipeline = "IoToDispatcherPipeline";
-
-static string const k_dispatcherToElevator1_consumer = "DispatcherToElevator1Consumer";
-static string const k_dispatcherToElevator1_producer = "DispatcherToElevator1Producer";
-static string const k_elevator1ToIO_consumer = "Elevator1ToIOConsumer";
-static string const k_elevator1ToIO_producer = "Elevator1ToIOProducer";
-static string const k_elevator1StatusDataPool = "Elevator1Status";
-static string const k_elevator1Commands = "Elevator1Commands";
-
-static string const k_dispatcherToElevator2_consumer = "DispatcherToElevator2Consumer";
-static string const k_dispatcherToElevator2_producer = "DispatcherToElevator2Producer";
-static string const k_elevator2ToIO_consumer = "Elevator2ToIOConsumer";
-static string const k_elevator2ToIO_producer = "Elevator2ToIOProducer";
-static string const k_elevator2StatusDataPool = "Elevator2Status";
-static string const k_elevator2Commands = "Elevator2Commands";
 typedef struct {		
 
 	//status for elevator struct

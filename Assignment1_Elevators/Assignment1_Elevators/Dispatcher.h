@@ -1,17 +1,17 @@
 /*****************************************************
  * EECE 314 Assignment #1
- * Authors: Kieren Wou & Ryan Wong
  * Date: October 2013
+ * Authors: 
+ *	 Kieren Wou	54724117
+ *	 Ryan Wong	47307103
  *****************************************************/
 #include <iostream>
 
 #include "..\..\..\rt.h"
-
+#include "GlobalVariableDecl.h"
 #include "IOProgram.h"
 #include "Elevator.h"
 
-
-static UINT const k_terminateSimulation = 3000;
 
 #ifndef DISPATCHER_H
 #define DISPATCHER_H

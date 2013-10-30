@@ -1,13 +1,14 @@
 /*****************************************************
  * EECE 314 Assignment #1
- * Authors: Kieren Wou & Ryan Wong
  * Date: October 2013
+ * Authors: 
+ *	 Kieren Wou	54724117
+ *	 Ryan Wong	47307103
  *****************************************************/
 #include <iostream>
 #include <memory>
 
 #include "..\..\..\rt.h"
-
 #include "Dispatcher.h" //include active classes header files
 #include "Elevator.h"
 #include "IOProgram.h"
