@@ -59,6 +59,8 @@ ipch/
 *.psess
 *.vsp
 *.vspx
+*.vcxproj
+*.filters
 
 #Visual Studio Settings
 visual\ studio\ 2010/
