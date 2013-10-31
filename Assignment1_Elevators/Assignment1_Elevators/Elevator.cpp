@@ -35,6 +35,7 @@ Elevator::Elevator(int num)
 	m_pElevatorDatapool = new CDataPool("Elevator"+s_elevatorNumber+"Status",sizeof(ElevatorStatus_t));
 	m_pElevatorCommands = new CPipe("Elevator"+s_elevatorNumber+"Commands", 1024);
 	m_pDispatcherFloorRequest = new CMutex("DispatcherFloorRequest");
+	m_pScreenMutex = new CMutex("PrintToScreen");
 	
 }
 
@@ -55,10 +56,14 @@ int  Elevator::ReadCommandsFromPipeline(void* args)
 	std::stringstream ss;
 	ss << m_elevatorNumber;
 	std::string elevatorNumber = ss.str();
-	//UserInputData_t userInput;
+	UserInputData_t userInput;
 	CPipe elevatorCommands("Elevator"+elevatorNumber+"Commands", 1024);
 	do{
-		//elevatorCommands.Read(&co
+		elevatorCommands.Read(&userInput,sizeof(UserInputData_t));
+		m_pScreenMutex->Wait();
+		MOVE_CURSOR(0,2);
+		printf("Direction = %c and Floor = %c from Elevator %d\n", userInput.direction,userInput.floor,m_elevatorNumber);
+		m_pScreenMutex->Signal();
 			//printf("%c\n",elevatorNumber);
 	}while(1);
 	return 0;
@@ -133,6 +138,8 @@ int Elevator::main()
 		UpdateElevatorStatus(elevatorStatus, k_up, k_open, 9); 
 	else if(m_elevatorNumber == 3)
 		UpdateElevatorStatus(elevatorStatus, k_up, k_closed, 4); 
+	else
+		UpdateElevatorStatus(elevatorStatus, k_idle, k_closed, 5); 
 
 	Sleep(1000);
 	do{

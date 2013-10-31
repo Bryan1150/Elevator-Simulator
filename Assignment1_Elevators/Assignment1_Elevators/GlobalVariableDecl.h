@@ -35,3 +35,8 @@ static std::string const k_elevator2ToIO_consumer = "Elevator2ToIOConsumer";
 static std::string const k_elevator2ToIO_producer = "Elevator2ToIOProducer";
 static std::string const k_elevator2StatusDataPool = "Elevator2Status";
 static std::string const k_elevator2Commands = "Elevator2Commands";
+
+typedef struct {
+	char direction;
+	char floor;
+} UserInputData_t;

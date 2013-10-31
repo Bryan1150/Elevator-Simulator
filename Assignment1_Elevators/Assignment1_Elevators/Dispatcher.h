@@ -29,15 +29,16 @@ public:
 	void UpdateElevatorStatus(ElevatorStatus_t elevatorStatus, int elevatorNumber) const; ///for debugging purposes
 
 private:
-	CDataPool* m_pElevatorDataPool[100];
+	CDataPool*			m_pElevatorDataPool[100];
+	CPipe*				m_pElevatorCommands[100];
 	ElevatorStatusPtr_t m_pElevatorStatus[100];
-	ElevatorStatus_t m_localElevatorStatus[100];
-	CMutex*	m_screenMutex;
-	CMutex* m_getCommandFromIO;
+	ElevatorStatus_t	m_localElevatorStatus[100];
+	CMutex*				m_screenMutex;
+	CMutex*				m_getCommandFromIO;
 
 	int main(); 
-	int m_numberOfElevators;
-	IOProgramPtr_t m_pIoProgram;
+	int					m_numberOfElevators;
+	IOProgramPtr_t		m_pIoProgram;
 	
 	//ElevatorStatusPtr_t	m_pElevator1Status, m_pElevator2Status;
 	bool m_bExit;

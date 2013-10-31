@@ -21,12 +21,13 @@ Dispatcher::Dispatcher(IOProgramPtr_t pIoProgram, int numberOfElevators)
 	m_getCommandFromIO = new CMutex("GetCommandFromIO");;
 	m_screenMutex = new CMutex("PrintToScreen");
 	std::stringstream ss;
-	std::string elevatorNumber;
+	std::string s_elevatorNumber;
 	for(int i = 1; i <= m_numberOfElevators; ++i)
 	{
 		ss << i;
-		elevatorNumber = ss.str();
-		m_pElevatorDataPool[i-1] = new CDataPool("Elevator"+elevatorNumber+"Status",sizeof(ElevatorStatus_t)); 
+		s_elevatorNumber = ss.str();
+		m_pElevatorDataPool[i-1] = new CDataPool("Elevator"+s_elevatorNumber+"Status",sizeof(ElevatorStatus_t)); 
+		m_pElevatorCommands[i-1] = new CPipe("Elevator"+s_elevatorNumber+"Commands",1024);
 		ss.str("");
 		//printf("Created %d datapools in IO Program\n", i);
 	}
@@ -104,12 +105,19 @@ int Dispatcher::ReadFromPipeline3(void *args)
 { 
 	CPipe IoToDispatcher_pipeline(k_ioToDispatcherPipeline, 1024);
 	UserInputData_t userInput;
-
+	int numberDirection;
 	do{
-			
+		
 		IoToDispatcher_pipeline.Read(&userInput, sizeof(UserInputData_t));
+		numberDirection = userInput.direction - '0';
+		m_screenMutex->Wait();
 		MOVE_CURSOR(0,1);
-		printf("Direction = %c and Floor = %c\n", userInput.direction,userInput.floor);
+		printf("Direction = %c and Floor = %c from Disptcher\n", userInput.direction,userInput.floor);
+		m_screenMutex->Signal();
+		if(numberDirection <= m_numberOfElevators && numberDirection > 0)
+			m_pElevatorCommands[numberDirection-1]->Write(&userInput,sizeof(UserInputData_t));
+
+
 
 		// "EE" used to terminate simulation
 		if(userInput.direction == 'E' && userInput.floor == 'E') 

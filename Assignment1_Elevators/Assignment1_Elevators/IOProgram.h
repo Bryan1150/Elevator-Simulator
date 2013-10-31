@@ -19,10 +19,7 @@
 class IOProgram;
 typedef std::shared_ptr<IOProgram> IOProgramPtr_t;
 
-typedef struct {
-	char direction;
-	char floor;
-} UserInputData_t;
+
 
 class IOProgram : public ActiveClass
 {

@@ -59,6 +59,7 @@ private:
 	CSemaphore* m_pElevatorToIO_producer;
 	CDataPool*  m_pElevatorDatapool;
 	CPipe*		m_pElevatorCommands;
+	CMutex*		m_pScreenMutex;
 	CMutex*      m_pDispatcherFloorRequest; //Mutex for floor requests
 	int m_elevatorNumber;
 
