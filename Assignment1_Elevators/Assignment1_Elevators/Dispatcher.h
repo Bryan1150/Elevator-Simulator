@@ -24,13 +24,16 @@ public:
 
 	int ReadFromPipeline3(void* args); //Thread for reading from pipeline3 
 	int DispatcherToElevator(void* args);
-	int WriteToPipeline2(void* args);
+	
+	int CollectElevatorStatus(void* args);
+	void UpdateElevatorStatus(ElevatorStatus_t elevatorStatus, int elevatorNumber) const; ///for debugging purposes
 
 private:
 	CDataPool* m_pElevatorDataPool[100];
 	ElevatorStatusPtr_t m_pElevatorStatus[100];
 	ElevatorStatus_t m_localElevatorStatus[100];
 	CMutex*	m_screenMutex;
+	CMutex* m_getCommandFromIO;
 
 	int main(); 
 	int m_numberOfElevators;

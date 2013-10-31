@@ -18,6 +18,7 @@ Dispatcher::Dispatcher(IOProgramPtr_t pIoProgram, int numberOfElevators)
 	, m_bExit(FALSE)
 	, m_numberOfElevators(numberOfElevators)
 {
+	m_getCommandFromIO = new CMutex("GetCommandFromIO");;
 	m_screenMutex = new CMutex("PrintToScreen");
 	std::stringstream ss;
 	std::string elevatorNumber;
@@ -37,14 +38,10 @@ Dispatcher::Dispatcher(IOProgramPtr_t pIoProgram, int numberOfElevators)
 		m_pElevatorStatus[i] = (ElevatorStatusPtr_t)(m_pElevatorDataPool[i]->LinkDataPool());		//link to datapools of elevator statuses
 		//printf("Created %d datapool link in IO Program\n", i);
 	}
-	/*CDataPool elevator1_datapool(k_elevator1StatusDataPool, sizeof(ElevatorStatus_t));
-	CDataPool elevator2_datapool(k_elevator2StatusDataPool, sizeof(ElevatorStatus_t));
-
-	m_pElevator1Status = (ElevatorStatusPtr_t)(elevator1_datapool.LinkDataPool());
-	m_pElevator2Status = (ElevatorStatusPtr_t)(elevator2_datapool.LinkDataPool());*/
+	
 }
 
-//Thread to write commands to pipeline 1 (elevator 1)
+//Thread to write commands to Elevators
 int Dispatcher::DispatcherToElevator(void* args)
 {
 	
@@ -52,7 +49,7 @@ int Dispatcher::DispatcherToElevator(void* args)
 	int x = *(int*)args;
 	ss << x;
 	std::string elevatorNumber = ss.str();
-	CPipe elevatorCommands1("Elevator"+elevatorNumber+"Commands", 1024);
+	CPipe elevatorCommands("Elevator"+elevatorNumber+"Commands", 1024);
 	do{
 
 			//printf("%c\n",elevatorNumber);
@@ -60,11 +57,45 @@ int Dispatcher::DispatcherToElevator(void* args)
 	return 0;
 }
 
-//Thread to write commands to pipeline 2 (elevator 2)
-int Dispatcher::WriteToPipeline2(void* args)
+void Dispatcher::UpdateElevatorStatus(ElevatorStatus_t elevatorStatus, int elevatorNumber) const
 {
-	CPipe ECommands2(k_elevator1Commands, 1024);
+	m_screenMutex->Wait();	
+		MOVE_CURSOR(25,elevatorNumber*5+5);
 
+	printf("Elevator %d from Dispatcher\n", elevatorNumber);
+	MOVE_CURSOR(25,elevatorNumber*5+6);
+	printf("Direction: %d\n",elevatorStatus.direction);
+	MOVE_CURSOR(25,elevatorNumber*5+7);
+	printf("Door Status: %d\n",elevatorStatus.doorStatus);
+	MOVE_CURSOR(25,elevatorNumber*5+8);
+	printf("Floor Number: %d\n", elevatorStatus.floorNumber);
+	m_screenMutex->Signal();
+
+}
+int Dispatcher::CollectElevatorStatus(void* args)
+{
+	std::stringstream ss;
+	int x = *(int*)args;
+	ss << x;
+	std::string s_elevatorNumber = ss.str();
+
+	CSemaphore dispatcherToElevator_consumer("DispatcherToElevator"+s_elevatorNumber+"Consumer",1,1);
+	CSemaphore dispatcherToElevator_producer("DispatcherToElevator"+s_elevatorNumber+"Producer",0,1);
+	do{
+		if(dispatcherToElevator_producer.Read() > 0) // elevator 1 produced data
+			{
+			  if(x-1>=0)
+			  {
+				dispatcherToElevator_producer.Wait();
+				//printf("Copying data from elevator1Status in IO program\n");
+				m_localElevatorStatus[x-1].direction = m_pElevatorStatus[x-1]->direction;
+				m_localElevatorStatus[x-1].doorStatus = m_pElevatorStatus[x-1]->doorStatus;
+				m_localElevatorStatus[x-1].floorNumber = m_pElevatorStatus[x-1]->floorNumber;
+				dispatcherToElevator_consumer.Signal();
+				//UpdateElevatorStatus(m_localElevatorStatus[x-1],x);	//update visual for elevator 1
+			  }
+			}
+	}while(!m_bExit);
 	return 0;
 }
 
@@ -108,7 +139,8 @@ int Dispatcher::main()
 
 	
 	CPipe IoToDispatcher_pipeline("DispatcherCommands", 1024);
-	
+	std::vector<ClassThread<Dispatcher>*> collectElevatorStatusVect;
+	int yArray[100];
 	std::vector<ClassThread<Dispatcher>*> dispatcherToElevatorVect;
 	int xArray[100];
 
@@ -124,6 +156,18 @@ int Dispatcher::main()
 	}//add delete in for the pointers in the vectors
 	ClassThread<Dispatcher>	 IoToDispatcherPipeline(this,&Dispatcher::ReadFromPipeline3,ACTIVE, NULL);
 
+	
+	for( int i = 1; i <= m_numberOfElevators; i++)
+	{
+		yArray[i-1] = i; //may be able to use xArray
+		if( i - 1 >= 0)
+		{	
+			ClassThread<Dispatcher>* pCollectElevatorStatus= new ClassThread<Dispatcher>(this,&Dispatcher::CollectElevatorStatus, ACTIVE, &yArray[i-1]);
+			collectElevatorStatusVect.push_back(pCollectElevatorStatus);
+			//printf("Created %d threads in IOProgram\n", i);
+			//Sleep(500);
+		}//add delete in for the pointers in the vectors //add waitfor thread at the end
+	}
 	//ClassThread<Dispatcher>	 DispatcherToElevator1Pipeline(this,&Dispatcher::DispatcherToElevator,ACTIVE, NULL);
 	//ClassThread<Dispatcher>	 DispatcherToElevator2Pipeline(this,&Dispatcher::WriteToPipeline2,ACTIVE, NULL);
 
@@ -148,6 +192,7 @@ int Dispatcher::main()
 	for( int i = 0; i < m_numberOfElevators; i++)
 	{
 		delete dispatcherToElevatorVect[i];
+		delete collectElevatorStatusVect[i];
 	}
 	//delete elevator1_datapool;
 	//delete elevator2_datapool;

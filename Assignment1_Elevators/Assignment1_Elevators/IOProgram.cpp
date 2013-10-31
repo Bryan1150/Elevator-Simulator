@@ -93,7 +93,7 @@ void IOProgram::UpdateElevatorStatus(ElevatorStatus_t elevatorStatus, int elevat
 	m_screenMutex->Wait();	
 		MOVE_CURSOR(0,elevatorNumber*5+5);
 
-	printf("Elevator %d\n"
+	printf("Elevator %d from IO\n"
 		"Direction: %d\n"
 		"Door Status: %d\n"
 		"Floor Number: %d\n", elevatorNumber,elevatorStatus.direction,elevatorStatus.doorStatus,elevatorStatus.floorNumber);

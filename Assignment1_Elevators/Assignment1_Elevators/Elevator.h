@@ -46,6 +46,10 @@ public:
 	void OpenElevatorDoors(ElevatorStatusPtr_t elevatorStatus) const;
 	void CloseElevatorDoors(ElevatorStatusPtr_t elevatorStatus) const;
 	int  ReadCommandsFromPipeline(void* args);
+	void ChangeDoorStatus(ElevatorStatusPtr_t elevatorStatus, int doorStatus) const;
+	void ChangeFloorNumber(ElevatorStatusPtr_t elevatorStatus, int direction) const;
+	void SetElevatorDirection(ElevatorStatusPtr_t elevatorStatus, int direction) const;
+
 private:
 	int main();
 
@@ -55,7 +59,7 @@ private:
 	CSemaphore* m_pElevatorToIO_producer;
 	CDataPool*  m_pElevatorDatapool;
 	CPipe*		m_pElevatorCommands;
-
+	CMutex*      m_pDispatcherFloorRequest; //Mutex for floor requests
 	int m_elevatorNumber;
 
 };
