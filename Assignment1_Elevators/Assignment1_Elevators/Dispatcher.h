@@ -19,28 +19,30 @@
 class Dispatcher : public ActiveClass
 {
 public:
-	Dispatcher(); //default constructor
+	Dispatcher();													//default constructor
 	Dispatcher(IOProgramPtr_t pIoProgram, int numberOfElevators); //overloader constructor
+	~Dispatcher();												//destructor
 
-	int ReadFromPipeline3(void* args); //Thread for reading from pipeline3 
-	int DispatcherToElevator(void* args);
+
+	int ReadFromPipeline3(void* args);				//Thread for reading from pipeline3 and send data to elevators through pipelines
+	int DispatcherToElevator(void* args);			//Thread to send commands to elevators (currently not being used
 	
-	int CollectElevatorStatus(void* args);
+	int CollectElevatorStatus(void* args);			//Updating elevator local status data pools
 	void UpdateElevatorStatus(ElevatorStatus_t elevatorStatus, int elevatorNumber) const; ///for debugging purposes
 
 private:
-	CDataPool*			m_pElevatorDataPool[100];
-	CPipe*				m_pElevatorCommands[100];
-	ElevatorStatusPtr_t m_pElevatorStatus[100];
-	ElevatorStatus_t	m_localElevatorStatus[100];
-	CMutex*				m_screenMutex;
-	CMutex*				m_getCommandFromIO;
+	CDataPool*			m_pElevatorDataPool[100];	//data pool object pointers to link to elevator status data pools
+	CPipe*				m_pElevatorCommands[100];	//Pipelines to send commands to elevators
+	ElevatorStatusPtr_t m_pElevatorStatus[100];		//link to the elevator status data pools
+	ElevatorStatus_t	m_localElevatorStatus[100];	//local data structures for elevator statuses
+	CMutex*				m_screenMutex;				// mutex to allow exclusive updates to the console
+	CMutex*				m_getCommandFromIO;			//mutex to lock the data being collected from the IO pipeline
 
 	int main(); 
-	int					m_numberOfElevators;
-	IOProgramPtr_t		m_pIoProgram;
+	int					m_numberOfElevators;		//stores number of elevators 
+	IOProgramPtr_t		m_pIoProgram;				//Pointer to IOprogram mailbox so that we can post to it
 	
-	//ElevatorStatusPtr_t	m_pElevator1Status, m_pElevator2Status;
+	
 	bool m_bExit;
 
 };

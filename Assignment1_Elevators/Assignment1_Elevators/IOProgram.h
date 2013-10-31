@@ -27,23 +27,23 @@ public:
 	IOProgram(); //default constructor
 
 	IOProgram(int numberOfElevators);
-	int ReadFromMailbox(void* args);
-	bool IsValidCommand(UserInputData_t userInput) const;
-	void ClearLines(int lines) const; //clear lines in console
+	~IOProgram();
+	
+	//int ReadFromMailbox(void* args);							//Not being used currently
+	bool IsValidCommand(UserInputData_t userInput) const;		//checks to ensure command entered is valid
+	void ClearLines(int lines) const;							//clear lines in console
 
-	int CollectElevatorStatus(void* args);
-	void UpdateElevatorStatus(ElevatorStatus_t elevatorStatus, int elevatorNumber) const;
-	/*void PrintElevatorStatus(ElevatorStatus_t localElevatorStatus, int elevatorNumber) const;
-	void PrintElevatorStatus1(ElevatorStatus_t localElevator1Status) const;
-	void PrintElevatorStatus2(ElevatorStatus_t localElevator2Status) const;*/
+	int CollectElevatorStatus(void* args);						//gather elevator status from the data pools
+	void UpdateElevatorStatus(ElevatorStatus_t elevatorStatus, int elevatorNumber) const;	//Print elevator statuses on the console
+	
 private:
 
-	CDataPool* m_pElevatorDataPool[100];
-	ElevatorStatusPtr_t m_pElevatorStatus[100];
-	ElevatorStatus_t m_localElevatorStatus[100];
-	CMutex*	m_screenMutex;
-	bool m_exit;
-	int m_numberOfElevators;
+	CDataPool* m_pElevatorDataPool[100];					//data pool object pointers to link to elevator status data pools
+	ElevatorStatusPtr_t m_pElevatorStatus[100];				//link to the elvator status data pools
+	ElevatorStatus_t m_localElevatorStatus[100];			//local data structures for elevator statuses
+	CMutex*	m_screenMutex;									//mutext to allow exclusive updates to the console
+	bool m_exit;											//termination flag
+	int m_numberOfElevators;								//stores number of elevators							
 	int main();
 
 };
