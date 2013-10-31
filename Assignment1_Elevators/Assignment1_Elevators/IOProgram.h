@@ -38,9 +38,9 @@ public:
 	
 private:
 
-	CDataPool* m_pElevatorDataPool[100];					//data pool object pointers to link to elevator status data pools
-	ElevatorStatusPtr_t m_pElevatorStatus[100];				//link to the elvator status data pools
-	ElevatorStatus_t m_localElevatorStatus[100];			//local data structures for elevator statuses
+	CDataPool* m_pElevatorDataPool[10];					//data pool object pointers to link to elevator status data pools
+	ElevatorStatusPtr_t m_pElevatorStatus[10];				//link to the elvator status data pools
+	ElevatorStatus_t m_localElevatorStatus[10];			//local data structures for elevator statuses
 	CMutex*	m_screenMutex;									//mutext to allow exclusive updates to the console
 	bool m_exit;											//termination flag
 	int m_numberOfElevators;								//stores number of elevators							

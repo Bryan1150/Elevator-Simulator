@@ -119,6 +119,9 @@ int Dispatcher::CollectElevatorStatus(void* args)
 int Dispatcher::ReadFromIoToDispatcherPipeline(void *args)
 { 
 	CPipe IoToDispatcher_pipeline(k_ioToDispatcherPipeline, 1024);
+	CSemaphore dispatcherConsumer("DispatcherConsumer",1,1);
+	CSemaphore dispatcherProducer("DispatcherProducer",0,1);
+
 	UserInputData_t userInput;
 	int numberDirection;
 	do{
@@ -130,8 +133,11 @@ int Dispatcher::ReadFromIoToDispatcherPipeline(void *args)
 		MOVE_CURSOR(0,1);
 		printf("Direction = %c and Floor = %c from Disptcher\n", userInput.direction, userInput.floor);
 		m_screenMutex->Signal();
-		if(numberDirection <= m_numberOfElevators && numberDirection > 0)
-			m_pElevatorCommands[numberDirection-1]->Write(&userInput, sizeof(UserInputData_t));
+		dispatcherConsumer.Wait();
+		m_userInputData.direction = userInput.direction;
+		m_userInputData.floor = userInput.floor;
+		dispatcherProducer.Signal();
+		
 
 
 
@@ -159,7 +165,11 @@ int Dispatcher::main()
 	std::vector<ClassThread<Dispatcher>*> dispatcherToElevatorVect;
 	int xArray[100];
 
+	CSemaphore dispatcherConsumer("DispatcherConsumer",1,1); //semaphores to protect local member variables between Pipeline Thread to IO and the this main function
+	CSemaphore dispatcherProducer("DispatcherProducer",0,1);
 
+
+	int numberDirection;
 	for( int i = 1; i <= m_numberOfElevators; i++)
 	{
 		xArray[i-1] = i+10;
@@ -186,6 +196,15 @@ int Dispatcher::main()
 
 
 	do{
+
+		if(dispatcherProducer.Read() > 0) //Check to see if there is a new command
+		{
+			dispatcherProducer.Wait();
+			numberDirection = m_userInputData.direction - '0';
+				if(numberDirection <= m_numberOfElevators && numberDirection > 0) //if the command is sent 
+					m_pElevatorCommands[numberDirection-1]->Write(&m_userInputData, sizeof(UserInputData_t));
+			dispatcherConsumer.Signal();
+		}
 		if(m_bExit)
 		{
 			printf("breaking from dispatcher loop\n");

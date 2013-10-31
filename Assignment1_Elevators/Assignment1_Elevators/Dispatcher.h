@@ -31,13 +31,14 @@ public:
 	void UpdateElevatorStatus(ElevatorStatus_t elevatorStatus, int elevatorNumber) const; ///for debugging purposes
 
 private:
-	CDataPool*			m_pElevatorDataPool[100];	//data pool object pointers to link to elevator status data pools
-	CPipe*				m_pElevatorCommands[100];	//Pipelines to send commands to elevators
-	ElevatorStatusPtr_t m_pElevatorStatus[100];		//link to the elevator status data pools
-	ElevatorStatus_t	m_localElevatorStatus[100];	//local data structures for elevator statuses
-	FloorRequest_t		m_localFloorRequest[100];	//local data structures for floor requests
+	CDataPool*			m_pElevatorDataPool[10];	//data pool object pointers to link to elevator status data pools
+	CPipe*				m_pElevatorCommands[10];	//Pipelines to send commands to elevators
+	ElevatorStatusPtr_t m_pElevatorStatus[10];		//link to the elevator status data pools
+	ElevatorStatus_t	m_localElevatorStatus[10];	//local data structures for elevator statuses
+	FloorRequest_t		m_localFloorRequest[10];	//local data structures for floor requests
 	CMutex*				m_screenMutex;				// mutex to allow exclusive updates to the console
 	CMutex*				m_getCommandFromIO;			//mutex to lock the data being collected from the IO pipeline
+	UserInputData_t		m_userInputData;			//member variable to store data from thread to main function
 
 	int main(); 
 	int					m_numberOfElevators;		//stores number of elevators 
