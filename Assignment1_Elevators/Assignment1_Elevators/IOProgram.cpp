@@ -34,18 +34,20 @@ IOProgram::IOProgram(int numberOfElevators)
 		//printf("Created %d datapools in IO Program\n", i);
 	}
 
-	for(int i = 1; i <= m_numberOfElevators; ++i)
+	for(int i = 0; i < m_numberOfElevators; ++i)
 	{
-		ss << i;
-		elevatorNumber = ss.str();
-		m_pElevatorStatus[i-1] = (ElevatorStatusPtr_t)(m_pElevatorDataPool[i-1]->LinkDataPool());		//link to datapools of elevator statuses
+		/*ss << i;
+		elevatorNumber = ss.str();*/
+		m_pElevatorStatus[i] = (ElevatorStatusPtr_t)(m_pElevatorDataPool[i]->LinkDataPool());		//link to datapools of elevator statuses
 		//printf("Created %d datapool link in IO Program\n", i);
 	}
 }
 bool IOProgram::IsValidCommand(UserInputData_t userInput) const
 {
+	int numberDirection = userInput.direction - '0'; 
+	int numberFloor = userInput.floor - '0'; 
 	if( (userInput.direction == 'U' || userInput.direction == 'D' || userInput.direction == 'E' ||
-		userInput.direction == '1' || userInput.direction == '2' || userInput.direction == 'F' || 
+		(numberDirection <= m_numberOfElevators && numberDirection > 0) || userInput.direction == 'F' || 
 		userInput.direction == 'C' ) )
 	{
 			
@@ -54,13 +56,13 @@ bool IOProgram::IsValidCommand(UserInputData_t userInput) const
 				{
 					return TRUE;
 				}
-				else if( (userInput.direction == '1' || userInput.direction == '2') &&  //the command is being made from within the elevator
+				else if( (numberDirection <= m_numberOfElevators && numberDirection > 0) &&  //the command is being made from within the elevator
 						  (userInput.floor <= '9' && userInput.floor >= '0' ) )
 				{
 					return TRUE;
 				}
 				else if( (userInput.direction == 'C' || userInput.direction == 'F') &&   //the command is being made to detect or clear a fault
-					(userInput.floor == '1' || userInput.floor == '2') )
+					(numberFloor <= m_numberOfElevators && numberFloor > 0) )
 				{
 					return TRUE;
 				}
@@ -121,7 +123,7 @@ int IOProgram::CollectElevatorStatus(void* args)
 				UpdateElevatorStatus(m_localElevatorStatus[x-1],x);	//update visual for elevator 1
 			  }
 			}
-	}while(1);
+	}while(!m_exit);
 	return 0;
 }
 int IOProgram::main()
@@ -258,9 +260,10 @@ int IOProgram::main()
 				{			
 					m_screenMutex->Wait();
 					MOVE_CURSOR(0,3);
-					printf("Received TERMINATE Message.....\n") ;
+					printf("Received TERMINATE Message in IO.....\n") ;
 					m_exit = TRUE;
 					m_screenMutex->Signal();
+					//printf("Set m_exit to True in IO\n");
 				}
 			
 		}
@@ -269,11 +272,22 @@ int IOProgram::main()
 	} while(!m_exit);
 
 	
-
-	printf("Exiting from IO\n");
+	//printf("Left the main loop of IOprogram\n");
 
 	//delete elevator1Status;
 	//delete elevator2Status;
-
+	for( int i = 0; i < m_numberOfElevators; i++)
+	{
+		collectElevatorStatusVect[i]->WaitForThread();
+	}
+	for( int i = 0; i < m_numberOfElevators; i++)
+	{
+		//printf("Entered to Delete collectElevatorStatus %d\n", i+1);
+		delete collectElevatorStatusVect[i];
+		//Sleep(100);
+		//printf("Deleted collectElevatorStatus %d\n", i+1);
+		
+	}
+		printf("Exiting from IO\n");
 	return 0;
 }

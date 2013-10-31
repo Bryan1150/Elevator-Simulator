@@ -7,6 +7,7 @@
  *****************************************************/
 #include <iostream>
 #include <memory>
+#include <vector>
 
 #include "..\..\..\rt.h"
 #include "Dispatcher.h" //include active classes header files
@@ -17,47 +18,41 @@
 int main()
 {
 	CMutex	screenMutex("PrintToScreen");
-	InterprocessCommTypeNames_t elevator1InterprocessNames,elevator2InterprocessNames,elevator3InterprocessNames;
+	int numberOfElevators;
 
-	elevator1InterprocessNames.dispatcherToElevator_consumer = k_dispatcherToElevator1_consumer;
-	elevator1InterprocessNames.dispatcherToElevator_producer = k_dispatcherToElevator1_producer;
-	elevator1InterprocessNames.elevatorToIO_consumer = k_elevator1ToIO_consumer;
-	elevator1InterprocessNames.elevatorToIO_producer = k_elevator1ToIO_producer;
-	elevator1InterprocessNames.dataPool = k_elevator1StatusDataPool;
-	elevator1InterprocessNames.elevatorCommands = k_elevator1Commands;
+	std::cout << "Enter number of elevators: ";
+	std::cin >> numberOfElevators;
 
-	elevator2InterprocessNames.dispatcherToElevator_consumer = k_dispatcherToElevator2_consumer;
-	elevator2InterprocessNames.dispatcherToElevator_producer = k_dispatcherToElevator2_producer;
-	elevator2InterprocessNames.elevatorToIO_consumer = k_elevator2ToIO_consumer;
-	elevator2InterprocessNames.elevatorToIO_producer = k_elevator2ToIO_producer;
-	elevator2InterprocessNames.dataPool = k_elevator2StatusDataPool;
-	elevator2InterprocessNames.elevatorCommands = k_elevator2Commands;
+	std::vector<Elevator*> elevatorVect;
 
-	elevator3InterprocessNames.dispatcherToElevator_consumer = k_dispatcherToElevator2_consumer;
-	elevator3InterprocessNames.dispatcherToElevator_producer = k_dispatcherToElevator2_producer;
-	elevator3InterprocessNames.elevatorToIO_consumer = k_elevator2ToIO_consumer;
-	elevator3InterprocessNames.elevatorToIO_producer = k_elevator2ToIO_producer;
-	elevator3InterprocessNames.dataPool = k_elevator2StatusDataPool;
-	elevator3InterprocessNames.elevatorCommands = k_elevator2Commands;
+	for( int i = 0; i < numberOfElevators; i++)
+	{
+		
+			Elevator* elevator= new Elevator(i+1);
+			elevatorVect.push_back(elevator);
+			elevatorVect[i]->Resume();
+		//add delete in for the pointers in the vectors //add waitfor thread at the end
+	}
 
-
-	Elevator	elevator1(1,elevator1InterprocessNames);
-	Elevator	elevator2(2,elevator2InterprocessNames);
-	Elevator	elevator3(3,elevator3InterprocessNames);
-
-	elevator1.Resume();
-	elevator2.Resume();
-	elevator3.Resume();
 	Sleep(1000);
-	IOProgramPtr_t pIoProgram = std::make_shared<IOProgram>(3);
-	Dispatcher dispatcher(pIoProgram,3);
+	IOProgramPtr_t pIoProgram = std::make_shared<IOProgram>(numberOfElevators);
+	Dispatcher dispatcher(pIoProgram,numberOfElevators);
 
+	pIoProgram->ClearLines(3);
 	pIoProgram->Resume();
 	dispatcher.Resume();
 
 	pIoProgram->WaitForThread();
 	dispatcher.WaitForThread();
-
+	/*for( int i = 0; i < numberOfElevators; i++)
+	{
+		elevatorVect[i]->WaitForThread();
+	}*/
+	for( int i = 0; i < numberOfElevators; i++)
+	{
+		delete elevatorVect[i];
+		//printf("Deleted elevatorVect %d in Main\n",i+1);
+	}
 	system("PAUSE");
 	return 0;
 }

@@ -27,11 +27,16 @@ public:
 	int WriteToPipeline2(void* args);
 
 private:
+	CDataPool* m_pElevatorDataPool[100];
+	ElevatorStatusPtr_t m_pElevatorStatus[100];
+	ElevatorStatus_t m_localElevatorStatus[100];
+	CMutex*	m_screenMutex;
+
 	int main(); 
 	int m_numberOfElevators;
 	IOProgramPtr_t m_pIoProgram;
 	
-	ElevatorStatusPtr_t	m_pElevator1Status, m_pElevator2Status;
+	//ElevatorStatusPtr_t	m_pElevator1Status, m_pElevator2Status;
 	bool m_bExit;
 
 };

@@ -18,11 +18,30 @@ Dispatcher::Dispatcher(IOProgramPtr_t pIoProgram, int numberOfElevators)
 	, m_bExit(FALSE)
 	, m_numberOfElevators(numberOfElevators)
 {
-	CDataPool elevator1_datapool(k_elevator1StatusDataPool, sizeof(ElevatorStatus_t));
+	m_screenMutex = new CMutex("PrintToScreen");
+	std::stringstream ss;
+	std::string elevatorNumber;
+	for(int i = 1; i <= m_numberOfElevators; ++i)
+	{
+		ss << i;
+		elevatorNumber = ss.str();
+		m_pElevatorDataPool[i-1] = new CDataPool("Elevator"+elevatorNumber+"Status",sizeof(ElevatorStatus_t)); 
+		ss.str("");
+		//printf("Created %d datapools in IO Program\n", i);
+	}
+
+	for(int i = 0; i < m_numberOfElevators; ++i)
+	{
+		/*ss << i;
+		elevatorNumber = ss.str();*/
+		m_pElevatorStatus[i] = (ElevatorStatusPtr_t)(m_pElevatorDataPool[i]->LinkDataPool());		//link to datapools of elevator statuses
+		//printf("Created %d datapool link in IO Program\n", i);
+	}
+	/*CDataPool elevator1_datapool(k_elevator1StatusDataPool, sizeof(ElevatorStatus_t));
 	CDataPool elevator2_datapool(k_elevator2StatusDataPool, sizeof(ElevatorStatus_t));
 
 	m_pElevator1Status = (ElevatorStatusPtr_t)(elevator1_datapool.LinkDataPool());
-	m_pElevator2Status = (ElevatorStatusPtr_t)(elevator2_datapool.LinkDataPool());
+	m_pElevator2Status = (ElevatorStatusPtr_t)(elevator2_datapool.LinkDataPool());*/
 }
 
 //Thread to write commands to pipeline 1 (elevator 1)
@@ -82,10 +101,10 @@ int Dispatcher::main()
 	/*CDataPool elevator1_datapool("Elevator1Status", sizeof(ElevatorStatus_t));
 	CDataPool elevator2_datapool("Elevator2Status", sizeof(ElevatorStatus_t));*/
 
-	CSemaphore dispatcherToElevator1_consumer("DispatcherToElevator1Consumer",1,1);
+	/*CSemaphore dispatcherToElevator1_consumer("DispatcherToElevator1Consumer",1,1);
 	CSemaphore dispatcherToElevator1_producer("DispatcherToElevator1Producer",0,1);
 	CSemaphore dispatcherToElevator2_consumer("DispatcherToElevator2Consumer",1,1);
-	CSemaphore dispatcherToElevator2_producer("DispatcherToElevator2Producer",0,1);
+	CSemaphore dispatcherToElevator2_producer("DispatcherToElevator2Producer",0,1);*/
 
 	
 	CPipe IoToDispatcher_pipeline("DispatcherCommands", 1024);
@@ -120,10 +139,18 @@ int Dispatcher::main()
 	} while(1);
 
 	IoToDispatcherPipeline.WaitForThread();
-	printf("Exiting dispatcher\n");
+	
 
+	/*for( int i = 0; i < m_numberOfElevators; i++)
+	{
+		dispatcherToElevatorVect[i]->WaitForThread();
+	}*/
+	for( int i = 0; i < m_numberOfElevators; i++)
+	{
+		delete dispatcherToElevatorVect[i];
+	}
 	//delete elevator1_datapool;
 	//delete elevator2_datapool;
-
+	printf("Exiting dispatcher\n");
 	return 0;
 }

@@ -40,7 +40,7 @@ class Elevator : public ActiveClass
 {
 public:
 	Elevator();		//default constructor
-	Elevator(int num,InterprocessCommTypeNames_t interprocessCommTypeNames); //overloader constructor
+	Elevator(int num); //overloader constructor
 	~Elevator();	//deconstructor
 	void UpdateElevatorStatus(ElevatorStatusPtr_t elevatorStatus, int direction, int doorStatus, int floorNumber) const;
 	void OpenElevatorDoors(ElevatorStatusPtr_t elevatorStatus) const;
