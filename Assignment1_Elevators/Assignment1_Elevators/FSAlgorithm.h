@@ -10,29 +10,11 @@
 #include <vector>
 #include <algorithm>
 
+#include "GlobalVariableDecl.h"
+
 #pragma once
 
-typedef struct {
-	int floor;
-	int direction;
-	int elevatorId;
 
-} FloorRequest_t;
-
-typedef int FigureOfSuitability_t;
-typedef std::map<FigureOfSuitability_t, FloorRequest_t> FsToFloorRequestMap_t;
-
-typedef struct {
-	int floor;
-	int door;
-	int direction;
-	FsToFloorRequestMap_t fsToFloorRequestMap;
-	std::string dataPoolId;
-
-} ElevatorStatus_t;
-
-typedef std::vector<ElevatorStatus_t> ElevatorStatusVect_t;
-typedef std::vector<FloorRequest_t> FloorRequestVect_t;
 
 static int const k_doorOpen = 0;
 static int const k_doorClosed = 1;

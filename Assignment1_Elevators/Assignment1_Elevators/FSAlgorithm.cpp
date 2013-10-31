@@ -12,7 +12,7 @@ void FSAlgorithm::TowardsCallSameDirection(
 		ElevatorStatus_t& lift)
 {
 	FigureOfSuitability_t fs;
-	fs = (k_numFloorsMinusOne + 2) - abs(floorReq.floor - lift.floor);
+	fs = (k_numFloorsMinusOne + 2) - abs(floorReq.floorNumber - lift.floorNumber);
 
 	InsertFsIntoMap(fs, floorReq, lift);
 }
@@ -22,7 +22,7 @@ void FSAlgorithm::TowardsCallDiffDirection(
 		ElevatorStatus_t& lift)
 {
 	FigureOfSuitability_t fs;
-	fs = (k_numFloorsMinusOne + 1) - abs(floorReq.floor - lift.floor);
+	fs = (k_numFloorsMinusOne + 1) - abs(floorReq.floorNumber - lift.floorNumber);
 
 	InsertFsIntoMap(fs, floorReq, lift);
 }
@@ -57,7 +57,7 @@ void FSAlgorithm::InsertFsIntoMap(
 			}
 			else // next entry is *also* an OUTSIDE request, so take the closest floor to the elevator
 			{
-				if(abs(lift.floor - it->second.floor) > abs(lift.floor - floorReq.floor))
+				if(abs(lift.floorNumber - it->second.floorNumber) > abs(lift.floorNumber - floorReq.floorNumber))
 				{
 					lift.fsToFloorRequestMap.erase(it);
 					lift.fsToFloorRequestMap.insert(std::make_pair(fs, floorReq));
@@ -69,7 +69,7 @@ void FSAlgorithm::InsertFsIntoMap(
 		{
 			if(floorReq.elevatorId != INT_MAX) // next entry is an INSIDE request
 			{
-				if(abs(lift.floor - it->second.floor) > abs(lift.floor - floorReq.floor))
+				if(abs(lift.floorNumber - it->second.floorNumber) > abs(lift.floorNumber - floorReq.floorNumber))
 				{
 					lift.fsToFloorRequestMap.erase(it);
 					lift.fsToFloorRequestMap.insert(std::make_pair(fs, floorReq));
@@ -96,7 +96,7 @@ ElevatorStatus_t FSAlgorithm::DispatcherFsCalculator(
 			itDeleteRequest != floorRequestVect.end();
 			++itDeleteRequest)
 		{
-			if((itDeleteRequest->floor == itElevatorStatus->floor) && (itElevatorStatus->door == k_doorOpen))
+			if((itDeleteRequest->floorNumber == itElevatorStatus->floorNumber) && (itElevatorStatus->doorStatus == k_doorOpen))
 				floorRequestVect.erase(itDeleteRequest);
 		}
 	}
@@ -112,7 +112,7 @@ ElevatorStatus_t FSAlgorithm::DispatcherFsCalculator(
 		{
 			if(itElevatorStatus->direction == k_directionIdle)
 			{
-				if(itFloorRequest->floor > itElevatorStatus->floor)
+				if(itFloorRequest->floorNumber > itElevatorStatus->floorNumber)
 				{
 					if(itFloorRequest->direction == k_directionUp)
 						FSAlgorithm::TowardsCallSameDirection(*itFloorRequest, *itElevatorStatus);
@@ -120,7 +120,7 @@ ElevatorStatus_t FSAlgorithm::DispatcherFsCalculator(
 					else if(itFloorRequest->direction == k_directionDown)
 						FSAlgorithm::TowardsCallDiffDirection(*itFloorRequest, *itElevatorStatus);
 				}
-				else if(itFloorRequest->floor < itElevatorStatus->floor)
+				else if(itFloorRequest->floorNumber < itElevatorStatus->floorNumber)
 				{
 					if(itFloorRequest->direction == k_directionDown)
 						FSAlgorithm::TowardsCallSameDirection(*itFloorRequest, *itElevatorStatus);
@@ -128,7 +128,7 @@ ElevatorStatus_t FSAlgorithm::DispatcherFsCalculator(
 					else if(itFloorRequest->direction == k_directionUp)
 						FSAlgorithm::TowardsCallDiffDirection(*itFloorRequest, *itElevatorStatus);
 				}
-				else if(itFloorRequest->floor == itElevatorStatus->floor)
+				else if(itFloorRequest->floorNumber == itElevatorStatus->floorNumber)
 				{
 					FSAlgorithm::TowardsCallSameDirection(*itFloorRequest, *itElevatorStatus);
 				}
@@ -138,18 +138,18 @@ ElevatorStatus_t FSAlgorithm::DispatcherFsCalculator(
 			{
 				if(itElevatorStatus->direction == k_directionUp)
 				{
-					if(itFloorRequest->floor >= itElevatorStatus->floor)
+					if(itFloorRequest->floorNumber >= itElevatorStatus->floorNumber)
 						FSAlgorithm::TowardsCallSameDirection(*itFloorRequest, *itElevatorStatus);
 					
-					else if(itFloorRequest->floor < itElevatorStatus->floor)
+					else if(itFloorRequest->floorNumber < itElevatorStatus->floorNumber)
 						FSAlgorithm::AwayFromCall(*itFloorRequest, *itElevatorStatus);
 				}
 				else if(itElevatorStatus->direction == k_directionDown)
 				{
-					if(itFloorRequest->floor <= itElevatorStatus->floor)
+					if(itFloorRequest->floorNumber <= itElevatorStatus->floorNumber)
 						FSAlgorithm::TowardsCallSameDirection(*itFloorRequest, *itElevatorStatus);
 					
-					else if(itFloorRequest->floor > itElevatorStatus->floor)
+					else if(itFloorRequest->floorNumber > itElevatorStatus->floorNumber)
 						FSAlgorithm::AwayFromCall(*itFloorRequest, *itElevatorStatus);
 				}
 			}
@@ -158,18 +158,18 @@ ElevatorStatus_t FSAlgorithm::DispatcherFsCalculator(
 			{
 				if(itElevatorStatus->direction == k_directionUp)
 				{
-					if(itFloorRequest->floor >= itElevatorStatus->floor)
+					if(itFloorRequest->floorNumber >= itElevatorStatus->floorNumber)
 						FSAlgorithm::TowardsCallDiffDirection(*itFloorRequest, *itElevatorStatus);
 					
-					else if(itFloorRequest->floor < itElevatorStatus->floor)
+					else if(itFloorRequest->floorNumber < itElevatorStatus->floorNumber)
 						FSAlgorithm::AwayFromCall(*itFloorRequest, *itElevatorStatus);
 				}
 				else if(itElevatorStatus->direction == k_directionDown)
 				{
-					if(itFloorRequest->floor <= itElevatorStatus->floor)
+					if(itFloorRequest->floorNumber <= itElevatorStatus->floorNumber)
 						FSAlgorithm::TowardsCallDiffDirection(*itFloorRequest, *itElevatorStatus);
 					
-					else if(itFloorRequest->floor > itElevatorStatus->floor)
+					else if(itFloorRequest->floorNumber > itElevatorStatus->floorNumber)
 						FSAlgorithm::AwayFromCall(*itFloorRequest, *itElevatorStatus);
 				}
 			}

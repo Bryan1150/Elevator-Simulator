@@ -24,16 +24,16 @@ Elevator::Elevator(int num)
 	: m_elevatorNumber(num)
 {
 	std::stringstream ss;
-	std::string s_elevatorNumber;
+	std::string elevatorNumber;
 	ss << m_elevatorNumber;
-	s_elevatorNumber = ss.str();
+	elevatorNumber = ss.str();
 
-	m_pDispatcherToElevator_consumer = new CSemaphore("DispatcherToElevator"+s_elevatorNumber+"Consumer",1,1);
-	m_pDispatcherToElevator_producer = new CSemaphore("DispatcherToElevator"+s_elevatorNumber+"Producer",0,1);
-	m_pElevatorToIO_consumer = new CSemaphore("Elevator"+s_elevatorNumber+"ToIOConsumer",1,1);
-	m_pElevatorToIO_producer = new CSemaphore("Elevator"+s_elevatorNumber+"ToIOProducer",0,1);
-	m_pElevatorDatapool = new CDataPool("Elevator"+s_elevatorNumber+"Status",sizeof(ElevatorStatus_t));
-	m_pElevatorCommands = new CPipe("Elevator"+s_elevatorNumber+"Commands", 1024);
+	m_pDispatcherToElevator_consumer = new CSemaphore("DispatcherToElevator"+elevatorNumber+"Consumer",1,1);
+	m_pDispatcherToElevator_producer = new CSemaphore("DispatcherToElevator"+elevatorNumber+"Producer",0,1);
+	m_pElevatorToIO_consumer = new CSemaphore("Elevator"+elevatorNumber+"ToIOConsumer",1,1);
+	m_pElevatorToIO_producer = new CSemaphore("Elevator"+elevatorNumber+"ToIOProducer",0,1);
+	m_pElevatorDatapool = new CDataPool("Elevator"+elevatorNumber+"Status",sizeof(ElevatorStatus_t));
+	m_pElevatorCommands = new CPipe("Elevator"+elevatorNumber+"Commands", 1024);
 	m_pDispatcherFloorRequest = new CMutex("DispatcherFloorRequest");
 	m_pScreenMutex = new CMutex("PrintToScreen");
 	
@@ -127,7 +127,12 @@ int Elevator::main()
 {
 
 	ElevatorStatusPtr_t	elevatorStatus = (ElevatorStatusPtr_t)(m_pElevatorDatapool->LinkDataPool());
-	ClassThread<Elevator> getCommandsFromPipeline(this,&Elevator::ReadCommandsFromPipeline,ACTIVE,NULL);
+	ClassThread<Elevator> dispatcherToElevatorPipelineThread(
+		this,
+		&Elevator::ReadCommandsFromPipeline,
+		ACTIVE,
+		NULL);
+
 	//int floorNumber;
 	
 
@@ -136,8 +141,10 @@ int Elevator::main()
 
 	else if(m_elevatorNumber == 2)
 		UpdateElevatorStatus(elevatorStatus, k_up, k_open, 9); 
+	
 	else if(m_elevatorNumber == 3)
 		UpdateElevatorStatus(elevatorStatus, k_up, k_closed, 4); 
+	
 	else
 		UpdateElevatorStatus(elevatorStatus, k_idle, k_closed, 5); 
 
@@ -146,15 +153,30 @@ int Elevator::main()
 
 		Sleep(1000);
 		if(elevatorStatus->floorNumber < k_maxFloorNumber && m_elevatorNumber == 1)
-			UpdateElevatorStatus(elevatorStatus, elevatorStatus->direction, elevatorStatus->doorStatus, elevatorStatus->floorNumber+1);
-
+		{
+			UpdateElevatorStatus(
+				elevatorStatus, 
+				elevatorStatus->direction, 
+				elevatorStatus->doorStatus, 
+				elevatorStatus->floorNumber+1);
+		}
 		if(elevatorStatus->floorNumber > k_minFloorNumber && m_elevatorNumber == 2)
-			UpdateElevatorStatus(elevatorStatus, elevatorStatus->direction, elevatorStatus->doorStatus, elevatorStatus->floorNumber-1);
+		{
+			UpdateElevatorStatus(
+				elevatorStatus, 
+				elevatorStatus->direction, 
+				elevatorStatus->doorStatus, 
+				elevatorStatus->floorNumber-1);
 			//floorNumber = (elevatorStatus->floorNumber)+1;
-	
-		if(elevatorStatus->floorNumber > k_minFloorNumber && m_elevatorNumber == 3){
+		}
+		if(elevatorStatus->floorNumber > k_minFloorNumber && m_elevatorNumber == 3)
+		{
 			Sleep(500);
-			UpdateElevatorStatus(elevatorStatus, elevatorStatus->direction, elevatorStatus->doorStatus, elevatorStatus->floorNumber-1);
+			UpdateElevatorStatus(
+				elevatorStatus, 
+				elevatorStatus->direction, 
+				elevatorStatus->doorStatus, 
+				elevatorStatus->floorNumber-1);
 		}
 
 	}while(1);

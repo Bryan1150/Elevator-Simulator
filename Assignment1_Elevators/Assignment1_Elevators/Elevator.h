@@ -10,18 +10,12 @@
 
 #include "..\..\..\rt.h"
 #include "GlobalVariableDecl.h"
-
+#include "FSAlgorithm.h"
 
 #ifndef ELEVATOR_H
 #define ELEVATOR_H
 
-typedef struct {		
 
-	//status for elevator struct
-	int doorStatus;
-	int direction;
-	int floorNumber;
-} ElevatorStatus_t;
 
 typedef struct {		
 

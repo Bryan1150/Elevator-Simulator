@@ -112,26 +112,26 @@ void IOProgram::UpdateElevatorStatus(ElevatorStatus_t elevatorStatus, int elevat
 int IOProgram::CollectElevatorStatus(void* args)
 {
 	std::stringstream ss;
-	int x = *(int*)args;
-	ss << x;
-	std::string elevatorNumber = ss.str();
+	int elevatorId = *(int*)args;
+	ss << elevatorId;
+	std::string elevatorNumberStr = ss.str();
 
-	CSemaphore elevatorToIO_consumer("Elevator"+elevatorNumber+"ToIOConsumer",1,1);
-	CSemaphore elevatorToIO_producer("Elevator"+elevatorNumber+"ToIOProducer",0,1);
+	CSemaphore elevatorToIO_consumer("Elevator"+elevatorNumberStr+"ToIOConsumer",1,1);
+	CSemaphore elevatorToIO_producer("Elevator"+elevatorNumberStr+"ToIOProducer",0,1);
 	do{
 		if(elevatorToIO_producer.Read() > 0) // elevator 1 produced data
+		{
+			if(elevatorId-1 >= 0)
 			{
-			  if(x-1>=0)
-			  {
 				elevatorToIO_producer.Wait();
 				//printf("Copying data from elevator1Status in IO program\n");
-				m_localElevatorStatus[x-1].direction = m_pElevatorStatus[x-1]->direction;
-				m_localElevatorStatus[x-1].doorStatus = m_pElevatorStatus[x-1]->doorStatus;
-				m_localElevatorStatus[x-1].floorNumber = m_pElevatorStatus[x-1]->floorNumber;
+				m_localElevatorStatus[elevatorId-1].direction = m_pElevatorStatus[elevatorId-1]->direction;
+				m_localElevatorStatus[elevatorId-1].doorStatus = m_pElevatorStatus[elevatorId-1]->doorStatus;
+				m_localElevatorStatus[elevatorId-1].floorNumber = m_pElevatorStatus[elevatorId-1]->floorNumber;
 				elevatorToIO_consumer.Signal();
-				UpdateElevatorStatus(m_localElevatorStatus[x-1],x);	//update visual for elevator 1
-			  }
+				UpdateElevatorStatus(m_localElevatorStatus[elevatorId-1],elevatorId);	//update visual for elevator 1
 			}
+		}
 	}while(!m_exit);
 	return 0;
 }

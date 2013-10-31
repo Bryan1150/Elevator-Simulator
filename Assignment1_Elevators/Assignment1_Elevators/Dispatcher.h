@@ -24,7 +24,7 @@ public:
 	~Dispatcher();												//destructor
 
 
-	int ReadFromPipeline3(void* args);				//Thread for reading from pipeline3 and send data to elevators through pipelines
+	int ReadFromIoToDispatcherPipeline(void* args);				//Thread for reading from pipeline3 and send data to elevators through pipelines
 	int DispatcherToElevator(void* args);			//Thread to send commands to elevators (currently not being used
 	
 	int CollectElevatorStatus(void* args);			//Updating elevator local status data pools
@@ -35,6 +35,7 @@ private:
 	CPipe*				m_pElevatorCommands[100];	//Pipelines to send commands to elevators
 	ElevatorStatusPtr_t m_pElevatorStatus[100];		//link to the elevator status data pools
 	ElevatorStatus_t	m_localElevatorStatus[100];	//local data structures for elevator statuses
+	FloorRequest_t		m_localFloorRequest[100];	//local data structures for floor requests
 	CMutex*				m_screenMutex;				// mutex to allow exclusive updates to the console
 	CMutex*				m_getCommandFromIO;			//mutex to lock the data being collected from the IO pipeline
 

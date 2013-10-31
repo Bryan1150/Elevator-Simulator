@@ -21,13 +21,13 @@ Dispatcher::Dispatcher(IOProgramPtr_t pIoProgram, int numberOfElevators)
 	m_getCommandFromIO = new CMutex("GetCommandFromIO");;
 	m_screenMutex = new CMutex("PrintToScreen");
 	std::stringstream ss;
-	std::string s_elevatorNumber;
+	std::string elevatorNumber;
 	for(int i = 1; i <= m_numberOfElevators; ++i)
 	{
 		ss << i;
-		s_elevatorNumber = ss.str();
-		m_pElevatorDataPool[i-1] = new CDataPool("Elevator"+s_elevatorNumber+"Status",sizeof(ElevatorStatus_t)); 
-		m_pElevatorCommands[i-1] = new CPipe("Elevator"+s_elevatorNumber+"Commands",1024);
+		elevatorNumber = ss.str();
+		m_pElevatorDataPool[i-1] = new CDataPool("Elevator"+elevatorNumber+"Status",sizeof(ElevatorStatus_t)); 
+		m_pElevatorCommands[i-1] = new CPipe("Elevator"+elevatorNumber+"Commands",1024);
 		ss.str("");
 		//printf("Created %d datapools in IO Program\n", i);
 	}
@@ -59,13 +59,13 @@ int Dispatcher::DispatcherToElevator(void* args)
 {
 	
 	std::stringstream ss;
-	int x = *(int*)args;
-	ss << x;
+	int elevatorId = *(int*)args;
+	ss << elevatorId;
 	std::string elevatorNumber = ss.str();
 	CPipe elevatorCommands("Elevator"+elevatorNumber+"Commands", 1024);
 	do{
-
-			//printf("%c\n",elevatorNumber);
+		
+		//printf("%c\n",elevatorNumber);
 	}while(1);
 	return 0;
 }
@@ -91,24 +91,24 @@ void Dispatcher::UpdateElevatorStatus(ElevatorStatus_t elevatorStatus, int eleva
 int Dispatcher::CollectElevatorStatus(void* args)
 {
 	std::stringstream ss;
-	int x = *(int*)args;
-	ss << x;
-	std::string s_elevatorNumber = ss.str();
+	int elevatorId = *(int*)args;
+	ss << elevatorId;
+	std::string elevatorNumber = ss.str();
 
-	CSemaphore dispatcherToElevator_consumer("DispatcherToElevator"+s_elevatorNumber+"Consumer",1,1);
-	CSemaphore dispatcherToElevator_producer("DispatcherToElevator"+s_elevatorNumber+"Producer",0,1);
+	CSemaphore dispatcherToElevator_consumer("DispatcherToElevator"+elevatorNumber+"Consumer",1,1);
+	CSemaphore dispatcherToElevator_producer("DispatcherToElevator"+elevatorNumber+"Producer",0,1);
 	do{
 		if(dispatcherToElevator_producer.Read() > 0) // elevator 1 produced data
 			{
-			  if(x-1>=0)
+			  if(elevatorId-1 >= 0)
 			  {
 				dispatcherToElevator_producer.Wait();
 				//printf("Copying data from elevator1Status in IO program\n");
-				m_localElevatorStatus[x-1].direction = m_pElevatorStatus[x-1]->direction;
-				m_localElevatorStatus[x-1].doorStatus = m_pElevatorStatus[x-1]->doorStatus;
-				m_localElevatorStatus[x-1].floorNumber = m_pElevatorStatus[x-1]->floorNumber;
+				m_localElevatorStatus[elevatorId-1].direction = m_pElevatorStatus[elevatorId-1]->direction;
+				m_localElevatorStatus[elevatorId-1].doorStatus = m_pElevatorStatus[elevatorId-1]->doorStatus;
+				m_localElevatorStatus[elevatorId-1].floorNumber = m_pElevatorStatus[elevatorId-1]->floorNumber;
 				dispatcherToElevator_consumer.Signal();
-				UpdateElevatorStatus(m_localElevatorStatus[x-1],x);	//update visual for elevator 1
+				UpdateElevatorStatus(m_localElevatorStatus[elevatorId-1],elevatorId);	//update visual for elevator 1
 			  }
 			}
 	}while(!m_bExit);
@@ -116,7 +116,7 @@ int Dispatcher::CollectElevatorStatus(void* args)
 }
 
 // Thread to read pipeline with commands from IOProgram
-int Dispatcher::ReadFromPipeline3(void *args)
+int Dispatcher::ReadFromIoToDispatcherPipeline(void *args)
 { 
 	CPipe IoToDispatcher_pipeline(k_ioToDispatcherPipeline, 1024);
 	UserInputData_t userInput;
@@ -128,10 +128,10 @@ int Dispatcher::ReadFromPipeline3(void *args)
 		numberDirection = userInput.direction - '0';
 		m_screenMutex->Wait();
 		MOVE_CURSOR(0,1);
-		printf("Direction = %c and Floor = %c from Disptcher\n", userInput.direction,userInput.floor);
+		printf("Direction = %c and Floor = %c from Disptcher\n", userInput.direction, userInput.floor);
 		m_screenMutex->Signal();
 		if(numberDirection <= m_numberOfElevators && numberDirection > 0)
-			m_pElevatorCommands[numberDirection-1]->Write(&userInput,sizeof(UserInputData_t));
+			m_pElevatorCommands[numberDirection-1]->Write(&userInput, sizeof(UserInputData_t));
 
 
 
@@ -169,7 +169,7 @@ int Dispatcher::main()
 			dispatcherToElevatorVect.push_back(pDispatcherToElevator);
 		}
 	}//add delete in for the pointers in the vectors
-	ClassThread<Dispatcher>	 IoToDispatcherPipeline(this,&Dispatcher::ReadFromPipeline3,ACTIVE, NULL);
+	ClassThread<Dispatcher>	 IoToDispatcherPipeline(this,&Dispatcher::ReadFromIoToDispatcherPipeline,ACTIVE, NULL);
 
 	
 	for( int i = 1; i <= m_numberOfElevators; i++)
