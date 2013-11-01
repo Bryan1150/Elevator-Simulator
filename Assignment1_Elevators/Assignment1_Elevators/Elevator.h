@@ -55,6 +55,8 @@ private:
 	CPipe*		m_pElevatorCommands;
 	CMutex*		m_pScreenMutex;
 	CMutex*      m_pDispatcherFloorRequest; //Mutex for floor requests
+
+	UserInputData_t m_elevatorCommandsFromDispatcher;
 	int m_elevatorNumber;
 
 };

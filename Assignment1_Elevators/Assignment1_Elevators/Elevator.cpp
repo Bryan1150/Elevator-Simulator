@@ -58,12 +58,20 @@ int  Elevator::ReadCommandsFromPipeline(void* args)
 	std::string elevatorNumber = ss.str();
 	UserInputData_t userInput;
 	CPipe elevatorCommands("Elevator"+elevatorNumber+"Commands", 1024);
+	CSemaphore elevatorConsumer("ElevatorConsumer",1,1); //semaphore to manage the local userInputData structure access
+	CSemaphore elevatorProducer("ElevatorProducer",0,1);
 	do{
 		elevatorCommands.Read(&userInput,sizeof(UserInputData_t));
 		m_pScreenMutex->Wait();
 		MOVE_CURSOR(0,2);
 		printf("Direction = %c and Floor = %c from Elevator %d\n", userInput.direction,userInput.floor,m_elevatorNumber);
 		m_pScreenMutex->Signal();
+
+		// This is for sending the commands to the elevator main function via a member variable
+		//elevatorConsumer.Wait();
+		//m_elevatorCommandsFromDispatcher.direction = userInput.direction;//copy data/commands from Dispatcher into local userInputData structure
+		//m_elevatorCommandsFromDispatcher.floor = userInput.floor;
+		//elevatorProducer.Signal();
 			//printf("%c\n",elevatorNumber);
 	}while(1);
 	return 0;
@@ -127,6 +135,8 @@ int Elevator::main()
 {
 
 	ElevatorStatusPtr_t	elevatorStatus = (ElevatorStatusPtr_t)(m_pElevatorDatapool->LinkDataPool());
+	CSemaphore elevatorConsumer("ElevatorConsumer",1,1); //semaphore to manage the local userInputData structure access
+	CSemaphore elevatorProducer("ElevatorProducer",0,1);
 	ClassThread<Elevator> dispatcherToElevatorPipelineThread(
 		this,
 		&Elevator::ReadCommandsFromPipeline,
@@ -150,7 +160,10 @@ int Elevator::main()
 
 	Sleep(1000);
 	do{
-
+		// Implement the get request phase which obtains commands from the Dispatcher to elevator pipeline
+		//elevatorProducer.Wait();
+		// do something with m_elevatorComandsFrom dispatcher - the local sturcture that holds the commands
+		//elevatorConsumer.Signal();
 		Sleep(1000);
 		if(elevatorStatus->floorNumber < k_maxFloorNumber && m_elevatorNumber == 1)
 		{
