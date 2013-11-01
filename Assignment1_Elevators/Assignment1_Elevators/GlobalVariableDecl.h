@@ -30,12 +30,17 @@ typedef struct {
 	char floor;
 } UserInputData_t;
 
-typedef struct {
+struct FloorRequest_t{
 	int floorNumber;
 	int direction;
 	int elevatorId;
+	bool bInsideRequest;
 
-} FloorRequest_t;
+	FloorRequest_t()
+		: bInsideRequest(false)
+	{}
+
+};
 
 typedef int FigureOfSuitability_t;
 typedef std::map<FigureOfSuitability_t, FloorRequest_t> FsToFloorRequestMap_t;
