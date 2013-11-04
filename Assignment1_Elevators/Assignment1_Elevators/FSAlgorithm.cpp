@@ -183,9 +183,9 @@ ElevatorStatus_t FSAlgorithm::DispatcherFsCalculator(
 		maxFsVect.reserve(elevatorStatusVect.size());
 		maxFsVect.push_back(itLift->fsToFloorRequestMap.rbegin()->first);
 	}
-	auto iter = std::max_element(maxFsVect.begin(), maxFsVect.end());
+	std::vector<int>::iterator iter = std::max_element(maxFsVect.begin(), maxFsVect.end());
 	
-	itLift += std::distance(maxFsVect.begin(), iter);
+	itLift = elevatorStatusVect.begin() + std::distance(maxFsVect.begin(), iter);
 
 	return *itLift;
 		

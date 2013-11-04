@@ -22,7 +22,7 @@ int main()
 
 	std::cout << "Enter number of elevators: ";
 	std::cin >> numberOfElevators;
-
+	int i;
 	std::vector<Elevator*> elevatorVect;
 
 	for( int i = 0; i < numberOfElevators; i++)
@@ -44,7 +44,7 @@ int main()
 
 	pIoProgram->WaitForThread();
 	dispatcher.WaitForThread();
-	/*for( int i = 0; i < numberOfElevators; i++)
+	*for( int i = 0; i < numberOfElevators; i++)
 	{
 		elevatorVect[i]->WaitForThread();
 	}*/
@@ -53,6 +53,27 @@ int main()
 		delete elevatorVect[i];
 		//printf("Deleted elevatorVect %d in Main\n",i+1);
 	}
+
+	//FloorRequestVect_t floorRequestVect;
+	//FloorRequest_t floorReq1;
+	//floorReq1.direction = k_directionUp;
+	//floorReq1.elevatorId = INT_MAX;
+	//floorReq1.floorNumber = 3;
+	//floorRequestVect.push_back(floorReq1);
+
+	//ElevatorStatus_t elevStatus1, elevStatus2;
+	//elevStatus1.direction = k_directionUp;
+	//elevStatus1.doorStatus = k_doorOpen;
+	//elevStatus1.floorNumber = 1;
+	//elevStatus2.direction = k_directionUp;
+	//elevStatus2.doorStatus = k_doorOpen;
+	//elevStatus2.floorNumber = 2;
+	//ElevatorStatusVect_t elevatorStatusVect;
+	//elevatorStatusVect.push_back(elevStatus1);
+	//elevatorStatusVect.push_back(elevStatus2);
+
+	//ElevatorStatus_t elevStatusResult = FSAlgorithm::DispatcherFsCalculator(elevatorStatusVect, floorRequestVect);
+	//
 	system("PAUSE");
 	return 0;
 }
