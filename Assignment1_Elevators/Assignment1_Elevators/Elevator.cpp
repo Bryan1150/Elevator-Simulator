@@ -73,7 +73,7 @@ int  Elevator::ReadCommandsFromPipeline(void* args)
 		//m_elevatorCommandsFromDispatcher.floor = userInput.floor;
 		//elevatorProducer.Signal();
 			//printf("%c\n",elevatorNumber);
-	}while(1);
+	} while(1);
 	return 0;
 }
 //Initiliazes the default values for the Elevator

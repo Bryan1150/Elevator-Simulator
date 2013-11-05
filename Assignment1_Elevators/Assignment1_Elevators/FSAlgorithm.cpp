@@ -176,17 +176,61 @@ ElevatorStatus_t FSAlgorithm::DispatcherFsCalculator(
 		}
 	}
 
-	std::vector<int> maxFsVect;
+	std::map<std::string/*fReqId*/, std::pair<FigureOfSuitability_t,int/*elevatorId*/>> floorReqToFsMap;
+	std::vector<int> reorderQueue;
 	auto itLift = elevatorStatusVect.begin();
 	for(itLift; itLift != elevatorStatusVect.end(); ++itLift)
 	{	
-		maxFsVect.reserve(elevatorStatusVect.size());
-		maxFsVect.push_back(itLift->fsToFloorRequestMap.rbegin()->first);
-	}
-	std::vector<int>::iterator iter = std::max_element(maxFsVect.begin(), maxFsVect.end());
-	
-	itLift = elevatorStatusVect.begin() + std::distance(maxFsVect.begin(), iter);
+		for(auto itFs = itLift->fsToFloorRequestMap.rbegin();
+			itFs != itLift->fsToFloorRequestMap.rend();
+			--itFs)
+		{
+			auto itMap = floorReqToFsMap.find(itFs->second.fReqId/*floorRequest*/);
+			if(itMap == floorReqToFsMap.end())
+			{
+				int elevatorId = std::distance(elevatorStatusVect.begin(), itLift); // NOTE: elevatorId is the index beginning from 0
+				floorReqToFsMap.insert(std::make_pair(itFs->second.fReqId, std::make_pair(itFs->first, elevatorId)));
+				break;
+			}
+			else if(itFs->first > itMap->second.first) // floorRequest already in map, so if this next one has a larger FS, then replace the old one
+			{	
+				int elevatorRemovalId = itMap->second.second;
+				
+				int elevatorId = std::distance(elevatorStatusVect.begin(), itLift);
 
-	return *itLift;
+				// erase then add new FR with the higher FS value
+				floorReqToFsMap.erase(itMap);
+				floorReqToFsMap.insert(
+					std::make_pair(itLift->fsToFloorRequestMap.rbegin()->second.fReqId,
+					std::make_pair(itLift->fsToFloorRequestMap.rbegin()->first, elevatorId)));
+				
+				// go through the remaining FR/FS for this elevator to find the next highest that is not in floorReqToFsMap
+				for(auto itRemoval = --elevatorStatusVect[elevatorRemovalId].fsToFloorRequestMap.rbegin();
+					itRemoval != elevatorStatusVect[elevatorRemovalId].fsToFloorRequestMap.rend();
+					--itRemoval)
+				{
+					if(floorReqToFsMap.find(itRemoval->second.fReqId) == floorReqToFsMap.end()) // if FR not yet in map, then insert
+					{
+						floorReqToFsMap.insert(
+							std::make_pair(itRemoval->second.fReqId,
+							std::make_pair(itRemoval->first, elevatorRemovalId)));
+						
+						break;
+					}
+				}
+				
+				break;
+			}
+			// we don't break from loop if a FR still needs to be added to the map for the current elevator
+		}
+	}
+
+	// Now that we have the FR with the highest FS linked to each elevator, we can tell each elevator where it needs to go next.
+	// The floorReqToFsMap will contain n FRs (n <= number of elevators) with a mapped pair containing an "elevatorId". Sometimes,
+	// there might not be a FR for a certain elevator, so we send it a blank FR, telling it to remain in the same spot.
+	// Elevator statuses from the DPs to the dispatcher are stored in order of "elevatorId".
+	// FIXME: add a final vector containing the FR for each elevator in order; return this vector instead of the ElevatorStatus_t().
+
+	return ElevatorStatus_t();
 		
 }

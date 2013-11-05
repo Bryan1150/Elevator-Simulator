@@ -9,6 +9,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <sstream>
 
 #pragma once
 
@@ -31,6 +32,7 @@ typedef struct {
 } UserInputData_t;
 
 struct FloorRequest_t{
+	std::string fReqId;
 	int floorNumber;
 	int direction;
 	int elevatorId;
@@ -39,7 +41,38 @@ struct FloorRequest_t{
 	FloorRequest_t()
 		: bInsideRequest(false)
 	{}
+	
+	FloorRequest_t(int floor, int dir)
+		: bInsideRequest(false)
+		, floorNumber(floor)
+		, direction(dir)
+		, elevatorId(INT_MAX)
+	{
+		if(dir == k_up)
+			fReqId = "U";
+		else if(dir == k_down)
+			fReqId = "D";
 
+		std::stringstream ss;
+		ss << floor;
+		fReqId += ss.str(); // ex. "U1","D9", etc.		
+	}
+
+	FloorRequest_t(int floor, int dir, int elevId)
+		: bInsideRequest(elevatorId != INT_MAX ? true : false)
+		, floorNumber(floor)
+		, direction(dir)
+		, elevatorId(elevId)
+	{
+		if(dir == k_up)
+			fReqId = "U";
+		else if(dir == k_down)
+			fReqId = "D";
+
+		std::stringstream ss;
+		ss << floorNumber;
+		fReqId += ss.str(); // ex. "U1","D9", etc.		
+	}
 };
 
 typedef int FigureOfSuitability_t;
