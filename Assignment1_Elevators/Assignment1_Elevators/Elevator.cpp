@@ -164,7 +164,7 @@ int Elevator::main()
 		//elevatorProducer.Wait();
 		// do something with m_elevatorComandsFrom dispatcher - the local sturcture that holds the commands
 		//elevatorConsumer.Signal();
-		Sleep(1000);
+		Sleep(3000);
 		if(elevatorStatus->floorNumber < k_maxFloorNumber && m_elevatorNumber == 1)
 		{
 			UpdateElevatorStatus(

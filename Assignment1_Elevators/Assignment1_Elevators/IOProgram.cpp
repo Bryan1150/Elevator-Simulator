@@ -118,6 +118,7 @@ int IOProgram::CollectElevatorStatus(void* args)
 
 	CSemaphore elevatorToIO_consumer("Elevator"+elevatorNumberStr+"ToIOConsumer",1,1);
 	CSemaphore elevatorToIO_producer("Elevator"+elevatorNumberStr+"ToIOProducer",0,1);
+	CPipe IoToElevatorGraphics_pipeline("IoToElevatorGraphics"+elevatorNumberStr, 1024);/*******************************/
 	do{
 		if(elevatorToIO_producer.Read() > 0) // elevator 1 produced data
 		{
@@ -130,6 +131,7 @@ int IOProgram::CollectElevatorStatus(void* args)
 				m_localElevatorStatus[elevatorId-1].floorNumber = m_pElevatorStatus[elevatorId-1]->floorNumber;
 				elevatorToIO_consumer.Signal();
 				UpdateElevatorStatus(m_localElevatorStatus[elevatorId-1],elevatorId);	//update visual for elevator 1
+				IoToElevatorGraphics_pipeline.Write(&m_localElevatorStatus[elevatorId-1], sizeof(ElevatorStatus_t));/****************/
 			}
 		}
 	}while(!m_exit);
@@ -147,6 +149,16 @@ int IOProgram::main()
 	std::vector<ClassThread<IOProgram>*> collectElevatorStatusVect; //vector to hold pointers for threads collecting elevator statuses
 	int elevatorNumberArray[100];												//used to pass in elevator number to the threads
 
+	std::stringstream ss;
+	ss << m_numberOfElevators;
+	std::string elevatorNumberStr = ss.str();
+
+	/*******************************/
+	CProcess p1("Z:\\RTExamples\\EECE314\\Assignment1_Elevators\\Debug\\ElevatorGraphics.exe "+elevatorNumberStr,	// pathlist to child program executable				
+			NORMAL_PRIORITY_CLASS,			// priority
+			OWN_WINDOW,						// process has its own window					
+			ACTIVE							// process is active immediately
+	) ;
 
 	//initialize threads for collecting elevator statuses
 	for( int i = 1; i <= m_numberOfElevators; i++)
@@ -161,6 +173,8 @@ int IOProgram::main()
 		}//add delete in for the pointers in the vectors //add waitfor thread at the end
 	}
 	
+	
+
 	//Prompt user for commands
 	m_screenMutex->Wait();
 	MOVE_CURSOR(0,0);
