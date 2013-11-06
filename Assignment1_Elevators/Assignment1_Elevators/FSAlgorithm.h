@@ -11,6 +11,7 @@
 #include <algorithm>
 
 #include "GlobalVariableDecl.h"
+#include "..\..\..\rt.h"
 
 #pragma once
 
@@ -43,7 +44,7 @@ public:
 		FloorRequest_t const& floorReq,
 		ElevatorStatus_t& lift);
 	
-	static ElevatorStatus_t DispatcherFsCalculator(
+	static FloorRequestVect_t DispatcherFsCalculator(
 		ElevatorStatusVect_t& elevatorStatusVect,
 		FloorRequestVect_t& floorRequestVect);
 };

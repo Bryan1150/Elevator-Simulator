@@ -83,7 +83,7 @@ void FSAlgorithm::InsertFsIntoMap(
 
 // elevatorStatusVect contains DataPool struct from each elevator; passed into each Child Dispatcher Thread
 // floorRequestVect contains all requests from IOProgram; need to be deleted by dispatcher once elevator(s) service the requests
-ElevatorStatus_t FSAlgorithm::DispatcherFsCalculator(
+FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 		ElevatorStatusVect_t& elevatorStatusVect,
 		FloorRequestVect_t& floorRequestVect)
 {
@@ -176,7 +176,7 @@ ElevatorStatus_t FSAlgorithm::DispatcherFsCalculator(
 		}
 	}
 
-	std::map<std::string/*fReqId*/, std::pair<FigureOfSuitability_t,int/*elevatorId*/>> floorReqToFsMap;
+	std::map<FloorRequest_t, std::pair<FigureOfSuitability_t,int/*elevatorId*/>> floorReqToFsMap;
 	std::vector<int> reorderQueue;
 	auto itLift = elevatorStatusVect.begin();
 	for(itLift; itLift != elevatorStatusVect.end(); ++itLift)
@@ -185,14 +185,14 @@ ElevatorStatus_t FSAlgorithm::DispatcherFsCalculator(
 			itFs != itLift->fsToFloorRequestMap.rend();
 			--itFs)
 		{
-			auto itMap = floorReqToFsMap.find(itFs->second.fReqId/*floorRequest*/);
+			auto itMap = floorReqToFsMap.find(itFs->second/*floorRequest*/);
 			if(itMap == floorReqToFsMap.end())
 			{
 				int elevatorId = std::distance(elevatorStatusVect.begin(), itLift); // NOTE: elevatorId is the index beginning from 0
-				floorReqToFsMap.insert(std::make_pair(itFs->second.fReqId, std::make_pair(itFs->first, elevatorId)));
+				floorReqToFsMap.insert(std::make_pair(itFs->second/*floorRequest*/, std::make_pair(itFs->first/*fs*/, elevatorId)));
 				break;
 			}
-			else if(itFs->first > itMap->second.first) // floorRequest already in map, so if this next one has a larger FS, then replace the old one
+			else if(itFs->first > itMap->second.first/*fs*/) // floorRequest already in map, so if this next one has a larger FS, then replace the old one
 			{	
 				int elevatorRemovalId = itMap->second.second;
 				
@@ -201,19 +201,19 @@ ElevatorStatus_t FSAlgorithm::DispatcherFsCalculator(
 				// erase then add new FR with the higher FS value
 				floorReqToFsMap.erase(itMap);
 				floorReqToFsMap.insert(
-					std::make_pair(itLift->fsToFloorRequestMap.rbegin()->second.fReqId,
-					std::make_pair(itLift->fsToFloorRequestMap.rbegin()->first, elevatorId)));
+					std::make_pair(itLift->fsToFloorRequestMap.rbegin()->second/*floorRequest*/,
+					std::make_pair(itLift->fsToFloorRequestMap.rbegin()->first/*fs*/, elevatorId)));
 				
 				// go through the remaining FR/FS for this elevator to find the next highest that is not in floorReqToFsMap
 				for(auto itRemoval = --elevatorStatusVect[elevatorRemovalId].fsToFloorRequestMap.rbegin();
 					itRemoval != elevatorStatusVect[elevatorRemovalId].fsToFloorRequestMap.rend();
 					--itRemoval)
 				{
-					if(floorReqToFsMap.find(itRemoval->second.fReqId) == floorReqToFsMap.end()) // if FR not yet in map, then insert
+					if(floorReqToFsMap.find(itRemoval->second/*floorRequest*/) == floorReqToFsMap.end()) // if FR not yet in map, then insert
 					{
 						floorReqToFsMap.insert(
-							std::make_pair(itRemoval->second.fReqId,
-							std::make_pair(itRemoval->first, elevatorRemovalId)));
+							std::make_pair(itRemoval->second/*floorRequest*/,
+							std::make_pair(itRemoval->first/*fs*/, elevatorRemovalId)));
 						
 						break;
 					}
@@ -231,6 +231,24 @@ ElevatorStatus_t FSAlgorithm::DispatcherFsCalculator(
 	// Elevator statuses from the DPs to the dispatcher are stored in order of "elevatorId".
 	// FIXME: add a final vector containing the FR for each elevator in order; return this vector instead of the ElevatorStatus_t().
 
-	return ElevatorStatus_t();
+	FloorRequestVect_t outputDispatcher;
+	outputDispatcher.reserve(10);
+
+	// initialize the outputDispatcher array to have default ElevatorStatus_t()
+	for(int i = 0; i < 10; ++i)
+	{
+		outputDispatcher[i] = FloorRequest_t();
+	}
+
+	for(auto iter = floorReqToFsMap.begin(); iter != floorReqToFsMap.end(); ++iter)
+	{
+		int elevatorId = iter->second.second;
+		if(elevatorId < 10 && elevatorId >= 0) // safety check for index range
+			outputDispatcher[elevatorId] = iter->first;
+		else
+			assert(false);
+	}
+
+	return outputDispatcher;
 		
 }

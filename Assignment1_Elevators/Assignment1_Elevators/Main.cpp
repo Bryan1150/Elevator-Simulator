@@ -66,7 +66,7 @@ int main()
 	elevatorStatusVect.push_back(elevStatus1);
 	elevatorStatusVect.push_back(elevStatus2);
 
-	ElevatorStatus_t elevStatusResult = FSAlgorithm::DispatcherFsCalculator(elevatorStatusVect, floorRequestVect);
+	FloorRequestVect_t fReqVect = FSAlgorithm::DispatcherFsCalculator(elevatorStatusVect, floorRequestVect);
 	
 	system("PAUSE");
 	return 0;

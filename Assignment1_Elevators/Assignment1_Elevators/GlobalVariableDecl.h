@@ -32,6 +32,7 @@ typedef struct {
 } UserInputData_t;
 
 struct FloorRequest_t{
+	
 	std::string fReqId;
 	int floorNumber;
 	int direction;
@@ -40,6 +41,10 @@ struct FloorRequest_t{
 
 	FloorRequest_t()
 		: bInsideRequest(false)
+		, floorNumber(INT_MAX)
+		, direction(INT_MAX)
+		, elevatorId(INT_MAX)
+		, fReqId("")
 	{}
 	
 	FloorRequest_t(int floor, int dir)
@@ -73,6 +78,21 @@ struct FloorRequest_t{
 		ss << floorNumber;
 		fReqId += ss.str(); // ex. "U1","D9", etc.		
 	}
+
+	bool operator>(FloorRequest_t const& other) const
+	{ return fReqId > other.fReqId; }
+
+	bool operator>=(FloorRequest_t const& other) const
+	{ return fReqId >= other.fReqId; }
+	
+	bool operator<(FloorRequest_t const& other) const
+	{ return fReqId < other.fReqId; }
+	
+	bool operator<=(FloorRequest_t const& other) const
+	{ return fReqId <= other.fReqId; }
+
+	bool operator==(FloorRequest_t const& other) const
+	{ return fReqId == other.fReqId; }
 };
 
 typedef int FigureOfSuitability_t;
@@ -85,7 +105,6 @@ typedef struct {
 	int direction;
 	int floorNumber;
 	FsToFloorRequestMap_t fsToFloorRequestMap;
-
 } ElevatorStatus_t;
 
 typedef std::vector<ElevatorStatus_t> ElevatorStatusVect_t;
