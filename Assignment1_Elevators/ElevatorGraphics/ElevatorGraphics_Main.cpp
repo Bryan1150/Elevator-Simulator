@@ -39,11 +39,37 @@ UINT __stdcall PrintElevatorGraphics (void *args)	// thread function
 	do{
 		IoToElevatorGraphics_pipeline.Read(&elevatorStatus, sizeof(ElevatorStatus_t));
 		graphicsMtx.Wait();
-		Display.ClearElevator(25*elevatorId,36-4*previousFloorNumber);
-		Display.DrawElevator(25*elevatorId,36-4*elevatorStatus.floorNumber);
+		Display.ClearElevator(20+20*(elevatorId-1),80-8*previousFloorNumber);
+		Display.DrawElevator(20+20*(elevatorId-1),80-8*elevatorStatus.floorNumber);
 		graphicsMtx.Signal();
 		previousFloorNumber = elevatorStatus.floorNumber;
 
+
+	}while(1);
+
+	return 0 ;
+}
+
+UINT __stdcall GetFloorRequests (void *args)	// thread function 
+{	
+
+	//Need pipeline
+	graphicsMtx.Wait();
+	for(int i = 0; i <= 9; ++i)
+	{
+		MOVE_CURSOR(0,80-8*i-2);
+		printf("____________");
+		MOVE_CURSOR(0,80-8*i-1);
+		printf("Floor %d", i);
+		MOVE_CURSOR(0,80-8*i);
+		printf("%c",30);
+		MOVE_CURSOR(0,80-8*i+1);
+		printf("%c",31);
+	}
+	graphicsMtx.Signal();
+
+	do{
+	
 
 	}while(1);
 
@@ -54,8 +80,14 @@ int main(int argc, char* argv[])
 {
 	int numberOfElevators = atoi(argv[1]);
 	CThread *Threads[10];
+	CThread getFloorRequests(GetFloorRequests,ACTIVE,NULL);
 	//Threads = (CThread*)malloc(numberOfElevators*sizeof(CThread));
 	int xArray[10];
+	
+	RECT r;
+	HWND console = GetConsoleWindow();
+	GetWindowRect(console, &r); //stores the console's current dimensions
+	MoveWindow(console, r.left, r.top, 800, 600, TRUE);
 
 	for(int i = 0; i < numberOfElevators; ++i)
 	{
@@ -63,6 +95,7 @@ int main(int argc, char* argv[])
 		Threads[i] = new CThread(PrintElevatorGraphics, ACTIVE, &xArray[i]);
 	}
 
+	CURSOR_OFF();
 
 	for(int i = 0; i < numberOfElevators; ++i)
 	{
