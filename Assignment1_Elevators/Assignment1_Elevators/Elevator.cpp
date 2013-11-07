@@ -10,6 +10,7 @@
 
 Elevator::Elevator() 
 	: m_elevatorNumber(0) // FIXME kwou: change default value
+	, m_elevatorStatus(ElevatorStatus_t())
 {
 	m_pDispatcherToElevator_consumer = new CSemaphore("dispatcherToElevator_consumer",1,1);
 	m_pDispatcherToElevator_producer = new CSemaphore("dispatcherToElevator_consumer",0,1);
@@ -22,6 +23,7 @@ Elevator::Elevator()
 
 Elevator::Elevator(int num) 
 	: m_elevatorNumber(num)
+	, m_elevatorStatus(ElevatorStatus_t())
 {
 	std::stringstream ss;
 	std::string elevatorNumber;
@@ -61,30 +63,40 @@ int  Elevator::ReadCommandsFromPipeline(void* args)
 	CSemaphore elevatorConsumer("ElevatorConsumer",1,1); //semaphore to manage the local userInputData structure access
 	CSemaphore elevatorProducer("ElevatorProducer",0,1);
 	do{
-		elevatorCommands.Read(&userInput,sizeof(UserInputData_t));
+		FloorRequest_t floorRequest;
+		OutputDebugString("Elevator Child attempting to read FR from DispatcherToElevator Pipeline\n");
+		if(elevatorCommands.TestForData() >= sizeof(FloorRequest_t))
+		{
+			elevatorCommands.Read(&floorRequest,sizeof(FloorRequest_t));
+			OutputDebugString("Elevator Child finished reading FR from DispatcherToElevator Pipeline\n");
+		}
+		else
+			OutputDebugString("Elevator Child did NOT to read from DispatcherToElevator Pipeline\n");
+
 		m_pScreenMutex->Wait();
 		MOVE_CURSOR(0,2);
-		printf("Direction = %c and Floor = %c from Elevator %d\n", userInput.direction,userInput.floor,m_elevatorNumber);
+		std::cout << floorRequest.fReqId << std::endl;
+//		printf("Floor Request ID = %s\n", floorRequest.fReqId);
 		m_pScreenMutex->Signal();
 
 		// This is for sending the commands to the elevator main function via a member variable
 		//elevatorConsumer.Wait();
-		//m_elevatorCommandsFromDispatcher.direction = userInput.direction;//copy data/commands from Dispatcher into local userInputData structure
-		//m_elevatorCommandsFromDispatcher.floor = userInput.floor;
+		//m_floorReqFromDispatcher.direction = userInput.direction;//copy data/commands from Dispatcher into local userInputData structure
+		//m_floorReqFromDispatcher.floor = userInput.floor;
 		//elevatorProducer.Signal();
 			//printf("%c\n",elevatorNumber);
 	} while(1);
 	return 0;
 }
 //Initiliazes the default values for the Elevator
-void Elevator::UpdateElevatorStatus(ElevatorStatusPtr_t elevatorStatus, int direction, int doorStatus, int floorNumber) const
+void Elevator::UpdateElevatorStatus(ElevatorStatusPtr_t pElevatorStatusDP, int direction, int doorStatus, int floorNumber) const
 {
 	
 		m_pElevatorToIO_consumer->Wait();
 		m_pDispatcherToElevator_consumer->Wait();
-		elevatorStatus->direction = direction;
-		elevatorStatus->doorStatus = doorStatus;
-		elevatorStatus->floorNumber = floorNumber;
+		pElevatorStatusDP->direction = direction;
+		pElevatorStatusDP->doorStatus = doorStatus;
+		pElevatorStatusDP->floorNumber = floorNumber;
 		m_pDispatcherToElevator_producer->Signal();
 		m_pElevatorToIO_producer->Signal();
 		
@@ -98,32 +110,32 @@ void Elevator::UpdateElevatorStatus(ElevatorStatusPtr_t elevatorStatus, int dire
 }
 
 //Open or Close the Doors of the Elevator
-void Elevator::ChangeDoorStatus(ElevatorStatusPtr_t elevatorStatus, int doorStatus) const
+void Elevator::ChangeDoorStatus(ElevatorStatusPtr_t pElevatorStatusDP, int doorStatus) const
 {
 	if(doorStatus == 0)
-		UpdateElevatorStatus(elevatorStatus, elevatorStatus->direction, k_closed, elevatorStatus->floorNumber); // close the doors
+		UpdateElevatorStatus(pElevatorStatusDP, pElevatorStatusDP->direction, k_closed, pElevatorStatusDP->floorNumber); // close the doors
 	else if(doorStatus == 1)
-		UpdateElevatorStatus(elevatorStatus, elevatorStatus->direction, k_open, elevatorStatus->floorNumber); //open the doors
+		UpdateElevatorStatus(pElevatorStatusDP, pElevatorStatusDP->direction, k_open, pElevatorStatusDP->floorNumber); //open the doors
 }
 
 //Increment or decrement the floor number
-void Elevator::ChangeFloorNumber(ElevatorStatusPtr_t elevatorStatus, int direction) const
+void Elevator::ChangeFloorNumber(ElevatorStatusPtr_t pElevatorStatusDP, int direction) const
 {
 	if(direction == 0)
-		UpdateElevatorStatus(elevatorStatus, elevatorStatus->direction, elevatorStatus->doorStatus, elevatorStatus->floorNumber-1);
+		UpdateElevatorStatus(pElevatorStatusDP, pElevatorStatusDP->direction, pElevatorStatusDP->doorStatus, pElevatorStatusDP->floorNumber-1);
 	else if(direction == 1)
-		UpdateElevatorStatus(elevatorStatus, elevatorStatus->direction, elevatorStatus->doorStatus, elevatorStatus->floorNumber+1);
+		UpdateElevatorStatus(pElevatorStatusDP, pElevatorStatusDP->direction, pElevatorStatusDP->doorStatus, pElevatorStatusDP->floorNumber+1);
 }
 
 //Set the direction of the Elevator
-void Elevator::SetElevatorDirection(ElevatorStatusPtr_t elevatorStatus, int direction) const
+void Elevator::SetElevatorDirection(ElevatorStatusPtr_t pElevatorStatusDP, int direction) const
 {
 	if(direction == 0)
-		UpdateElevatorStatus(elevatorStatus, k_idle, elevatorStatus->doorStatus, elevatorStatus->floorNumber); //set direction to idle
+		UpdateElevatorStatus(pElevatorStatusDP, k_idle, pElevatorStatusDP->doorStatus, pElevatorStatusDP->floorNumber); //set direction to idle
 	else if(direction == 1)
-		UpdateElevatorStatus(elevatorStatus, k_up, elevatorStatus->doorStatus, elevatorStatus->floorNumber); //set direction to up
+		UpdateElevatorStatus(pElevatorStatusDP, k_up, pElevatorStatusDP->doorStatus, pElevatorStatusDP->floorNumber); //set direction to up
 	else if(direction == 2)
-		UpdateElevatorStatus(elevatorStatus, k_down, elevatorStatus->doorStatus, elevatorStatus->floorNumber); //set direction to down
+		UpdateElevatorStatus(pElevatorStatusDP, k_down, pElevatorStatusDP->doorStatus, pElevatorStatusDP->floorNumber); //set direction to down
 }
 
 
@@ -134,7 +146,7 @@ void Elevator::SetElevatorDirection(ElevatorStatusPtr_t elevatorStatus, int dire
 int Elevator::main()
 {
 
-	ElevatorStatusPtr_t	elevatorStatus = (ElevatorStatusPtr_t)(m_pElevatorDatapool->LinkDataPool());
+	ElevatorStatusPtr_t	pElevatorStatusDP = (ElevatorStatusPtr_t)(m_pElevatorDatapool->LinkDataPool());
 	CSemaphore elevatorConsumer("ElevatorConsumer",1,1); //semaphore to manage the local userInputData structure access
 	CSemaphore elevatorProducer("ElevatorProducer",0,1);
 	ClassThread<Elevator> dispatcherToElevatorPipelineThread(
@@ -146,51 +158,63 @@ int Elevator::main()
 	//int floorNumber;
 	
 
-	if(m_elevatorNumber == 1)
-		UpdateElevatorStatus(elevatorStatus, k_idle, k_closed, 0); // initlialize elevator
-
-	else if(m_elevatorNumber == 2)
-		UpdateElevatorStatus(elevatorStatus, k_up, k_open, 9); 
-	
-	else if(m_elevatorNumber == 3)
-		UpdateElevatorStatus(elevatorStatus, k_up, k_closed, 4); 
-	
-	else
-		UpdateElevatorStatus(elevatorStatus, k_idle, k_closed, 5); 
-
+//	if(m_elevatorNumber == 1)
+//		UpdateElevatorStatus(pElevatorStatusDP, k_idle, k_closed, 0); // initlialize elevator
+//
+//	else if(m_elevatorNumber == 2)
+//		UpdateElevatorStatus(pElevatorStatusDP, k_up, k_open, 9); 
+//	
+//	else if(m_elevatorNumber == 3)
+//		UpdateElevatorStatus(pElevatorStatusDP, k_up, k_closed, 4); 
+//	
+//	else
+//		UpdateElevatorStatus(pElevatorStatusDP, k_idle, k_closed, 5); 
+//
 	Sleep(1000);
 	do{
+		OutputDebugString("Elevator Main attempting to update ElevatorStatus DP\n");
+		m_pDispatcherToElevator_consumer->Wait();
+		OutputDebugString("dispatcherToElevator_consumer.Wait() finished call\n");
+		OutputDebugString("Elevator Main updating ElevatorStatus DP\n");
+		pElevatorStatusDP->direction = m_elevatorStatus.direction;
+		pElevatorStatusDP->doorStatus = m_elevatorStatus.doorStatus;
+		pElevatorStatusDP->floorNumber = m_elevatorStatus.floorNumber;
+		m_pDispatcherToElevator_producer->Signal();
+		OutputDebugString("dispatcherToElevator_producer.Signal() finished call\n");
+		OutputDebugString("Elevator Main finished updating ElevatorStatus DP\n");
+
 		// Implement the get request phase which obtains commands from the Dispatcher to elevator pipeline
 		//elevatorProducer.Wait();
 		// do something with m_elevatorComandsFrom dispatcher - the local sturcture that holds the commands
 		//elevatorConsumer.Signal();
-		Sleep(1000);
-		if(elevatorStatus->floorNumber < k_maxFloorNumber && m_elevatorNumber == 1)
-		{
-			UpdateElevatorStatus(
-				elevatorStatus, 
-				elevatorStatus->direction, 
-				elevatorStatus->doorStatus, 
-				elevatorStatus->floorNumber+1);
-		}
-		if(elevatorStatus->floorNumber > k_minFloorNumber && m_elevatorNumber == 2)
-		{
-			UpdateElevatorStatus(
-				elevatorStatus, 
-				elevatorStatus->direction, 
-				elevatorStatus->doorStatus, 
-				elevatorStatus->floorNumber-1);
-			//floorNumber = (elevatorStatus->floorNumber)+1;
-		}
-		if(elevatorStatus->floorNumber > k_minFloorNumber && m_elevatorNumber == 3)
-		{
-			Sleep(500);
-			UpdateElevatorStatus(
-				elevatorStatus, 
-				elevatorStatus->direction, 
-				elevatorStatus->doorStatus, 
-				elevatorStatus->floorNumber-1);
-		}
+		
+		//Sleep(1000);
+		//if(pElevatorStatusDP->floorNumber < k_maxFloorNumber && m_elevatorNumber == 1)
+		//{
+		//	UpdateElevatorStatus(
+		//		pElevatorStatusDP, 
+		//		pElevatorStatusDP->direction, 
+		//		pElevatorStatusDP->doorStatus, 
+		//		pElevatorStatusDP->floorNumber+1);
+		//}
+		//if(pElevatorStatusDP->floorNumber > k_minFloorNumber && m_elevatorNumber == 2)
+		//{
+		//	UpdateElevatorStatus(
+		//		pElevatorStatusDP, 
+		//		pElevatorStatusDP->direction, 
+		//		pElevatorStatusDP->doorStatus, 
+		//		pElevatorStatusDP->floorNumber-1);
+		//	//floorNumber = (pElevatorStatusDP->floorNumber)+1;
+		//}
+		//if(pElevatorStatusDP->floorNumber > k_minFloorNumber && m_elevatorNumber == 3)
+		//{
+		//	Sleep(500);
+		//	UpdateElevatorStatus(
+		//		pElevatorStatusDP, 
+		//		pElevatorStatusDP->direction, 
+		//		pElevatorStatusDP->doorStatus, 
+		//		pElevatorStatusDP->floorNumber-1);
+		//}
 
 	}while(1);
 	//delete elevator1Status;

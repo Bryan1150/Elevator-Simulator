@@ -51,6 +51,7 @@ IOProgram::~IOProgram()
 	}
 	delete m_screenMutex;
 }
+
 bool IOProgram::IsValidCommand(UserInputData_t userInput) const
 {
 	int numberDirection = userInput.direction - '0'; 
@@ -158,7 +159,7 @@ int IOProgram::main()
 			collectElevatorStatusVect.push_back(pCollectElevatorStatus);
 			//printf("Created %d threads in IOProgram\n", i);
 			//Sleep(500);
-		}//add delete in for the pointers in the vectors //add waitfor thread at the end
+		}// FIXME add delete in for the pointers in the vectors //add waitfor thread at the end
 	}
 	
 	//Prompt user for commands
@@ -166,6 +167,10 @@ int IOProgram::main()
 	MOVE_CURSOR(0,0);
 	printf("Enter Commands: ");
 	m_screenMutex->Signal();
+
+	UserInputData_t testInput('U','5');
+	IoToDispatcher_pipeline.Write(&testInput, sizeof(UserInputData_t));
+
 	do{
 		if(TEST_FOR_KEYBOARD())		//Test for keyboard inputs
 		{

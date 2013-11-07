@@ -56,7 +56,8 @@ private:
 	CMutex*		m_pScreenMutex;
 	CMutex*      m_pDispatcherFloorRequest; //Mutex for floor requests
 
-	UserInputData_t m_elevatorCommandsFromDispatcher;
+	FloorRequest_t m_floorReqFromDispatcher;
+	ElevatorStatus_t m_elevatorStatus;
 	int m_elevatorNumber;
 
 };

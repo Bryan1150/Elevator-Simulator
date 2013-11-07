@@ -13,6 +13,12 @@
 
 #pragma once
 
+static int const k_doorOpen = 1;
+static int const k_doorClosed = 0;
+static int const k_directionDown = 2;
+static int const k_directionUp = 1;
+static int const k_directionIdle = 0;
+
 static int const k_open = 1;
 static int const k_closed = 0;
 static int const k_idle = 0;
@@ -26,10 +32,18 @@ static int const k_terminateSimulation = 3000;
 static std::string const k_ioToDispatcherPipeline = "IoToDispatcherPipeline";
 
 
-typedef struct {
+struct UserInputData_t {
 	char direction;
 	char floor;
-} UserInputData_t;
+
+	UserInputData_t()
+	{}
+
+	UserInputData_t(char dir, char fl)
+		: direction(dir)
+		, floor(fl)
+	{}
+};
 
 struct FloorRequest_t{
 	
@@ -44,7 +58,7 @@ struct FloorRequest_t{
 		, floorNumber(INT_MAX)
 		, direction(INT_MAX)
 		, elevatorId(INT_MAX)
-		, fReqId("")
+		, fReqId("Idle")
 	{}
 	
 	FloorRequest_t(int floor, int dir)
@@ -98,14 +112,18 @@ struct FloorRequest_t{
 typedef int FigureOfSuitability_t;
 typedef std::map<FigureOfSuitability_t, FloorRequest_t> FsToFloorRequestMap_t;
 
-typedef struct {		
-
-	//status for elevator struct
+struct ElevatorStatus_t {
 	int doorStatus;
 	int direction;
 	int floorNumber;
 	FsToFloorRequestMap_t fsToFloorRequestMap;
-} ElevatorStatus_t;
+
+	ElevatorStatus_t()
+		: doorStatus(k_open)
+		, direction(k_directionUp)
+		, floorNumber(0)
+	{}
+};
 
 typedef std::vector<ElevatorStatus_t> ElevatorStatusVect_t;
 typedef std::vector<FloorRequest_t> FloorRequestVect_t;

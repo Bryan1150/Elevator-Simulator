@@ -38,10 +38,10 @@ Dispatcher::Dispatcher(IOProgramPtr_t pIoProgram, int numberOfElevators)
 		m_pElevatorStatus[i] = (ElevatorStatusPtr_t)(m_pElevatorDataPool[i]->LinkDataPool());
 	}
 	
-	CSemaphore* m_pEntryToQueue = new CSemaphore("EntryToQueue", 0 , 2); // entry
-	CSemaphore* m_pExitFromQueue = new CSemaphore("ExitFromQueue", 0, 2); // exit
-	CSemaphore* m_pQueueEmpty = new CSemaphore("QueueEmpty", 0, 2); // empty
-	CSemaphore* m_pQueueFull = new CSemaphore("QueueFull", 0, 2); // full
+	CSemaphore* m_pEntryToQueue = new CSemaphore("EntryToQueue", 0 , m_numberOfElevators); // entry
+	CSemaphore* m_pExitFromQueue = new CSemaphore("ExitFromQueue", 0, m_numberOfElevators); // exit
+	CSemaphore* m_pQueueEmpty = new CSemaphore("QueueEmpty", 0, m_numberOfElevators); // empty
+	CSemaphore* m_pQueueFull = new CSemaphore("QueueFull", 0, m_numberOfElevators); // full
 }
 
 Dispatcher::~Dispatcher()
@@ -109,17 +109,20 @@ int Dispatcher::CollectElevatorStatus(void* args)
 		{
 			if(elevatorId-1 >= 0)
 			{
+				OutputDebugString("Dispatcher Child attempting to write from Elevator DP to Dispatcher Main\n");
 				dispatcherToElevator_producer.Wait();
-
+				OutputDebugString("dispatcherToElevator_producer.Wait() finished call\n");
 				m_pEntryToQueue->Wait();
 				m_pQueueFull->Signal();
 				
 				m_localElevatorStatus[elevatorId-1] = *m_pElevatorStatus[elevatorId-1];
-				
+				OutputDebugString("Dispatcher Child writing from Elevator DP to Dispatcher Main\n");
 				m_pExitFromQueue->Wait();
 				m_pQueueEmpty->Signal();
 				
 				dispatcherToElevator_consumer.Signal();
+				OutputDebugString("dispatcherToElevator_consumer.Signal() finished call\n");
+				OutputDebugString("Dispatcher Child has written from Elevator DP to Dispatcher Main\n");
 				UpdateElevatorStatus(m_localElevatorStatus[elevatorId-1],elevatorId);	//update visual for elevator 1
 			}
 		}
@@ -141,14 +144,14 @@ int Dispatcher::ReadFromIoToDispatcherPipeline(void *args)
 
 		
 		IoToDispatcher_pipeline.Read(&userInput, sizeof(UserInputData_t));	//Read commands from IO 
-
+		OutputDebugString("Dispatcher reading UserInputData_t from IO\n");
 //		m_screenMutex->Wait(); 
 //		MOVE_CURSOR(0,1);
 //		printf("Direction = %c and Floor = %c from Disptcher\n", userInput.direction, userInput.floor);
 //		m_screenMutex->Signal();
 
 		// FIXME how are we dealing with INSIDE requests? we temporarily have a boolean "bInsideRequest"
-		FloorRequest_t floorReq;
+//		FloorRequest_t floorReq;
 		
 		// "EE" used to terminate simulation
 		if(userInput.direction == 'E' && userInput.floor == 'E') 
@@ -162,23 +165,41 @@ int Dispatcher::ReadFromIoToDispatcherPipeline(void *args)
 			}
 		}
 
-		if(userInput.direction == 'U')
-			floorReq.direction = k_directionUp;
-		else if(userInput.direction == 'D')
-			floorReq.direction = k_directionDown;
-		else if(userInput.floor >= '0' && userInput.floor <= '9')
-			floorReq.bInsideRequest = true;
-		else
-			assert(!"invalid direction from IO");
+		int direction, floorNumber;
 
-		if(userInput.floor >= '0' && userInput.floor <= '9')
-			floorReq.floorNumber = userInput.floor - '0';
-		else
-			assert(!"invalid floor from IO");
+		if(userInput.direction >= '0' && userInput.direction <= '9') // inside request
+		{
+			bool bInsideRequest = true;
+			continue; // FIXME temporary! not dealing with inside reqs right now
+		}
+		else // outside request
+		{
+			if(userInput.direction == 'U')
+			{
+				direction = k_directionUp;
+			}
+			else if(userInput.direction == 'D')
+			{
+				direction = k_directionDown;
+			} 
+			else
+			{
+				assert(!"invalid direction from IO");
+			}
+
+			if(userInput.floor >= '0' && userInput.floor <= '9')
+				floorNumber = userInput.floor - '0';
+			else
+				assert(!"invalid floor from IO");
+
+		}
+
+		FloorRequest_t floorReq(floorNumber, direction);
 
 		floorRequestVectProtector_consumer.Wait();
 		m_floorRequestVect.push_back(floorReq);
 		floorRequestVectProtector_producer.Signal();
+		OutputDebugString("Dispatcher Child adding FR to queue\n");
 		
 	} while(1);
 	return 0;
@@ -228,6 +249,8 @@ int Dispatcher::main()
 		}// FIXME add delete in for the pointers in the vectors //add waitfor thread at the end
 	}
 
+	Sleep(1000);
+
 	FloorRequestVect_t floorRequestQueue;
 	ElevatorStatusVect_t elevatorStatusVect;
 	do{
@@ -238,6 +261,7 @@ int Dispatcher::main()
 			floorRequestVectProtector_producer.Wait();
 			floorRequestQueue = m_floorRequestVect;
 			floorRequestVectProtector_consumer.Signal();
+			OutputDebugString("Dispatcher Main reading from queue\n");
 			
 			/** debugging **/
 			int i = 1;
@@ -250,7 +274,7 @@ int Dispatcher::main()
 			}
 			/** end debugging **/
 		}
-		
+		OutputDebugString("Dispatcher Main attempting to read Elevator Statuses\n");
 		for(int i = 0; i < m_numberOfElevators; ++i)
 		{
 			m_pEntryToQueue->Signal();
@@ -259,15 +283,23 @@ int Dispatcher::main()
 		{
 			m_pQueueFull->Wait();
 		}
-
+		OutputDebugString("Dispatcher Main reading Elevator Statuses\n");
 		// obtain Elevator Statuses here
 		for(int i = 0; i < m_numberOfElevators; ++i)
 		{
 			elevatorStatusVect.push_back(m_localElevatorStatus[i]);
 		}
-		
-		FSAlgorithm::DispatcherFsCalculator(elevatorStatusVect, floorRequestQueue);
+		FloorRequestVect_t outputDispatcher;
+		outputDispatcher = FSAlgorithm::DispatcherFsCalculator(elevatorStatusVect, floorRequestQueue);
+		for(auto iter = outputDispatcher.begin(); iter != outputDispatcher.end(); ++iter)
+		{
+			int elevatorId = std::distance(outputDispatcher.begin(), iter);
+			m_pElevatorCommands[elevatorId]->Write(&iter,sizeof(iter)); // send FR to elevator
+			OutputDebugString("Dispatcher Main sending FR to each Elevator Pipeline\n");
+		}
 
+		OutputDebugString("Dispatcher Main releasing semaphores protecting ElevatorStatusVect\n");
+		// release semaphores
 		for(int i = 0; i < m_numberOfElevators; ++i)
 		{
 			m_pExitFromQueue->Signal();
@@ -276,6 +308,7 @@ int Dispatcher::main()
 		{
 			m_pQueueEmpty->Wait();
 		}
+		OutputDebugString("Dispatcher Main has released semaphores protecting ElevatorStatusVect\n");
 
 		if(m_bExit)
 		{

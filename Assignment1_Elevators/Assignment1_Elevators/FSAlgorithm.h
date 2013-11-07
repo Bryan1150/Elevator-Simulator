@@ -16,13 +16,6 @@
 #pragma once
 
 
-
-static int const k_doorOpen = 0;
-static int const k_doorClosed = 1;
-static int const k_directionDown = 0;
-static int const k_directionUp = 1;
-static int const k_directionIdle = 2;
-
 class FSAlgorithm {
 public:
 	static int const k_numFloorsMinusOne = 4;

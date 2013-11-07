@@ -13,7 +13,7 @@ void FSAlgorithm::TowardsCallSameDirection(
 {
 	FigureOfSuitability_t fs;
 	fs = (k_numFloorsMinusOne + 2) - abs(floorReq.floorNumber - lift.floorNumber);
-
+	std::cout<<fs<<std::endl;
 	InsertFsIntoMap(fs, floorReq, lift);
 }
 
@@ -23,7 +23,7 @@ void FSAlgorithm::TowardsCallDiffDirection(
 {
 	FigureOfSuitability_t fs;
 	fs = (k_numFloorsMinusOne + 1) - abs(floorReq.floorNumber - lift.floorNumber);
-
+	std::cout<<fs<<std::endl;
 	InsertFsIntoMap(fs, floorReq, lift);
 }
 
@@ -32,7 +32,7 @@ void FSAlgorithm::AwayFromCall(
 		ElevatorStatus_t& lift)
 {
 	FigureOfSuitability_t fs = 1;
-
+	std::cout<<fs<<std::endl;
 	InsertFsIntoMap(fs, floorReq, lift);
 }
 
@@ -93,11 +93,18 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 		++itElevatorStatus)
 	{
 		for(auto itDeleteRequest = floorRequestVect.begin();
-			itDeleteRequest != floorRequestVect.end();
-			++itDeleteRequest)
+			itDeleteRequest != floorRequestVect.end();)
 		{
-			if((itDeleteRequest->floorNumber == itElevatorStatus->floorNumber) && (itElevatorStatus->doorStatus == k_doorOpen))
-				floorRequestVect.erase(itDeleteRequest);
+			if((itDeleteRequest->floorNumber == itElevatorStatus->floorNumber) && 
+				(itElevatorStatus->doorStatus == k_doorOpen) &&
+				(itDeleteRequest->direction == itElevatorStatus->direction))
+			{	// only rm from queue if FR is on same floor, door is open, both directions are the same
+				itDeleteRequest = floorRequestVect.erase(itDeleteRequest);
+			}
+			else
+			{
+				++itDeleteRequest;
+			}
 		}
 	}
 
@@ -183,7 +190,7 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 	{	
 		for(auto itFs = itLift->fsToFloorRequestMap.rbegin();
 			itFs != itLift->fsToFloorRequestMap.rend();
-			--itFs)
+			++itFs)
 		{
 			auto itMap = floorReqToFsMap.find(itFs->second/*floorRequest*/);
 			if(itMap == floorReqToFsMap.end())
@@ -205,9 +212,9 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 					std::make_pair(itLift->fsToFloorRequestMap.rbegin()->first/*fs*/, elevatorId)));
 				
 				// go through the remaining FR/FS for this elevator to find the next highest that is not in floorReqToFsMap
-				for(auto itRemoval = --elevatorStatusVect[elevatorRemovalId].fsToFloorRequestMap.rbegin();
+				for(auto itRemoval = elevatorStatusVect[elevatorRemovalId].fsToFloorRequestMap.rbegin();
 					itRemoval != elevatorStatusVect[elevatorRemovalId].fsToFloorRequestMap.rend();
-					--itRemoval)
+					++itRemoval)
 				{
 					if(floorReqToFsMap.find(itRemoval->second/*floorRequest*/) == floorReqToFsMap.end()) // if FR not yet in map, then insert
 					{
@@ -234,21 +241,26 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 	FloorRequestVect_t outputDispatcher;
 	outputDispatcher.reserve(10);
 
-	// initialize the outputDispatcher array to have default ElevatorStatus_t()
-	for(int i = 0; i < 10; ++i)
+	// initialize the outputDispatcher vector to have 10 default ElevatorStatus_t()
+	for(int i = 0; i < elevatorStatusVect.size(); ++i)
 	{
-		outputDispatcher[i] = FloorRequest_t();
+		outputDispatcher.push_back(FloorRequest_t());
 	}
 
 	for(auto iter = floorReqToFsMap.begin(); iter != floorReqToFsMap.end(); ++iter)
 	{
 		int elevatorId = iter->second.second;
-		if(elevatorId < 10 && elevatorId >= 0) // safety check for index range
+		if(elevatorId < outputDispatcher.size() && elevatorId >= 0) // safety check for index range
 			outputDispatcher[elevatorId] = iter->first;
 		else
 			assert(false);
 	}
 
+	for(auto itPrinter = outputDispatcher.begin(); itPrinter != outputDispatcher.end(); ++itPrinter)
+	{
+		std::cout << std::endl << itPrinter->fReqId << std::endl;
+	}
+	
 	return outputDispatcher;
 		
 }
