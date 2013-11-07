@@ -39,8 +39,8 @@ UINT __stdcall PrintElevatorGraphics (void *args)	// thread function
 	do{
 		IoToElevatorGraphics_pipeline.Read(&elevatorStatus, sizeof(ElevatorStatus_t));
 		graphicsMtx.Wait();
-		Display.ClearElevator(20+20*(elevatorId-1),80-8*previousFloorNumber);
-		Display.DrawElevator(20+20*(elevatorId-1),80-8*elevatorStatus.floorNumber);
+		Display.ClearElevator(20+23*(elevatorId-1),80-8*previousFloorNumber);
+		Display.DrawElevator(20+23*(elevatorId-1),80-8*elevatorStatus.floorNumber);
 		graphicsMtx.Signal();
 		previousFloorNumber = elevatorStatus.floorNumber;
 
@@ -52,7 +52,6 @@ UINT __stdcall PrintElevatorGraphics (void *args)	// thread function
 
 UINT __stdcall GetFloorRequests (void *args)	// thread function 
 {	
-
 	//Need pipeline
 	graphicsMtx.Wait();
 	for(int i = 0; i <= 9; ++i)
@@ -76,11 +75,34 @@ UINT __stdcall GetFloorRequests (void *args)	// thread function
 	return 0 ;
 }
 
+UINT __stdcall GetInsideRequests (void *args)	// thread function 
+{	
+
+	
+	//Need pipeline
+	int elevatorId = *(int*)args;
+	graphicsMtx.Wait();
+	for(int i = 0; i < elevatorId; ++i)
+	{
+		MOVE_CURSOR(15+23*i,5);
+		printf("0 1 2 3 4 5 6 7 8 9");
+	}
+	graphicsMtx.Signal();
+
+	do{
+	
+
+	}while(1);
+
+	return 0 ;
+}
+
 int main(int argc, char* argv[])
 {
 	int numberOfElevators = atoi(argv[1]);
 	CThread *Threads[10];
 	CThread getFloorRequests(GetFloorRequests,ACTIVE,NULL);
+	CThread getInsideRequests(GetInsideRequests,ACTIVE,&numberOfElevators);
 	//Threads = (CThread*)malloc(numberOfElevators*sizeof(CThread));
 	int xArray[10];
 	
