@@ -38,10 +38,10 @@ Dispatcher::Dispatcher(IOProgramPtr_t pIoProgram, int numberOfElevators)
 		m_pElevatorStatus[i] = (ElevatorStatusPtr_t)(m_pElevatorDataPool[i]->LinkDataPool());
 	}
 	
-	CSemaphore* m_pEntryToQueue = new CSemaphore("EntryToQueue", 0 , m_numberOfElevators); // entry
-	CSemaphore* m_pExitFromQueue = new CSemaphore("ExitFromQueue", 0, m_numberOfElevators); // exit
-	CSemaphore* m_pQueueEmpty = new CSemaphore("QueueEmpty", 0, m_numberOfElevators); // empty
-	CSemaphore* m_pQueueFull = new CSemaphore("QueueFull", 0, m_numberOfElevators); // full
+	m_pEntryToQueue = new CSemaphore("EntryToQueue", 0 , m_numberOfElevators); // entry
+	m_pExitFromQueue = new CSemaphore("ExitFromQueue", 0, m_numberOfElevators); // exit
+	m_pQueueEmpty = new CSemaphore("QueueEmpty", 0, m_numberOfElevators); // empty
+	m_pQueueFull = new CSemaphore("QueueFull", 0, m_numberOfElevators); // full
 }
 
 Dispatcher::~Dispatcher()
@@ -294,7 +294,8 @@ int Dispatcher::main()
 		for(auto iter = outputDispatcher.begin(); iter != outputDispatcher.end(); ++iter)
 		{
 			int elevatorId = std::distance(outputDispatcher.begin(), iter);
-			m_pElevatorCommands[elevatorId]->Write(&iter,sizeof(iter)); // send FR to elevator
+			FloorRequest_t tempFloorRequest = *iter;
+			m_pElevatorCommands[elevatorId]->Write(&tempFloorRequest,sizeof(FloorRequest_t)); // send FR to elevator
 			OutputDebugString("Dispatcher Main sending FR to each Elevator Pipeline\n");
 		}
 

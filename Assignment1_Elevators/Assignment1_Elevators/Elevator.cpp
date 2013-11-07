@@ -64,14 +64,14 @@ int  Elevator::ReadCommandsFromPipeline(void* args)
 	CSemaphore elevatorProducer("ElevatorProducer",0,1);
 	do{
 		FloorRequest_t floorRequest;
-		OutputDebugString("Elevator Child attempting to read FR from DispatcherToElevator Pipeline\n");
+//		OutputDebugString("Elevator Child attempting to read FR from DispatcherToElevator Pipeline\n");
 		if(elevatorCommands.TestForData() >= sizeof(FloorRequest_t))
 		{
 			elevatorCommands.Read(&floorRequest,sizeof(FloorRequest_t));
 			OutputDebugString("Elevator Child finished reading FR from DispatcherToElevator Pipeline\n");
 		}
 		else
-			OutputDebugString("Elevator Child did NOT to read from DispatcherToElevator Pipeline\n");
+//			OutputDebugString("Elevator Child did NOT to read from DispatcherToElevator Pipeline\n");
 
 		m_pScreenMutex->Wait();
 		MOVE_CURSOR(0,2);

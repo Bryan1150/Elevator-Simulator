@@ -123,6 +123,17 @@ struct ElevatorStatus_t {
 		, direction(k_directionUp)
 		, floorNumber(0)
 	{}
+
+	ElevatorStatus_t& operator=(ElevatorStatus_t const& other)
+	{
+		doorStatus = other.doorStatus;
+		direction = other.direction;
+		floorNumber = other.floorNumber;
+		if(!other.fsToFloorRequestMap.empty())
+			fsToFloorRequestMap = other.fsToFloorRequestMap;
+
+		return *this;
+	}
 };
 
 typedef std::vector<ElevatorStatus_t> ElevatorStatusVect_t;
