@@ -74,11 +74,10 @@ int  Elevator::ReadCommandsFromPipeline(void* args)
 		if(elevatorCommands.TestForData() >= sizeof(FloorRequest_t))
 		{
 			elevatorCommands.Read(&floorRequest,sizeof(FloorRequest_t));
-			OutputDebugString("Elevator Child finished reading FR from DispatcherToElevator Pipeline\n");
 
 			m_pChildToMainElev_consumer->Wait();
 			m_floorReqFromDispatcher = floorRequest;
-			OutputDebugString("Elevator Child sending FR to Elevator Main (via semaphore + member)\n");
+			OutputDebugString("Elevator Child finished reading FR from DispatcherToElevator Pipeline and sending to Elevator Main\n");
 			m_pChildToMainElev_producer->Signal();
 		}
 
@@ -105,36 +104,36 @@ int Elevator::main()
 	Sleep(1000);
 		
 	// very first time only
-	OutputDebugString("Elevator Main attempting to write new ElevatorStatus to DP\n");
+//	OutputDebugString("Elevator Main attempting to write new ElevatorStatus to DP\n");
 	m_pDispatcherToElevator_consumer->Wait();
-	OutputDebugString("dispatcherToElevator_consumer.Wait() finished call\n");
+//	OutputDebugString("dispatcherToElevator_consumer.Wait() finished call\n");
 	OutputDebugString("Elevator Main writing new ElevatorStatus to DP\n");
 	pElevatorStatusDP->direction = m_elevatorStatus.direction;
 	pElevatorStatusDP->doorStatus = m_elevatorStatus.doorStatus;
 	pElevatorStatusDP->floorNumber = m_elevatorStatus.floorNumber;
 	m_pDispatcherToElevator_producer->Signal();
-	OutputDebugString("dispatcherToElevator_producer.Signal() finished call\n");
-	OutputDebugString("Elevator Main finished writing new ElevatorStatus to DP\n");
+//	OutputDebugString("dispatcherToElevator_producer.Signal() finished call\n");
+//	OutputDebugString("Elevator Main finished writing new ElevatorStatus to DP\n");
 
 	do { 
-		OutputDebugString("Elevator Main is waiting for FR from DispatcherToElevatorPipeline\n");
+//		OutputDebugString("Elevator Main is waiting for FR from DispatcherToElevatorPipeline\n");
 		m_pChildToMainElev_producer->Wait();
-		//if(m_pChildToMainElev_producer->Wait(5000) == WAIT_TIMEOUT)
-		//{
-		//	if(lastRequest != FloorRequest_t())
-		//		floorRequest = lastRequest;
-		//}
-		//else
-		//{
+// 		if(m_pChildToMainElev_producer->Wait(5000) == WAIT_TIMEOUT)
+// 		{
+// 			if(lastRequest != FloorRequest_t())
+// 				floorRequest = lastRequest;
+// 		}
+// 		else
+// 		{
 			floorRequest = m_floorReqFromDispatcher;
-		//	lastRequest = floorRequest;
-		//}
+// 			lastRequest = floorRequest;
+// 		}
 		m_pChildToMainElev_consumer->Signal();
 		OutputDebugString("Elevator Main has received FR from DispatcherToElevatorPipeline\n");
 		
-		// We send a default FR to an elevator with the following conditions below, when
+		// We send a default FR to an elevator with the following condition below, when
 		// it doesn't need to move. It will stay in place until the highest FS of a new FR matches this elevator
-		if(floorRequest.fReqId == "Idle" || m_elevatorStatus.direction == k_directionIdle)
+		if(floorRequest.fReqId == "Idle")
 		{
 			m_elevatorStatus.doorStatus = k_doorOpen;
 			m_pScreenMutex->Wait();
@@ -155,15 +154,17 @@ int Elevator::main()
 			MOVE_CURSOR(0,30);
 			std::cout << "Elevator has reached its FR at floor " << floorRequest.floorNumber << std::endl;
 			m_pScreenMutex->Signal();
+			Sleep(1500);
 		}
 		else
 		{
 			m_elevatorStatus.doorStatus = k_doorClosed;
-			
-			if(m_elevatorStatus.direction == k_directionUp)
-				m_elevatorStatus.floorNumber++;
-			else if(m_elevatorStatus.direction == k_directionDown)
+
+			m_elevatorStatus.floorNumber - floorRequest.floorNumber > 0 ? m_elevatorStatus.direction = k_directionDown : m_elevatorStatus.direction = k_directionUp;
+			if(m_elevatorStatus.direction == k_directionDown)
 				m_elevatorStatus.floorNumber--;
+			else if(m_elevatorStatus.direction == k_directionUp)
+				m_elevatorStatus.floorNumber++;
 
 			m_pScreenMutex->Wait();
 			MOVE_CURSOR(0,30);
@@ -173,16 +174,16 @@ int Elevator::main()
 			m_pScreenMutex->Signal();
 		}
 		
-		OutputDebugString("Elevator Main attempting to write new ElevatorStatus to DP\n");
+//		OutputDebugString("Elevator Main attempting to write new ElevatorStatus to DP\n");
 		m_pDispatcherToElevator_consumer->Wait();
-		OutputDebugString("dispatcherToElevator_consumer.Wait() finished call\n");
-		OutputDebugString("Elevator Main writing new ElevatorStatus to DP\n");
+//		OutputDebugString("dispatcherToElevator_consumer.Wait() finished call\n");
 		pElevatorStatusDP->direction = m_elevatorStatus.direction;
 		pElevatorStatusDP->doorStatus = m_elevatorStatus.doorStatus;
 		pElevatorStatusDP->floorNumber = m_elevatorStatus.floorNumber;
+		OutputDebugString("Elevator Main writing new ElevatorStatus to DP\n");
 		m_pDispatcherToElevator_producer->Signal();
-		OutputDebugString("dispatcherToElevator_producer.Signal() finished call\n");
-		OutputDebugString("Elevator Main finished writing new ElevatorStatus to DP\n");
+//		OutputDebugString("dispatcherToElevator_producer.Signal() finished call\n");
+//		OutputDebugString("Elevator Main finished writing new ElevatorStatus to DP\n");
 
 		Sleep(800);
 	} while(1);

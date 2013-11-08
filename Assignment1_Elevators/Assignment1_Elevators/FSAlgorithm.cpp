@@ -102,20 +102,20 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 				
 					// if outside request, replace with pseudoFR to keep Elevator at that floor
 					// so that the passenger can send an inside request to continue going in that direction
-					if(!itDeleteRequest->bInsideRequest) 
-					{
-						FloorRequest_t pseudoFR(itDeleteRequest->floorNumber, 
-							itDeleteRequest->direction,
-							std::distance(elevatorStatusVect.begin(), itElevatorStatus));
-
-						std::replace(floorRequestVect.begin(), floorRequestVect.end(), *itDeleteRequest, pseudoFR);
-
-						++itDeleteRequest;
-					}
-					else
-					{
+// 					if(!itDeleteRequest->bInsideRequest) 
+// 					{
+// 						FloorRequest_t pseudoFR(itDeleteRequest->floorNumber, 
+// 							itDeleteRequest->direction,
+// 							std::distance(elevatorStatusVect.begin(), itElevatorStatus));
+// 
+// 						std::replace(floorRequestVect.begin(), floorRequestVect.end(), *itDeleteRequest, pseudoFR);
+// 
+// 						++itDeleteRequest;
+// 					}
+// 					else
+// 					{
 						itDeleteRequest = floorRequestVect.erase(itDeleteRequest);
-					}
+//					}
 				}
 				else
 				{

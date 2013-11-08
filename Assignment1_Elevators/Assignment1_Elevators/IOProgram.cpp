@@ -132,7 +132,7 @@ int IOProgram::CollectElevatorStatus(void* args)
 				UpdateElevatorStatus(m_localElevatorStatus[elevatorId-1],elevatorId);	//update visual for elevator 1
 			}
 		}
-	}while(!m_exit);
+	} while(!m_exit);
 	return 0;
 }
 int IOProgram::main()

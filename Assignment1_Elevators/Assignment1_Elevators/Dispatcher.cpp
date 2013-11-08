@@ -93,9 +93,9 @@ int Dispatcher::CollectElevatorStatus(void* args)
 		{
 			if(elevatorId-1 >= 0)
 			{
-				OutputDebugString("Dispatcher Child reading from Elevator DP and copying to Dispatcher Main\n");
+//				OutputDebugString("Dispatcher Child reading from Elevator DP and copying to Dispatcher Main\n");
 				dispatcherToElevator_producer.Wait();
-				OutputDebugString("dispatcherToElevator_producer.Wait() finished call. Waiting at 'enter roller coaster' semaphores.\n");
+//				OutputDebugString("dispatcherToElevator_producer.Wait() finished call. Waiting at 'enter roller coaster' semaphores.\n");
 				m_pEntryToQueue->Wait();
 				m_pQueueFull->Signal();
 				
@@ -105,8 +105,8 @@ int Dispatcher::CollectElevatorStatus(void* args)
 				m_pQueueEmpty->Signal();
 				
 				dispatcherToElevator_consumer.Signal();
-				OutputDebugString("dispatcherToElevator_consumer.Signal() finished call\n");
-				OutputDebugString("Dispatcher Child has read from Elevator DP and copied to Dispatcher Main\n");
+//				OutputDebugString("dispatcherToElevator_consumer.Signal() finished call\n");
+//				OutputDebugString("Dispatcher Child has read from Elevator DP and copied to Dispatcher Main\n");
 			}
 		}
 	} while(!m_bExit);
@@ -231,16 +231,7 @@ int Dispatcher::main()
 			floorRequestVectProtector_consumer.Signal();
 			OutputDebugString("Dispatcher Main reading from queue\n");
 			
-			/** debugging **/
-			//int i = 1;
-			//for(auto itQueue = floorRequestQueue.begin(); itQueue != floorRequestQueue.end(); ++itQueue)
-			//{
-			//	m_screenMutex->Wait(); 
-			//	MOVE_CURSOR(0,i++);
-			//	printf("\nRequest... floor: %d\tdirection: %d\n", itQueue->floorNumber, itQueue->direction);
-			//	m_screenMutex->Signal();
-			//}
-			/** end debugging **/
+
 		}
 
 //		OutputDebugString("Dispatcher Main attempting to read Elevator Statuses\n");
@@ -282,6 +273,23 @@ int Dispatcher::main()
 			m_pElevatorCommands[elevatorId]->Write(&tempFloorRequest,sizeof(FloorRequest_t)); // send FR to elevator
 			OutputDebugString("Dispatcher Main sending FR to each Elevator Pipeline\n");
 		}
+
+		/** debugging **/
+		m_screenMutex->Wait();
+		MOVE_CURSOR(0,50);
+		std::cout << "                                                               ";
+		m_screenMutex->Signal();
+
+		int i = 0;
+		for(auto itQueue = floorRequestQueue.begin(); itQueue != floorRequestQueue.end(); ++itQueue)
+		{
+			m_screenMutex->Wait(); 
+			MOVE_CURSOR(i,50);
+			std::cout << itQueue->fReqId;
+			m_screenMutex->Signal();
+			i += 3;
+		}
+		/** end debugging **/
 
 		if(m_bExit)
 		{
