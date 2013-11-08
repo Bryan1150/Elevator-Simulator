@@ -16,19 +16,19 @@ void Graphics::DrawElevator(int x, int y)
 	screenMutex->Wait();
 	MOVE_CURSOR(x+3,y-1);
 	TEXT_COLOUR(3);
-	printf("LVL %d", (y-80)/(-8));
+	printf("LVL %d", (y-64)/(-6));
 	TEXT_COLOUR(7);
-	for(int i = 0; i < 6; ++i)
+	for(int i = 0; i < 5; ++i)
 	{
 		MOVE_CURSOR(x,y+i);
-		for(int i = 0; i < 5; ++i)
+		for(int i = 0; i < 4; ++i)
 		{
-				printf("%c",219);
+			printf("%c",219);
 		}
 		printf("%c",221);
-		for(int i = 0; i < 5; ++i)
+		for(int i = 0; i < 4; ++i)
 		{
-				printf("%c",219);
+			printf("%c",219);
 		}
 		printf("%c",221);
 
@@ -45,7 +45,7 @@ void Graphics::OpenElevatorDoor(int x, int y)
 			printf("%c",219);
 		}
 		printf("%c",221);
-		for(int i = 0; i < 6; ++i)
+		for(int i = 0; i < 4; ++i)
 		{
 			printf("-"); //overscore
 		}
@@ -56,7 +56,7 @@ void Graphics::OpenElevatorDoor(int x, int y)
 		}
 
 	
-	for(int i = 1; i <= 4; ++i)
+	for(int i = 1; i <= 3; ++i)
 	{
 		MOVE_CURSOR(x,y+i);
 		for(int i = 0; i < 2; ++i)
@@ -64,7 +64,7 @@ void Graphics::OpenElevatorDoor(int x, int y)
 			printf("%c",219);
 		}
 		printf("%c",221);
-		for(int i = 0; i < 6; ++i)
+		for(int i = 0; i < 4; ++i)
 		{
 			printf(" "); //overscore
 		}
@@ -75,14 +75,14 @@ void Graphics::OpenElevatorDoor(int x, int y)
 		}
 		
 	}
-	MOVE_CURSOR(x,y+5);
+	MOVE_CURSOR(x,y+4);
 	
 		for(int i = 0; i < 2; ++i)
 		{
 			printf("%c",219);
 		}
 		printf("%c",221);
-		for(int i = 0; i < 6; ++i)
+		for(int i = 0; i < 4; ++i)
 		{
 			printf("-");
 		}
@@ -106,14 +106,41 @@ void Graphics::ClearElevator(int x, int y)
 	screenMutex->Wait();
 	MOVE_CURSOR(x+3,y-1);
 	printf("     ");
-	for(int i = 0; i < 6; ++i)
+	for(int i = 0; i < 5; ++i)
 	{
 		MOVE_CURSOR(x,y+i);
-		for(int i = 0; i < 12; ++i)
+		for(int i = 0; i < 10; ++i)
 		{
 			printf(" ");
 		}
 
 	}
+	screenMutex->Signal();
+}
+
+void Graphics::PrintElevatorStatus(int elevatorId, ElevatorStatus_t const& ElevatorStatus)
+{
+	screenMutex->Wait();
+	MOVE_CURSOR(15+23*(elevatorId-1),0);
+	printf("Elevator %d", elevatorId);
+	MOVE_CURSOR(15+23*(elevatorId-1),1);
+	printf("Floor Number: %d", ElevatorStatus.floorNumber);
+
+	MOVE_CURSOR(15+23*(elevatorId-1),2);
+	printf("Direction: ");
+	if( ElevatorStatus.direction == 0)
+		 printf("Idle");
+	else if( ElevatorStatus.direction == 1)
+		printf("Up");
+	else if( ElevatorStatus.direction == 2)
+		printf("Down");
+
+	MOVE_CURSOR(15+23*(elevatorId-1),3);
+	printf("Door Status: ");
+	if( ElevatorStatus.doorStatus == 0)
+		 printf("Closed");
+	else if( ElevatorStatus.doorStatus == 1)
+		printf("Open");
+	
 	screenMutex->Signal();
 }

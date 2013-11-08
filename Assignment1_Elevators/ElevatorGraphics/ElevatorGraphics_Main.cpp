@@ -4,28 +4,29 @@
 #include <string.h>
 #include <map>
 #include "Graphics.h"
+#include "..\Assignment1_Elevators\GlobalVariableDecl.h"
 #include "..\..\..\rt.h"
 
 Graphics Display;
 CMutex graphicsMtx("Mutex for Drawing");
-
-typedef struct {
-	int floorNumber;
-	int direction;
-	int elevatorId;
-
-} FloorRequest_t;
-typedef int FigureOfSuitability_t;
-typedef std::map<FigureOfSuitability_t, FloorRequest_t> FsToFloorRequestMap_t;
-typedef struct {		
-
-	//status for elevator struct
-	int doorStatus;
-	int direction;
-	int floorNumber;
-	FsToFloorRequestMap_t fsToFloorRequestMap;
-
-} ElevatorStatus_t;
+//
+//typedef struct {
+//	int floorNumber;
+//	int direction;
+//	int elevatorId;
+//
+//} FloorRequest_t;
+//typedef int FigureOfSuitability_t;
+//typedef std::map<FigureOfSuitability_t, FloorRequest_t> FsToFloorRequestMap_t;
+//typedef struct {		
+//
+//	//status for elevator struct
+//	int doorStatus;
+//	int direction;
+//	int floorNumber;
+//	FsToFloorRequestMap_t fsToFloorRequestMap;
+//
+//} ElevatorStatus_t;
 
 UINT __stdcall PrintElevatorGraphics (void *args)	// thread function 
 {	
@@ -39,11 +40,12 @@ UINT __stdcall PrintElevatorGraphics (void *args)	// thread function
 	do{
 		IoToElevatorGraphics_pipeline.Read(&elevatorStatus, sizeof(ElevatorStatus_t));
 		graphicsMtx.Wait();
-		Display.ClearElevator(20+23*(elevatorId-1),80-8*previousFloorNumber);
-		Display.DrawElevator(20+23*(elevatorId-1),80-8*elevatorStatus.floorNumber);
+		Display.ClearElevator(20+23*(elevatorId-1),64-6*previousFloorNumber);
+		Display.DrawElevator(20+23*(elevatorId-1),64-6*elevatorStatus.floorNumber);
+		Display.PrintElevatorStatus(elevatorId, elevatorStatus);
 		graphicsMtx.Signal();
-		previousFloorNumber = elevatorStatus.floorNumber;
-
+		previousFloorNumber = elevatorStatus.floorNumber;	
+		
 
 	}while(1);
 
@@ -56,13 +58,13 @@ UINT __stdcall GetFloorRequests (void *args)	// thread function
 	graphicsMtx.Wait();
 	for(int i = 0; i <= 9; ++i)
 	{
-		MOVE_CURSOR(0,80-8*i-2);
+		MOVE_CURSOR(0,64-6*i-2);
 		printf("____________");
-		MOVE_CURSOR(0,80-8*i-1);
+		MOVE_CURSOR(0,64-6*i-1);
 		printf("Floor %d", i);
-		MOVE_CURSOR(0,80-8*i);
+		MOVE_CURSOR(0,64-6*i);
 		printf("%c",30);
-		MOVE_CURSOR(0,80-8*i+1);
+		MOVE_CURSOR(0,64-6*i+1);
 		printf("%c",31);
 	}
 	graphicsMtx.Signal();
@@ -84,7 +86,7 @@ UINT __stdcall GetInsideRequests (void *args)	// thread function
 	graphicsMtx.Wait();
 	for(int i = 0; i < elevatorId; ++i)
 	{
-		MOVE_CURSOR(15+23*i,5);
+		MOVE_CURSOR(15+23*i,6);
 		printf("0 1 2 3 4 5 6 7 8 9");
 	}
 	graphicsMtx.Signal();
@@ -96,6 +98,8 @@ UINT __stdcall GetInsideRequests (void *args)	// thread function
 
 	return 0 ;
 }
+
+
 
 int main(int argc, char* argv[])
 {

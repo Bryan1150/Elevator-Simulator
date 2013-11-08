@@ -6,7 +6,7 @@
  *	 Ryan Wong	47307103
  *****************************************************/
 #include <iostream>
-
+#include "..\Assignment1_Elevators\GlobalVariableDecl.h"
 #include "..\..\..\rt.h"
 
 
@@ -24,6 +24,7 @@ public:
 	void OpenElevatorDoor(int x, int y);
 	void CloseElevatorDoor(int x, int y);
 	void ClearElevator(int x, int y);
+	void PrintElevatorStatus(int elevatorId, ElevatorStatus_t const& ElevatorStatus);
 
 private:
 	CMutex* screenMutex;
