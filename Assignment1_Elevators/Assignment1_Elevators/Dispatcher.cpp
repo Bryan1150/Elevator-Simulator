@@ -61,22 +61,6 @@ Dispatcher::~Dispatcher()
 	delete m_pQueueFull;
 }
 
-
-//Thread to write commands to Elevators
-int Dispatcher::DispatcherToElevator(void* args)
-{
-	std::stringstream ss;
-	int elevatorId = *(int*)args;
-	ss << elevatorId;
-	std::string elevatorNumber = ss.str();
-	CPipe elevatorCommands("Elevator"+elevatorNumber+"Commands", 1024);
-	do{
-		
-//		printf("%c\n",elevatorNumber);
-	} while(1);
-	return 0;
-}
-
 //testing to see if dispatcher is getting the right information from the data pools
 void Dispatcher::UpdateElevatorStatus(ElevatorStatus_t elevatorStatus, int elevatorNumber) const
 {
@@ -123,7 +107,6 @@ int Dispatcher::CollectElevatorStatus(void* args)
 				dispatcherToElevator_consumer.Signal();
 				OutputDebugString("dispatcherToElevator_consumer.Signal() finished call\n");
 				OutputDebugString("Dispatcher Child has read from Elevator DP and copied to Dispatcher Main\n");
-//				UpdateElevatorStatus(m_localElevatorStatus[elevatorId-1],elevatorId);	//update visual for elevator 1
 			}
 		}
 	} while(!m_bExit);
@@ -146,14 +129,8 @@ int Dispatcher::ReadFromIoToDispatcherPipeline(void *args)
 		{
 			IoToDispatcher_pipeline.Read(&userInput, sizeof(UserInputData_t));	//Read commands from IO 
 			OutputDebugString("Dispatcher reading UserInputData_t from IO\n");
-		
-// 			m_screenMutex->Wait(); 
-// 			MOVE_CURSOR(0,1);
-// 			printf("Direction = %c and Floor = %c from Dispatcher\n", userInput.direction, userInput.floor);
-// 			m_screenMutex->Signal();
 
 			// FIXME how are we dealing with INSIDE requests? we temporarily have a boolean "bInsideRequest"
-//			FloorRequest_t floorReq;
 		
 			// "EE" used to terminate simulation
 			if(userInput.direction == 'E' && userInput.floor == 'E') 
@@ -223,42 +200,31 @@ int Dispatcher::main()
 
 	std::stringstream ss;
 	std::string elevatorNumberStr;
+	bool bIsStartUp = true;
+	ClassThread<Dispatcher>	 IoToDispatcherPipeline(this,&Dispatcher::ReadFromIoToDispatcherPipeline,ACTIVE, NULL);
 	
-
-	int numberDirection;
 	for( int i = 1; i <= m_numberOfElevators; i++)
 	{
 		ss << i;
 		elevatorNumberStr = ss.str();
 		xArray[i-1] = i;
-		if(i - 1 >= 0) // safety check
-		{	
-			ClassThread<Dispatcher>* pDispatcherToElevator= new ClassThread<Dispatcher>(this,&Dispatcher::DispatcherToElevator, ACTIVE, &xArray[i-1]);
-			dispatcherToElevatorVect.push_back(pDispatcherToElevator);
-		}
-	}// FIXME add delete in for the pointers in the vectors
-	ClassThread<Dispatcher>	 IoToDispatcherPipeline(this,&Dispatcher::ReadFromIoToDispatcherPipeline,ACTIVE, NULL);
 
-	
-	for( int i = 1; i <= m_numberOfElevators; i++)
-	{
 		if( i - 1 >= 0)
 		{	
 			ClassThread<Dispatcher>* pCollectElevatorStatus= new ClassThread<Dispatcher>(this,&Dispatcher::CollectElevatorStatus, ACTIVE, &xArray[i-1]);
 			collectElevatorStatusVect.push_back(pCollectElevatorStatus);
-//			printf("Created %d threads in IOProgram\n", i);
-//			Sleep(500);
 		}// FIXME add delete in for the pointers in the vectors //add waitfor thread at the end
 	}
-
-	Sleep(1000);
-
+	
 	FloorRequestVect_t floorRequestQueue;
 	ElevatorStatusVect_t elevatorStatusVect;
-	do{
 
+	do{
+		elevatorStatusVect.clear();
 		if(floorRequestVectProtector_producer.Read() > 0) //Check to see if there is a new command
 		{
+			if(bIsStartUp)
+				bIsStartUp = false;
 			// read from the member variable storing the floor request queue; to be used for FS value calculations
 			floorRequestVectProtector_producer.Wait();
 			floorRequestQueue = m_floorRequestVect;
@@ -266,18 +232,18 @@ int Dispatcher::main()
 			OutputDebugString("Dispatcher Main reading from queue\n");
 			
 			/** debugging **/
-			int i = 1;
-			for(auto itQueue = floorRequestQueue.begin(); itQueue != floorRequestQueue.end(); ++itQueue)
-			{
-				m_screenMutex->Wait(); 
-				MOVE_CURSOR(0,i++);
-				printf("\nRequest... floor: %d\tdirection: %d\n", itQueue->floorNumber, itQueue->direction);
-				m_screenMutex->Signal();
-			}
+			//int i = 1;
+			//for(auto itQueue = floorRequestQueue.begin(); itQueue != floorRequestQueue.end(); ++itQueue)
+			//{
+			//	m_screenMutex->Wait(); 
+			//	MOVE_CURSOR(0,i++);
+			//	printf("\nRequest... floor: %d\tdirection: %d\n", itQueue->floorNumber, itQueue->direction);
+			//	m_screenMutex->Signal();
+			//}
 			/** end debugging **/
 		}
 
-		OutputDebugString("Dispatcher Main attempting to read Elevator Statuses\n");
+//		OutputDebugString("Dispatcher Main attempting to read Elevator Statuses\n");
 		for(int i = 0; i < m_numberOfElevators; ++i)
 		{
 			m_pEntryToQueue->Signal();
@@ -286,7 +252,7 @@ int Dispatcher::main()
 		{
 			m_pQueueFull->Wait();
 		}
-		OutputDebugString("Dispatcher Main reading Elevator Statuses\n");
+		OutputDebugString("Dispatcher Main reading each of the Elevator Statuses\n");
 		
 		// obtain Elevator Statuses here
 		for(int i = 0; i < m_numberOfElevators; ++i)
@@ -294,7 +260,7 @@ int Dispatcher::main()
 			elevatorStatusVect.push_back(m_localElevatorStatus[i]);
 		}
 
-		OutputDebugString("Dispatcher Main releasing semaphores protecting ElevatorStatusVect\n");
+//		OutputDebugString("Dispatcher Main releasing semaphores protecting ElevatorStatusVect\n");
 		// release semaphores
 		for(int i = 0; i < m_numberOfElevators; ++i)
 		{
@@ -304,11 +270,11 @@ int Dispatcher::main()
 		{
 			m_pQueueEmpty->Wait();
 		}
-		OutputDebugString("Dispatcher Main has released semaphores protecting ElevatorStatusVect\n");
+//		OutputDebugString("Dispatcher Main has released semaphores protecting ElevatorStatusVect\n");
 
 		FloorRequest_t tempFloorRequest;
 		FloorRequestVect_t outputDispatcher;
-		outputDispatcher = FSAlgorithm::DispatcherFsCalculator(elevatorStatusVect, floorRequestQueue);
+		outputDispatcher = FSAlgorithm::DispatcherFsCalculator(elevatorStatusVect, floorRequestQueue, bIsStartUp);
 		for(auto iter = outputDispatcher.begin(); iter != outputDispatcher.end(); ++iter)
 		{
 			int elevatorId = std::distance(outputDispatcher.begin(), iter);
@@ -329,7 +295,6 @@ int Dispatcher::main()
 	
 	for( int i = 0; i < m_numberOfElevators; i++)
 	{
-		delete dispatcherToElevatorVect[i];
 		delete collectElevatorStatusVect[i];
 	}
 	

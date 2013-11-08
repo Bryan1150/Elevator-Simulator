@@ -51,6 +51,9 @@ private:
 	CSemaphore* m_pDispatcherToElevator_producer;
 	CSemaphore* m_pElevatorToIO_consumer;
 	CSemaphore* m_pElevatorToIO_producer;
+	CSemaphore* m_pChildToMainElev_consumer;
+	CSemaphore* m_pChildToMainElev_producer;
+
 	CDataPool*  m_pElevatorDatapool;
 	CPipe*		m_pElevatorCommands;
 	CMutex*		m_pScreenMutex;

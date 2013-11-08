@@ -137,7 +137,6 @@ int IOProgram::CollectElevatorStatus(void* args)
 }
 int IOProgram::main()
 {
-
 	CPipe IoToDispatcher_pipeline(k_ioToDispatcherPipeline, 1024);	//initialize pipeline to receive data from IO program
 	int keys_pressed = 0;											//count of number of keys pressed
 	CMailbox DispatcherToIo_mailbox;								//mailbox for the IOprogram to receive messages from the dispatcher
@@ -166,9 +165,6 @@ int IOProgram::main()
 	MOVE_CURSOR(0,0);
 	printf("Enter Commands: ");
 	m_screenMutex->Signal();
-
-	UserInputData_t testInput('U','5');
-	IoToDispatcher_pipeline.Write(&testInput, sizeof(UserInputData_t));
 
 	do{
 		if(TEST_FOR_KEYBOARD())		//Test for keyboard inputs

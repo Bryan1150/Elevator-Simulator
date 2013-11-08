@@ -19,13 +19,13 @@
 class Dispatcher : public ActiveClass
 {
 public:
-	Dispatcher();													//default constructor
-	Dispatcher(IOProgramPtr_t pIoProgram, int numberOfElevators); //overloader constructor
-	~Dispatcher();												//destructor
+	Dispatcher();								
+	Dispatcher(
+		IOProgramPtr_t pIoProgram, 
+		int numberOfElevators); 
+	~Dispatcher();											
 
-
-	int ReadFromIoToDispatcherPipeline(void* args);				//Thread for reading from pipeline3 and send data to elevators through pipelines
-	int DispatcherToElevator(void* args);			//Thread to send commands to elevators (currently not being used
+	int ReadFromIoToDispatcherPipeline(void* args);			//Thread for reading from pipeline3 and send data to elevators through pipelines
 	
 	int CollectElevatorStatus(void* args);			//Updating elevator local status data pools
 	void UpdateElevatorStatus(ElevatorStatus_t elevatorStatus, int elevatorNumber) const; ///for debugging purposes

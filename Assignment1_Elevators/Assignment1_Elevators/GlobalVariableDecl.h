@@ -109,6 +109,9 @@ struct FloorRequest_t{
 	bool operator==(FloorRequest_t const& other) const
 	{ return fReqId == other.fReqId; }
 
+	bool operator!=(FloorRequest_t const& other) const
+	{ return fReqId != other.fReqId; }
+
 };
 
 typedef int FigureOfSuitability_t;
