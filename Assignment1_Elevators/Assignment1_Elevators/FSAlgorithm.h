@@ -11,16 +11,10 @@
 #include <algorithm>
 
 #include "GlobalVariableDecl.h"
+#include "..\..\..\rt.h"
 
 #pragma once
 
-
-
-static int const k_doorOpen = 0;
-static int const k_doorClosed = 1;
-static int const k_directionDown = 0;
-static int const k_directionUp = 1;
-static int const k_directionIdle = 2;
 
 class FSAlgorithm {
 public:
@@ -43,7 +37,8 @@ public:
 		FloorRequest_t const& floorReq,
 		ElevatorStatus_t& lift);
 	
-	static ElevatorStatus_t DispatcherFsCalculator(
+	static FloorRequestVect_t DispatcherFsCalculator(
 		ElevatorStatusVect_t& elevatorStatusVect,
-		FloorRequestVect_t& floorRequestVect);
+		FloorRequestVect_t& floorRequestVect,
+		bool& bIsStartUp);
 };

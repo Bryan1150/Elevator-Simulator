@@ -51,12 +51,16 @@ private:
 	CSemaphore* m_pDispatcherToElevator_producer;
 	CSemaphore* m_pElevatorToIO_consumer;
 	CSemaphore* m_pElevatorToIO_producer;
+	CSemaphore* m_pChildToMainElev_consumer;
+	CSemaphore* m_pChildToMainElev_producer;
+
 	CDataPool*  m_pElevatorDatapool;
 	CPipe*		m_pElevatorCommands;
 	CMutex*		m_pScreenMutex;
 	CMutex*      m_pDispatcherFloorRequest; //Mutex for floor requests
 
-	UserInputData_t m_elevatorCommandsFromDispatcher;
+	FloorRequest_t m_floorReqFromDispatcher;
+	ElevatorStatus_t m_elevatorStatus;
 	int m_elevatorNumber;
 
 };
