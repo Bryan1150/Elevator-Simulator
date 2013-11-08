@@ -40,8 +40,8 @@ UINT __stdcall PrintElevatorGraphics (void *args)	// thread function
 	do{
 		IoToElevatorGraphics_pipeline.Read(&elevatorStatus, sizeof(ElevatorStatus_t));
 		graphicsMtx.Wait();
-		Display.ClearElevator(20+23*(elevatorId-1),64-6*previousFloorNumber);
-		Display.DrawElevator(20+23*(elevatorId-1),64-6*elevatorStatus.floorNumber);
+		Display.ClearElevator(20+23*(elevatorId-1),53-5*previousFloorNumber);
+		Display.DrawElevator(20+23*(elevatorId-1),53-5*elevatorStatus.floorNumber);
 		Display.PrintElevatorStatus(elevatorId, elevatorStatus);
 		graphicsMtx.Signal();
 		previousFloorNumber = elevatorStatus.floorNumber;	
@@ -56,17 +56,23 @@ UINT __stdcall GetFloorRequests (void *args)	// thread function
 {	
 	//Need pipeline
 	graphicsMtx.Wait();
+	MOVE_CURSOR(0,56);
+	printf("____________");
 	for(int i = 0; i <= 9; ++i)
 	{
-		MOVE_CURSOR(0,64-6*i-2);
-		printf("____________");
-		MOVE_CURSOR(0,64-6*i-1);
+		if( i != 9)	
+		{
+			MOVE_CURSOR(0,53-5*i-2);
+			printf("____________");
+		}
+		MOVE_CURSOR(0,53-5*i-1);
 		printf("Floor %d", i);
-		MOVE_CURSOR(0,64-6*i);
+		MOVE_CURSOR(0,53-5*i);
 		printf("%c",30);
-		MOVE_CURSOR(0,64-6*i+1);
+		MOVE_CURSOR(0,53-5*i+1);
 		printf("%c",31);
 	}
+
 	graphicsMtx.Signal();
 
 	do{
@@ -86,7 +92,7 @@ UINT __stdcall GetInsideRequests (void *args)	// thread function
 	graphicsMtx.Wait();
 	for(int i = 0; i < elevatorId; ++i)
 	{
-		MOVE_CURSOR(15+23*i,6);
+		MOVE_CURSOR(15+23*i,5);
 		printf("0 1 2 3 4 5 6 7 8 9");
 	}
 	graphicsMtx.Signal();

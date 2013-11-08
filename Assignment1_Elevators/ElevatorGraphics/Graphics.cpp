@@ -14,19 +14,19 @@ Graphics::~Graphics()
 void Graphics::DrawElevator(int x, int y)
 {
 	screenMutex->Wait();
-	MOVE_CURSOR(x+3,y-1);
+	MOVE_CURSOR(x+1,y-1);
 	TEXT_COLOUR(3);
-	printf("LVL %d", (y-64)/(-6));
+	printf("LVL %d", (y-53)/(-5));
 	TEXT_COLOUR(7);
-	for(int i = 0; i < 5; ++i)
+	for(int i = 0; i < 4; ++i)
 	{
 		MOVE_CURSOR(x,y+i);
-		for(int i = 0; i < 4; ++i)
+		for(int i = 0; i < 3; ++i)
 		{
 			printf("%c",219);
 		}
 		printf("%c",221);
-		for(int i = 0; i < 4; ++i)
+		for(int i = 0; i < 3; ++i)
 		{
 			printf("%c",219);
 		}
@@ -39,8 +39,12 @@ void Graphics::DrawElevator(int x, int y)
 void Graphics::OpenElevatorDoor(int x, int y)
 {
 	screenMutex->Wait();
+	MOVE_CURSOR(x+1,y-1);
+	TEXT_COLOUR(3);
+	printf("LVL %d", (y-64)/(-6));
+	TEXT_COLOUR(7);
 	MOVE_CURSOR(x,y);
-		for(int i = 0; i < 2; ++i)
+		for(int i = 0; i < 1; ++i)
 		{
 			printf("%c",219);
 		}
@@ -50,16 +54,16 @@ void Graphics::OpenElevatorDoor(int x, int y)
 			printf("-"); //overscore
 		}
 		printf("%c",222);
-		for(int i = 0; i < 2; ++i)
+		for(int i = 0; i < 1; ++i)
 		{
 			printf("%c",219);
 		}
 
 	
-	for(int i = 1; i <= 3; ++i)
+	for(int i = 1; i <= 2; ++i)
 	{
 		MOVE_CURSOR(x,y+i);
-		for(int i = 0; i < 2; ++i)
+		for(int i = 0; i < 1; ++i)
 		{
 			printf("%c",219);
 		}
@@ -69,15 +73,15 @@ void Graphics::OpenElevatorDoor(int x, int y)
 			printf(" "); //overscore
 		}
 		printf("%c",222);
-		for(int i = 0; i < 2; ++i)
+		for(int i = 0; i < 1; ++i)
 		{
 			printf("%c",219);
 		}
 		
 	}
-	MOVE_CURSOR(x,y+4);
+	MOVE_CURSOR(x,y+3);
 	
-		for(int i = 0; i < 2; ++i)
+		for(int i = 0; i < 1; ++i)
 		{
 			printf("%c",219);
 		}
@@ -87,7 +91,7 @@ void Graphics::OpenElevatorDoor(int x, int y)
 			printf("-");
 		}
 		printf("%c",222);
-		for(int i = 0; i < 2; ++i)
+		for(int i = 0; i < 1; ++i)
 		{
 			printf("%c",219);
 		}
@@ -104,9 +108,9 @@ void Graphics::CloseElevatorDoor(int x, int y)
 void Graphics::ClearElevator(int x, int y)
 {
 	screenMutex->Wait();
-	MOVE_CURSOR(x+3,y-1);
+	MOVE_CURSOR(x+1,y-1);
 	printf("     ");
-	for(int i = 0; i < 5; ++i)
+	for(int i = 0; i < 4; ++i)
 	{
 		MOVE_CURSOR(x,y+i);
 		for(int i = 0; i < 10; ++i)
