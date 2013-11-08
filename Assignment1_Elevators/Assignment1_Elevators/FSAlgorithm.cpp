@@ -236,7 +236,7 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 	// The floorReqToFsMap will contain n FRs (n <= number of elevators) with a mapped pair containing an "elevatorId". Sometimes,
 	// there might not be a FR for a certain elevator, so we send it a blank FR, telling it to remain in the same spot.
 	// Elevator statuses from the DPs to the dispatcher are stored in order of "elevatorId".
-	// FIXME: add a final vector containing the FR for each elevator in order; return this vector instead of the ElevatorStatus_t().
+	// Create a final vector containing the FR for each elevator in order; return this vector instead of the ElevatorStatus_t().
 
 	FloorRequestVect_t outputDispatcher;
 	outputDispatcher.reserve(10);

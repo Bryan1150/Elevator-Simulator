@@ -31,7 +31,7 @@ int main()
 			Elevator* elevator= new Elevator(i+1);
 			elevatorVect.push_back(elevator);
 			elevatorVect[i]->Resume();
-		//add delete in for the pointers in the vectors //add waitfor thread at the end
+		// FIXME add delete in for the pointers in the vectors; add WaitForThread() at the end
 	}
 
 	Sleep(1000);

@@ -33,6 +33,7 @@ static std::string const k_ioToDispatcherPipeline = "IoToDispatcherPipeline";
 
 
 struct UserInputData_t {
+	
 	char direction;
 	char floor;
 
@@ -107,12 +108,14 @@ struct FloorRequest_t{
 
 	bool operator==(FloorRequest_t const& other) const
 	{ return fReqId == other.fReqId; }
+
 };
 
 typedef int FigureOfSuitability_t;
 typedef std::map<FigureOfSuitability_t, FloorRequest_t> FsToFloorRequestMap_t;
 
 struct ElevatorStatus_t {
+	
 	int doorStatus;
 	int direction;
 	int floorNumber;
@@ -134,6 +137,7 @@ struct ElevatorStatus_t {
 
 		return *this;
 	}
+
 };
 
 typedef std::vector<ElevatorStatus_t> ElevatorStatusVect_t;

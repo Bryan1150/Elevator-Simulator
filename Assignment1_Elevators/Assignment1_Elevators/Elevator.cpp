@@ -62,16 +62,14 @@ int  Elevator::ReadCommandsFromPipeline(void* args)
 	CPipe elevatorCommands("Elevator"+elevatorNumber+"Commands", 1024);
 	CSemaphore elevatorConsumer("ElevatorConsumer",1,1); //semaphore to manage the local userInputData structure access
 	CSemaphore elevatorProducer("ElevatorProducer",0,1);
+	FloorRequest_t floorRequest;
 	do{
-		FloorRequest_t floorRequest;
-//		OutputDebugString("Elevator Child attempting to read FR from DispatcherToElevator Pipeline\n");
+		
 		if(elevatorCommands.TestForData() >= sizeof(FloorRequest_t))
 		{
 			elevatorCommands.Read(&floorRequest,sizeof(FloorRequest_t));
 			OutputDebugString("Elevator Child finished reading FR from DispatcherToElevator Pipeline\n");
 		}
-		else
-//			OutputDebugString("Elevator Child did NOT to read from DispatcherToElevator Pipeline\n");
 
 		m_pScreenMutex->Wait();
 		MOVE_CURSOR(0,2);
@@ -80,15 +78,15 @@ int  Elevator::ReadCommandsFromPipeline(void* args)
 		m_pScreenMutex->Signal();
 
 		// This is for sending the commands to the elevator main function via a member variable
-		//elevatorConsumer.Wait();
-		//m_floorReqFromDispatcher.direction = userInput.direction;//copy data/commands from Dispatcher into local userInputData structure
-		//m_floorReqFromDispatcher.floor = userInput.floor;
-		//elevatorProducer.Signal();
-			//printf("%c\n",elevatorNumber);
+// 		elevatorConsumer.Wait();
+// 		m_floorReqFromDispatcher.direction = userInput.direction;//copy data/commands from Dispatcher into local userInputData structure
+// 		m_floorReqFromDispatcher.floor = userInput.floor;
+// 		elevatorProducer.Signal();
+// 			printf("%c\n",elevatorNumber);
 	} while(1);
 	return 0;
 }
-//Initiliazes the default values for the Elevator
+//Initializes the default values for the Elevator
 void Elevator::UpdateElevatorStatus(ElevatorStatusPtr_t pElevatorStatusDP, int direction, int doorStatus, int floorNumber) const
 {
 	
@@ -100,13 +98,13 @@ void Elevator::UpdateElevatorStatus(ElevatorStatusPtr_t pElevatorStatusDP, int d
 		m_pDispatcherToElevator_producer->Signal();
 		m_pElevatorToIO_producer->Signal();
 		
-	/*if(m_elevatorNumber == 1)
-		MOVE_CURSOR(10,10);
-	else if(m_elevatorNumber == 2)
-		MOVE_CURSOR(20,20);
-
-	printf("Updated Elevator Status %d\n", m_elevatorNumber);
-	Sleep(1000);*/
+// 	if(m_elevatorNumber == 1)
+// 		MOVE_CURSOR(10,10);
+// 	else if(m_elevatorNumber == 2)
+// 		MOVE_CURSOR(20,20);
+// 
+// 	printf("Updated Elevator Status %d\n", m_elevatorNumber);
+// 	Sleep(1000);
 }
 
 //Open or Close the Doors of the Elevator
@@ -171,21 +169,21 @@ int Elevator::main()
 //		UpdateElevatorStatus(pElevatorStatusDP, k_idle, k_closed, 5); 
 //
 	Sleep(1000);
-	do{
-		OutputDebugString("Elevator Main attempting to update ElevatorStatus DP\n");
+//	do{
+		OutputDebugString("Elevator Main attempting to write new ElevatorStatus to DP\n");
 		m_pDispatcherToElevator_consumer->Wait();
 		OutputDebugString("dispatcherToElevator_consumer.Wait() finished call\n");
-		OutputDebugString("Elevator Main updating ElevatorStatus DP\n");
+		OutputDebugString("Elevator Main writing new ElevatorStatus to DP\n");
 		pElevatorStatusDP->direction = m_elevatorStatus.direction;
 		pElevatorStatusDP->doorStatus = m_elevatorStatus.doorStatus;
 		pElevatorStatusDP->floorNumber = m_elevatorStatus.floorNumber;
 		m_pDispatcherToElevator_producer->Signal();
 		OutputDebugString("dispatcherToElevator_producer.Signal() finished call\n");
-		OutputDebugString("Elevator Main finished updating ElevatorStatus DP\n");
-
+		OutputDebugString("Elevator Main finished writing new ElevatorStatus to DP\n");
+	do { // FIXME temporary*******!!!!!! until we add logic sequence for elevator
 		// Implement the get request phase which obtains commands from the Dispatcher to elevator pipeline
 		//elevatorProducer.Wait();
-		// do something with m_elevatorComandsFrom dispatcher - the local sturcture that holds the commands
+		// do something with m_elevatorComandsFrom dispatcher - the local structure that holds the commands
 		//elevatorConsumer.Signal();
 		
 		//Sleep(1000);

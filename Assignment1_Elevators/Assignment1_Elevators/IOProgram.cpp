@@ -31,15 +31,12 @@ IOProgram::IOProgram(int numberOfElevators)
 		elevatorNumber = ss.str();
 		m_pElevatorDataPool[i-1] = new CDataPool("Elevator"+elevatorNumber+"Status",sizeof(ElevatorStatus_t)); 
 		ss.str("");
-		//printf("Created %d datapools in IO Program\n", i);
+//		printf("Created %d datapools in IO Program\n", i);
 	}
 
 	for(int i = 0; i < m_numberOfElevators; ++i)
 	{
-		/*ss << i;
-		elevatorNumber = ss.str();*/
 		m_pElevatorStatus[i] = (ElevatorStatusPtr_t)(m_pElevatorDataPool[i]->LinkDataPool());		//link to datapools of elevator statuses
-		//printf("Created %d datapool link in IO Program\n", i);
 	}
 }
 
@@ -76,7 +73,7 @@ bool IOProgram::IsValidCommand(UserInputData_t userInput) const
 				{
 					return TRUE;
 				}
-				else if( userInput.direction == 'E' && userInput.floor == 'E') //the command is to terminate the simluation
+				else if( userInput.direction == 'E' && userInput.floor == 'E') //the command is to terminate the simulation
 				{
 					return TRUE;
 				}
@@ -103,13 +100,15 @@ void IOProgram::UpdateElevatorStatus(ElevatorStatus_t elevatorStatus, int elevat
 	m_screenMutex->Wait();	
 		MOVE_CURSOR(0,elevatorNumber*5+5);
 
-	printf("Elevator %d from IO\n"
-		"Direction: %d\n"
-		"Door Status: %d\n"
-		"Floor Number: %d\n", elevatorNumber,elevatorStatus.direction,elevatorStatus.doorStatus,elevatorStatus.floorNumber);
+	printf("Elevator %d from IO\nDirection: %d\nDoor Status: %d\nFloor Number: %d\n", 
+		elevatorNumber,
+		elevatorStatus.direction,
+		elevatorStatus.doorStatus,
+		elevatorStatus.floorNumber);
 	m_screenMutex->Signal();
 
 }
+
 int IOProgram::CollectElevatorStatus(void* args)
 {
 	std::stringstream ss;
@@ -125,7 +124,7 @@ int IOProgram::CollectElevatorStatus(void* args)
 			if(elevatorId-1 >= 0)
 			{
 				elevatorToIO_producer.Wait();
-				//printf("Copying data from elevator1Status in IO program\n");
+//				printf("Copying data from elevator1Status in IO program\n");
 				m_localElevatorStatus[elevatorId-1].direction = m_pElevatorStatus[elevatorId-1]->direction;
 				m_localElevatorStatus[elevatorId-1].doorStatus = m_pElevatorStatus[elevatorId-1]->doorStatus;
 				m_localElevatorStatus[elevatorId-1].floorNumber = m_pElevatorStatus[elevatorId-1]->floorNumber;
@@ -139,14 +138,14 @@ int IOProgram::CollectElevatorStatus(void* args)
 int IOProgram::main()
 {
 
-	CPipe IoToDispatcher_pipeline(k_ioToDispatcherPipeline, 1024);	//initlialize pipeline to receive data from IO program
+	CPipe IoToDispatcher_pipeline(k_ioToDispatcherPipeline, 1024);	//initialize pipeline to receive data from IO program
 	int keys_pressed = 0;											//count of number of keys pressed
 	CMailbox DispatcherToIo_mailbox;								//mailbox for the IOprogram to receive messages from the dispatcher
 
-	UserInputData_t userInput;										// Struct for holding user inpu
+	UserInputData_t userInput;										
 	
 	std::vector<ClassThread<IOProgram>*> collectElevatorStatusVect; //vector to hold pointers for threads collecting elevator statuses
-	int elevatorNumberArray[100];												//used to pass in elevator number to the threads
+	int elevatorNumberArray[10];												//used to pass in elevator number to the threads
 
 
 	//initialize threads for collecting elevator statuses
@@ -157,8 +156,8 @@ int IOProgram::main()
 		{	
 			ClassThread<IOProgram>* pCollectElevatorStatus= new ClassThread<IOProgram>(this,&IOProgram::CollectElevatorStatus, ACTIVE, &elevatorNumberArray[i-1]);
 			collectElevatorStatusVect.push_back(pCollectElevatorStatus);
-			//printf("Created %d threads in IOProgram\n", i);
-			//Sleep(500);
+// 			printf("Created %d threads in IOProgram\n", i);
+// 			Sleep(500);
 		}// FIXME add delete in for the pointers in the vectors //add waitfor thread at the end
 	}
 	
