@@ -31,7 +31,6 @@ IOProgram::IOProgram(int numberOfElevators)
 		elevatorNumber = ss.str();
 		m_pElevatorDataPool[i-1] = new CDataPool("Elevator"+elevatorNumber+"Status",sizeof(ElevatorStatus_t)); 
 		ss.str("");
-//		printf("Created %d datapools in IO Program\n", i);
 	}
 
 	for(int i = 0; i < m_numberOfElevators; ++i)
@@ -61,24 +60,28 @@ bool IOProgram::IsValidCommand(UserInputData_t userInput) const
 				if( (userInput.direction == 'U' || userInput.direction == 'D') &&  // The command is for calling the elevator
 					(userInput.floor <= '9' && userInput.floor >= '0' ) )
 				{
-					return TRUE;
+					if((userInput.direction == 'U' && userInput.floor == '9') ||
+						(userInput.direction == 'D' && userInput.floor == '0'))
+						return false;
+					else
+						return true;
 				}
 				else if( (numberDirection <= m_numberOfElevators && numberDirection > 0) &&  //the command is being made from within the elevator
 						  (userInput.floor <= '9' && userInput.floor >= '0' ) )
 				{
-					return TRUE;
+					return true;
 				}
 				else if( (userInput.direction == 'C' || userInput.direction == 'F') &&   //the command is being made to detect or clear a fault
 					(numberFloor <= m_numberOfElevators && numberFloor > 0) )
 				{
-					return TRUE;
+					return true;
 				}
 				else if( userInput.direction == 'E' && userInput.floor == 'E') //the command is to terminate the simulation
 				{
-					return TRUE;
+					return true;
 				}
 	}
-	return FALSE;
+	return false;
 }
 
 //This function is to clear lines in the console
@@ -119,22 +122,26 @@ int IOProgram::CollectElevatorStatus(void* args)
 	CSemaphore elevatorToIO_consumer("Elevator"+elevatorNumberStr+"ToIOConsumer",1,1);
 	CSemaphore elevatorToIO_producer("Elevator"+elevatorNumberStr+"ToIOProducer",0,1);
 	CPipe IoToElevatorGraphics_pipeline("IoToElevatorGraphics"+elevatorNumberStr, 1024);/*******************************/
+	
 	do{
 		if(elevatorToIO_producer.Read() > 0) // elevator 1 produced data
 		{
 			if(elevatorId-1 >= 0)
 			{
 				elevatorToIO_producer.Wait();
-//				printf("Copying data from elevator1Status in IO program\n");
-				m_localElevatorStatus[elevatorId-1].direction = m_pElevatorStatus[elevatorId-1]->direction;
-				m_localElevatorStatus[elevatorId-1].doorStatus = m_pElevatorStatus[elevatorId-1]->doorStatus;
-				m_localElevatorStatus[elevatorId-1].floorNumber = m_pElevatorStatus[elevatorId-1]->floorNumber;
+
+				m_localElevatorStatus[elevatorId-1] = *m_pElevatorStatus[elevatorId-1];
+				OutputDebugString("IO Program has read incoming Elevator Status\n");
+
 				elevatorToIO_consumer.Signal();
+				
 				UpdateElevatorStatus(m_localElevatorStatus[elevatorId-1],elevatorId);	//update visual for elevator 1
+
 				IoToElevatorGraphics_pipeline.Write(&m_localElevatorStatus[elevatorId-1], sizeof(ElevatorStatus_t));/****************/
 			}
 		}
 	} while(!m_exit);
+	
 	return 0;
 }
 int IOProgram::main()
@@ -170,13 +177,10 @@ int IOProgram::main()
 		{	
 			ClassThread<IOProgram>* pCollectElevatorStatus= new ClassThread<IOProgram>(this,&IOProgram::CollectElevatorStatus, ACTIVE, &elevatorNumberArray[i-1]);
 			collectElevatorStatusVect.push_back(pCollectElevatorStatus);
-// 			printf("Created %d threads in IOProgram\n", i);
-// 			Sleep(500);
-		}// FIXME add delete in for the pointers in the vectors //add waitfor thread at the end
+		} // FIXME add delete in for the pointers in the vectors //add waitfor thread at the end
 	}
 	
 	
-
 	//Prompt user for commands
 	m_screenMutex->Wait();
 	MOVE_CURSOR(0,0);
@@ -204,75 +208,67 @@ int IOProgram::main()
 			}
 			++keys_pressed;
 		}
-		//printf("keys pressed = %d\n", keys_pressed);
+
 		if(keys_pressed == 2)
 		{
-				printf("\nEntered Test\n");
+			printf("\nEntered Test\n");
 		
-				printf("\nReceived two values\n");
+			printf("\nReceived two values\n");
 		
-				if(IsValidCommand(userInput))		//Check if the command was valid
+			if(IsValidCommand(userInput))		//Check if the command was valid
+			{
+				printf("Sending commands\n");
+				IoToDispatcher_pipeline.Write(&userInput, sizeof(UserInputData_t));
+				if( userInput.direction == 'U' || userInput.direction == 'D')
+					IoOutsideRequestsToElevatorGraphics_pipeline.Write(&userInput, sizeof(UserInputData_t));
+				else if( userInput.direction <= '9' && userInput.direction >= '1')
+					IoInsideRequestsToElevatorGraphics_pipeline.Write(&userInput,sizeof(UserInputData_t));
+				else if( userInput.direction == 'E' && userInput.floor == 'E') //terminate the threads processing requests in graphics
 				{
-					printf("Sending commands\n");
-					IoToDispatcher_pipeline.Write(&userInput, sizeof(UserInputData_t));
-					if( userInput.direction == 'U' || userInput.direction == 'D')
-						IoOutsideRequestsToElevatorGraphics_pipeline.Write(&userInput, sizeof(UserInputData_t));
-					else if( userInput.direction <= '9' && userInput.direction >= '1')
-						IoInsideRequestsToElevatorGraphics_pipeline.Write(&userInput,sizeof(UserInputData_t));
-					else if( userInput.direction == 'E' && userInput.floor == 'E') //terminate the threads processing requests in graphics
-					{
-						IoOutsideRequestsToElevatorGraphics_pipeline.Write(&userInput, sizeof(UserInputData_t));
-						IoInsideRequestsToElevatorGraphics_pipeline.Write(&userInput,sizeof(UserInputData_t));
-					}
+					IoOutsideRequestsToElevatorGraphics_pipeline.Write(&userInput, sizeof(UserInputData_t));
+					IoInsideRequestsToElevatorGraphics_pipeline.Write(&userInput,sizeof(UserInputData_t));
+				}
 					
-				}
-				else
-				{
-					printf("Error: invalid command\n");
-				}
-				keys_pressed = 0; //reset the number of keys pressed value
-				Sleep(500);
-				ClearLines(5);
-				MOVE_CURSOR(0,0);
-				printf("Enter Commands: ");
+			}
+			else
+			{
+				printf("Error: invalid command\n");
+			}
+			keys_pressed = 0; //reset the number of keys pressed value
+			Sleep(500);
+			ClearLines(5);
+			MOVE_CURSOR(0,0);
+			printf("Enter Commands: ");
 		}	
 
 
 		if(DispatcherToIo_mailbox.TestForMessage()) //Check mailbox for messages from dispatcher
 		{		
-				UINT message = DispatcherToIo_mailbox.GetMessage() ;	
-				printf("Message = %d\n", message);
-				if(message == k_terminateSimulation)	
-				{			
-					m_screenMutex->Wait();
-					MOVE_CURSOR(0,3);
-					printf("Received TERMINATE Message in IO.....\n") ;
-					m_exit = TRUE;
-					m_screenMutex->Signal();
-					//printf("Set m_exit to True in IO\n");
-				}
-			
+			UINT message = DispatcherToIo_mailbox.GetMessage() ;	
+			printf("Message = %d\n", message);
+			if(message == k_terminateSimulation)	
+			{			
+				m_screenMutex->Wait();
+				MOVE_CURSOR(0,3);
+				printf("Received TERMINATE Message in IO.....\n") ;
+				m_exit = TRUE;
+				m_screenMutex->Signal();
+				//printf("Set m_exit to True in IO\n");
+			}
 		}
-	
 		
 	} while(!m_exit);
 
-	
-	//printf("Left the main loop of IOprogram\n");
-	//wait for the elevator status threads to finish
+
 	for( int i = 0; i < m_numberOfElevators; i++)
 	{
 		collectElevatorStatusVect[i]->WaitForThread();
 	}
-	//delete pointers
+	
 	for( int i = 0; i < m_numberOfElevators; i++)
 	{
-		//printf("Entered to Delete collectElevatorStatus %d\n", i+1);
 		delete collectElevatorStatusVect[i];
-		//Sleep(100);
-		//printf("Deleted collectElevatorStatus %d\n", i+1);
-		
 	}
-		printf("Exiting from IO\n");
+
 	return 0;
 }

@@ -46,7 +46,7 @@ UINT __stdcall PrintElevatorGraphics (void *args)	// thread function
 		
 		if(elevatorStatus.doorStatus == k_doorOpen)
 		{
-
+			Display.OpenElevatorDoor(20+23*(elevatorId-1),53-5*elevatorStatus.floorNumber);
 			if(elevatorStatus.direction == k_directionUp)
 			{
 				MOVE_CURSOR(0,53-5*elevatorStatus.floorNumber);
@@ -88,10 +88,16 @@ UINT __stdcall GetFloorRequests (void *args)	// thread function
 		}
 		MOVE_CURSOR(0,53-5*i-1);
 		printf("Floor %d", i);
-		MOVE_CURSOR(0,53-5*i);
-		printf("%c",30);
-		MOVE_CURSOR(0,53-5*i+1);
-		printf("%c",31);
+		if( i != 9)
+		{
+			MOVE_CURSOR(0,53-5*i);
+			printf("%c",30);
+		}
+		if( i != 0)
+		{
+			MOVE_CURSOR(0,53-5*i+1);
+			printf("%c",31);
+		}
 	}
 
 	graphicsMtx.Signal();
