@@ -33,6 +33,15 @@ void FSAlgorithm::AwayFromCall(
 	InsertFsIntoMap(fs, floorReq, lift);
 }
 
+void FSAlgorithm::InsideRequest(
+	FloorRequest_t const& floorReq,
+	ElevatorStatus_t& lift)
+{
+	FigureOfSuitability_t fs = 10;
+
+	InsertFsIntoMap(fs, floorReq, lift);
+}
+
 void FSAlgorithm::InsertFsIntoMap(
 	FigureOfSuitability_t const& fs,
 	FloorRequest_t const& floorReq,
@@ -45,16 +54,17 @@ void FSAlgorithm::InsertFsIntoMap(
 	}
 	else
 	{
-		if(it->second.elevatorId == INT_MAX) // map has an OUTSIDE request
+		if(!it->second.bInsideRequest) // map has an OUTSIDE request
 		{	// INT_MAX is the default
-			if(floorReq.elevatorId != INT_MAX) // next entry is an INSIDE request, so overwrite map entry
+			if(floorReq.bInsideRequest) // next entry is an INSIDE request, so overwrite map entry
 			{
 				lift.fsToFloorRequestMap.erase(it);
 				lift.fsToFloorRequestMap.insert(std::make_pair(fs, floorReq));
 			}
 			else // next entry is *also* an OUTSIDE request, so take the closest floor to the elevator
 			{
-				if(abs(lift.floorNumber - it->second.floorNumber) > abs(lift.floorNumber - floorReq.floorNumber))
+				if(it->second.direction != lift.direction && floorReq.direction == lift.direction)
+				/*if(abs(lift.floorNumber - it->second.floorNumber) > abs(lift.floorNumber - floorReq.floorNumber))*/
 				{
 					lift.fsToFloorRequestMap.erase(it);
 					lift.fsToFloorRequestMap.insert(std::make_pair(fs, floorReq));
@@ -64,7 +74,7 @@ void FSAlgorithm::InsertFsIntoMap(
 		}
 		else // map has an INSIDE request
 		{
-			if(floorReq.elevatorId != INT_MAX) // next entry is an INSIDE request
+			if(floorReq.bInsideRequest) // next entry is an INSIDE request, so take the FR closest to the elevator's current floor
 			{
 				if(abs(lift.floorNumber - it->second.floorNumber) > abs(lift.floorNumber - floorReq.floorNumber))
 				{
@@ -73,7 +83,17 @@ void FSAlgorithm::InsertFsIntoMap(
 				}
 				// else, do nothing if the elevator is closer to the request that is already in the map
 			}
-			// else, do nothing if next entry is an OUTSIDE request since it ha lower priority
+			else // next entry is an OUTSIDE request
+			{
+				if((floorReq.direction == it->second.direction) &&
+					(abs(lift.floorNumber - it->second.floorNumber) > abs(floorReq.floorNumber - floorReq.floorNumber)))
+				{
+					// erase the inside FR that is already in map since the next the next FR is in the same direction
+					// and is closer to the elevator, so the inside FR would eventually be reached later on anyways
+					lift.fsToFloorRequestMap.erase(it);
+					lift.fsToFloorRequestMap.insert(std::make_pair(fs, floorReq));
+				}
+			}
 		}
 	}
 }
@@ -150,7 +170,16 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 				itFloorRequest != floorRequestVect.end();
 				++itFloorRequest)
 			{
-				if(itElevatorStatus->direction == k_directionIdle)
+				if(itFloorRequest->bInsideRequest)
+				{
+					int elevId = itFloorRequest->elevatorId;
+					assert(elevId > 0 && elevId <= 10);
+					itFloorRequest->direction = elevatorStatusVect[elevId-1].direction;
+
+					FSAlgorithm::InsideRequest(*itFloorRequest, *itElevatorStatus);
+				}
+
+				else if(itElevatorStatus->direction == k_directionIdle)
 				{
 					if(itFloorRequest->floorNumber > itElevatorStatus->floorNumber)
 					{

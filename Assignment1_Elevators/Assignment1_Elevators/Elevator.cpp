@@ -83,12 +83,12 @@ int  Elevator::ReadCommandsFromPipeline(void* args)
 			m_pChildToMainElev_producer->Signal();
 		}
 
-		m_pScreenMutex->Wait();
-		MOVE_CURSOR(0,2);
-		std::cout << "                                                   ";
-		MOVE_CURSOR(0,2);
-		std::cout << floorRequest.fReqId << std::endl;
-		m_pScreenMutex->Signal();
+		//m_pScreenMutex->Wait();
+		//MOVE_CURSOR(0,2);
+		//std::cout << "                                                   ";
+		//MOVE_CURSOR(0,2);
+		//std::cout << floorRequest.fReqId << std::endl;
+		//m_pScreenMutex->Signal();
 
 	} while(1);
 	return 0;
@@ -149,7 +149,7 @@ int Elevator::main()
 			MOVE_CURSOR(0,30);
 			std::cout << "Elevator has reached its FR at floor " << floorRequest.floorNumber << std::endl;
 			m_pScreenMutex->Signal();
-			Sleep(1500);
+			Sleep(2000);
 		}
 		else
 		{
@@ -181,7 +181,7 @@ int Elevator::main()
 		m_pDispatcherToElevator_producer->Signal();
 		m_pElevatorToIO_producer-> Signal();
 
-		Sleep(400);
+		Sleep(500);
 
 	} while(1);
 

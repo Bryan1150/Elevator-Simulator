@@ -18,8 +18,6 @@
 
 class FSAlgorithm {
 public:
-	static int const k_numFloorsMinusOne = 4;
-
 	static void TowardsCallSameDirection(
 		FloorRequest_t const& floorReq,
 		ElevatorStatus_t& Lift);
@@ -29,6 +27,10 @@ public:
 		ElevatorStatus_t& lift);
 
 	static void AwayFromCall(
+		FloorRequest_t const& floorReq,
+		ElevatorStatus_t& lift);
+
+	static void InsideRequest(
 		FloorRequest_t const& floorReq,
 		ElevatorStatus_t& lift);
 
