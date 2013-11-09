@@ -106,12 +106,14 @@ int Elevator::main()
 	// very first time only
 //	OutputDebugString("Elevator Main attempting to write new ElevatorStatus to DP\n");
 	m_pDispatcherToElevator_consumer->Wait();
+	m_pElevatorToIO_consumer->Wait(); 
 //	OutputDebugString("dispatcherToElevator_consumer.Wait() finished call\n");
 	OutputDebugString("Elevator Main writing new ElevatorStatus to DP\n");
 	pElevatorStatusDP->direction = m_elevatorStatus.direction;
 	pElevatorStatusDP->doorStatus = m_elevatorStatus.doorStatus;
 	pElevatorStatusDP->floorNumber = m_elevatorStatus.floorNumber;
 	m_pDispatcherToElevator_producer->Signal();
+	m_pElevatorToIO_producer-> Signal();
 //	OutputDebugString("dispatcherToElevator_producer.Signal() finished call\n");
 //	OutputDebugString("Elevator Main finished writing new ElevatorStatus to DP\n");
 
@@ -176,12 +178,14 @@ int Elevator::main()
 		
 //		OutputDebugString("Elevator Main attempting to write new ElevatorStatus to DP\n");
 		m_pDispatcherToElevator_consumer->Wait();
+		m_pElevatorToIO_consumer->Wait(); 
 //		OutputDebugString("dispatcherToElevator_consumer.Wait() finished call\n");
 		pElevatorStatusDP->direction = m_elevatorStatus.direction;
 		pElevatorStatusDP->doorStatus = m_elevatorStatus.doorStatus;
 		pElevatorStatusDP->floorNumber = m_elevatorStatus.floorNumber;
 		OutputDebugString("Elevator Main writing new ElevatorStatus to DP\n");
 		m_pDispatcherToElevator_producer->Signal();
+		m_pElevatorToIO_producer-> Signal();
 //		OutputDebugString("dispatcherToElevator_producer.Signal() finished call\n");
 //		OutputDebugString("Elevator Main finished writing new ElevatorStatus to DP\n");
 
