@@ -162,6 +162,7 @@ int Dispatcher::ReadFromIoToDispatcherPipeline(void *args)
 			OutputDebugString("Dispatcher Child adding FR to queue\n");
 		}
 	} while(1);
+
 	return 0;
 }
 
@@ -219,9 +220,16 @@ int Dispatcher::main()
 		{
 			m_pEntryToQueue->Signal();
 		}
-		for(int i = 0; i < m_numberOfElevators; ++i)
+		for(int i = 0; i < m_numberOfElevators; )
 		{
-			m_pQueueFull->Wait();
+			if(m_bExit)
+			{
+				printf("breaking from dispatcher loop\n");
+				break; 
+			}
+			if(m_pQueueFull->Wait(200) == WAIT_TIMEOUT)
+				continue;
+			++i;
 		}
 		
 		// obtain Elevator Statuses here
@@ -237,9 +245,16 @@ int Dispatcher::main()
 		{
 			m_pExitFromQueue->Signal();
 		}
-		for(int i = 0; i < m_numberOfElevators; ++i)
+		for(int i = 0; i < m_numberOfElevators;)
 		{
-			m_pQueueEmpty->Wait();
+			if(m_bExit)
+			{
+				printf("breaking from dispatcher loop\n");
+				break; 
+			}
+			if(m_pQueueEmpty->Wait(200) == WAIT_TIMEOUT)
+				continue;
+			++i;
 		}
 
 		FloorRequest_t tempFloorRequest;

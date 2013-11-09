@@ -56,10 +56,14 @@ void FSAlgorithm::InsertFsIntoMap(
 	{
 		if(!it->second.bInsideRequest) // map has an OUTSIDE request
 		{	// INT_MAX is the default
-			if(floorReq.bInsideRequest) // next entry is an INSIDE request, so overwrite map entry
+			if(floorReq.bInsideRequest) // next entry is an INSIDE request
 			{
-				lift.fsToFloorRequestMap.erase(it);
-				lift.fsToFloorRequestMap.insert(std::make_pair(fs, floorReq));
+				if((floorReq.direction == it->second.direction) && (abs(lift.floorNumber - it->second.floorNumber) > abs(floorReq.floorNumber - floorReq.floorNumber)))
+				{
+					// only remove the previous outside FR if it is further away than the next inside FR
+					lift.fsToFloorRequestMap.erase(it);
+					lift.fsToFloorRequestMap.insert(std::make_pair(fs, floorReq));
+				}
 			}
 			else // next entry is *also* an OUTSIDE request, so take the closest floor to the elevator
 			{
@@ -86,7 +90,7 @@ void FSAlgorithm::InsertFsIntoMap(
 			else // next entry is an OUTSIDE request
 			{
 				if((floorReq.direction == it->second.direction) &&
-					(abs(lift.floorNumber - it->second.floorNumber) > abs(floorReq.floorNumber - floorReq.floorNumber)))
+					(abs(lift.floorNumber - it->second.floorNumber) > abs(lift.floorNumber - floorReq.floorNumber)))
 				{
 					// erase the inside FR that is already in map since the next the next FR is in the same direction
 					// and is closer to the elevator, so the inside FR would eventually be reached later on anyways

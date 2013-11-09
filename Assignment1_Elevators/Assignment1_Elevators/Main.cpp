@@ -43,10 +43,11 @@ int main()
 	dispatcher.Resume();
 
 	pIoProgram->WaitForThread();
-	dispatcher.WaitForThread();
+	//dispatcher.TerminateThread();
 	
 	for( int i = 0; i < numberOfElevators; i++)
 	{
+		elevatorVect[i]->TerminateThread();
 		delete elevatorVect[i];
 		//printf("Deleted elevatorVect %d in Main\n",i+1);
 	}
