@@ -62,6 +62,6 @@ private:
 	FloorRequest_t m_floorReqFromDispatcher;
 	ElevatorStatus_t m_elevatorStatus;
 	int m_elevatorNumber;
-
+	
 };
 #endif

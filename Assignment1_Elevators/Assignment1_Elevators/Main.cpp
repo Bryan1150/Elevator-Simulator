@@ -43,46 +43,15 @@ int main()
 	dispatcher.Resume();
 
 	pIoProgram->WaitForThread();
-	dispatcher.WaitForThread();
+	//dispatcher.TerminateThread();
 	
 	for( int i = 0; i < numberOfElevators; i++)
 	{
+		elevatorVect[i]->TerminateThread();
 		delete elevatorVect[i];
 		//printf("Deleted elevatorVect %d in Main\n",i+1);
 	}
 
-	//FloorRequestVect_t floorRequestVect;
-	//FloorRequest_t floorReq1(5,k_directionDown,INT_MAX);
-	//FloorRequest_t floorReq2(4,k_directionDown,INT_MAX);
-	//FloorRequest_t floorReq3(3,k_directionUp,INT_MAX);
-	//FloorRequest_t floorReq4(1,k_directionUp,INT_MAX);
-
-	//floorRequestVect.push_back(floorReq1);
-	//floorRequestVect.push_back(floorReq2);
-	//floorRequestVect.push_back(floorReq3);
-	//floorRequestVect.push_back(floorReq4);
-
-	//ElevatorStatus_t elevStatus1, elevStatus2, elevStatus3, elevStatus4;
-	//elevStatus1.direction = k_directionUp;
-	//elevStatus1.doorStatus = k_doorOpen;
-	//elevStatus1.floorNumber = 1;
-	//elevStatus2.direction = k_directionUp;
-	//elevStatus2.doorStatus = k_doorOpen;
-	//elevStatus2.floorNumber = 2;
-	//elevStatus3.direction = k_directionUp;
-	//elevStatus3.doorStatus = k_doorOpen;
-	//elevStatus3.floorNumber = 3;
-	//elevStatus4.direction = k_directionDown;
-	//elevStatus4.doorStatus = k_doorOpen;
-	//elevStatus4.floorNumber = 5;
-	//ElevatorStatusVect_t elevatorStatusVect;
-	//elevatorStatusVect.push_back(elevStatus1);
-	//elevatorStatusVect.push_back(elevStatus2);
-	//elevatorStatusVect.push_back(elevStatus3);
-	//elevatorStatusVect.push_back(elevStatus4);
-
-	//FloorRequestVect_t fReqVect = FSAlgorithm::DispatcherFsCalculator(elevatorStatusVect, floorRequestVect);
-	
 	system("PAUSE");
 	return 0;
 }
