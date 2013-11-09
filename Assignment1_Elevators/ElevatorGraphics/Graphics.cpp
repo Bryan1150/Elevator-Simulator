@@ -42,7 +42,7 @@ void Graphics::OpenElevatorDoor(int x, int y)
 	screenMutex->Wait();
 	MOVE_CURSOR(x+1,y-1);
 	TEXT_COLOUR(3);
-	printf("LVL %d", (y-64)/(-6));
+	printf("LVL %d", (y-53)/(-5));
 	TEXT_COLOUR(7);
 	MOVE_CURSOR(x,y);
 		for(int i = 0; i < 1; ++i)
@@ -136,7 +136,7 @@ void Graphics::PrintElevatorStatus(int elevatorId, ElevatorStatus_t const& Eleva
 	if( ElevatorStatus.direction == 0)
 		 printf("Idle");
 	else if( ElevatorStatus.direction == 1)
-		printf("Up");
+		printf("Up  ");
 	else if( ElevatorStatus.direction == 2)
 		printf("Down");
 
@@ -145,7 +145,7 @@ void Graphics::PrintElevatorStatus(int elevatorId, ElevatorStatus_t const& Eleva
 	if( ElevatorStatus.doorStatus == 0)
 		 printf("Closed");
 	else if( ElevatorStatus.doorStatus == 1)
-		printf("Open");
+		printf("Open  ");
 	
 	screenMutex->Signal();
 }

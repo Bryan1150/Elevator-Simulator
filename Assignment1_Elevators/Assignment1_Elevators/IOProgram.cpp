@@ -121,7 +121,7 @@ int IOProgram::CollectElevatorStatus(void* args)
 
 	CSemaphore elevatorToIO_consumer("Elevator"+elevatorNumberStr+"ToIOConsumer",1,1);
 	CSemaphore elevatorToIO_producer("Elevator"+elevatorNumberStr+"ToIOProducer",0,1);
-//	CPipe IoToElevatorGraphics_pipeline("IoToElevatorGraphics"+elevatorNumberStr, 1024);/*******************************/
+	CPipe IoToElevatorGraphics_pipeline("IoToElevatorGraphics"+elevatorNumberStr, 1024);/*******************************/
 	
 	do{
 		if(elevatorToIO_producer.Read() > 0) // elevator 1 produced data
@@ -137,7 +137,7 @@ int IOProgram::CollectElevatorStatus(void* args)
 				
 				UpdateElevatorStatus(m_localElevatorStatus[elevatorId-1],elevatorId);	//update visual for elevator 1
 
-//				IoToElevatorGraphics_pipeline.Write(&m_localElevatorStatus[elevatorId-1], sizeof(ElevatorStatus_t));/****************/
+				IoToElevatorGraphics_pipeline.Write(&m_localElevatorStatus[elevatorId-1], sizeof(ElevatorStatus_t));/****************/
 			}
 		}
 	} while(!m_exit);
@@ -163,11 +163,11 @@ int IOProgram::main()
 	std::string elevatorNumberStr = ss.str();
 
 	/*******************************/
-	//CProcess p1("Z:\\RTExamples\\EECE314\\Assignment1_Elevators\\Debug\\ElevatorGraphics.exe "+elevatorNumberStr,	// pathlist to child program executable				
-	//		NORMAL_PRIORITY_CLASS,			// priority
-	//		OWN_WINDOW,						// process has its own window					
-	//		ACTIVE							// process is active immediately
-	//) ;
+	CProcess p1("Z:\\RTExamples\\EECE314\\Assignment1_Elevators\\Debug\\ElevatorGraphics.exe "+elevatorNumberStr,	// pathlist to child program executable				
+			NORMAL_PRIORITY_CLASS,			// priority
+			OWN_WINDOW,						// process has its own window					
+			ACTIVE							// process is active immediately
+	) ;
 
 	//initialize threads for collecting elevator statuses
 	for( int i = 1; i <= m_numberOfElevators; i++)
@@ -215,30 +215,30 @@ int IOProgram::main()
 		
 			printf("\nReceived two values\n");
 
-				if(IsValidCommand(userInput))		//Check if the command was valid
+			if(IsValidCommand(userInput))		//Check if the command was valid
+			{
+				printf("Sending commands\n");
+				IoToDispatcher_pipeline.Write(&userInput, sizeof(UserInputData_t));
+				if( userInput.direction == 'U' || userInput.direction == 'D')
+					IoOutsideRequestsToElevatorGraphics_pipeline.Write(&userInput, sizeof(UserInputData_t));
+				else if( userInput.direction <= '9' && userInput.direction >= '1')
+					IoInsideRequestsToElevatorGraphics_pipeline.Write(&userInput,sizeof(UserInputData_t));
+				else if( userInput.direction == 'E' && userInput.floor == 'E') //terminate the threads processing requests in graphics
 				{
-					printf("Sending commands\n");
-					IoToDispatcher_pipeline.Write(&userInput, sizeof(UserInputData_t));
-					if( userInput.direction == 'U' || userInput.direction == 'D')
-						IoOutsideRequestsToElevatorGraphics_pipeline.Write(&userInput, sizeof(UserInputData_t));
-					else if( userInput.direction <= '9' && userInput.direction >= '1')
-						IoInsideRequestsToElevatorGraphics_pipeline.Write(&userInput,sizeof(UserInputData_t));
-					else if( userInput.direction == 'E' && userInput.floor == 'E') //terminate the threads processing requests in graphics
-					{
-						IoOutsideRequestsToElevatorGraphics_pipeline.Write(&userInput, sizeof(UserInputData_t));
-						IoInsideRequestsToElevatorGraphics_pipeline.Write(&userInput,sizeof(UserInputData_t));
-					}
+					IoOutsideRequestsToElevatorGraphics_pipeline.Write(&userInput, sizeof(UserInputData_t));
+					IoInsideRequestsToElevatorGraphics_pipeline.Write(&userInput,sizeof(UserInputData_t));
+				}
 					
-				}
-				else
-				{
-					printf("Error: invalid command\n");
-				}
-				keys_pressed = 0; //reset the number of keys pressed value
-				Sleep(500);
-				ClearLines(5);
-				MOVE_CURSOR(0,0);
-				printf("Enter Commands: ");
+			}
+			else
+			{
+				printf("Error: invalid command\n");
+			}
+			keys_pressed = 0; //reset the number of keys pressed value
+			Sleep(500);
+			ClearLines(5);
+			MOVE_CURSOR(0,0);
+			printf("Enter Commands: ");
 		}	
 
 
