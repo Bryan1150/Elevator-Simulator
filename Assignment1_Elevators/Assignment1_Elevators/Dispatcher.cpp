@@ -203,18 +203,6 @@ int Dispatcher::main()
 
 	do{
 		elevatorStatusVect.clear();
-		if(floorRequestVectProtector_producer.Read() > 0) //Check to see if there is a new command
-		{
-			if(bIsStartUp)
-				bIsStartUp = false;
-
-			floorRequestVectProtector_producer.Wait();
-			
-			floorRequestQueue = m_floorRequestVect;
-			OutputDebugString("Dispatcher Main has read from queue\n");
-			
-			floorRequestVectProtector_consumer.Signal();
-		}
 
 		for(int i = 0; i < m_numberOfElevators; ++i)
 		{
@@ -259,7 +247,29 @@ int Dispatcher::main()
 
 		FloorRequest_t tempFloorRequest;
 		FloorRequestVect_t outputDispatcher;
-		outputDispatcher = FSAlgorithm::DispatcherFsCalculator(elevatorStatusVect, floorRequestQueue, bIsStartUp);
+		if(floorRequestVectProtector_producer.Read() > 0) //Check to see if there is a new command
+		{
+			if(bIsStartUp)
+				bIsStartUp = false;
+
+			floorRequestVectProtector_producer.Wait();
+			
+			floorRequestQueue = m_floorRequestVect;
+			OutputDebugString("Dispatcher Main has read from queue\n");
+			
+			outputDispatcher = FSAlgorithm::DispatcherFsCalculator(elevatorStatusVect, floorRequestQueue, bIsStartUp);
+			m_floorRequestVect = floorRequestQueue; // update class-wide QUEUE
+
+			floorRequestVectProtector_consumer.Signal();
+		}
+		else
+		{
+			OutputDebugString("Dispatcher Main has read from queue\n");
+			
+			outputDispatcher = FSAlgorithm::DispatcherFsCalculator(elevatorStatusVect, floorRequestQueue, bIsStartUp);
+		}
+
+		
 		for(auto iter = outputDispatcher.begin(); iter != outputDispatcher.end(); ++iter)
 		{
 			int elevatorId = std::distance(outputDispatcher.begin(), iter);
