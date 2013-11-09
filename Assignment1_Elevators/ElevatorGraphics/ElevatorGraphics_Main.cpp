@@ -43,9 +43,28 @@ UINT __stdcall PrintElevatorGraphics (void *args)	// thread function
 		Display.ClearElevator(20+23*(elevatorId-1),53-5*previousFloorNumber);
 		Display.DrawElevator(20+23*(elevatorId-1),53-5*elevatorStatus.floorNumber);
 		Display.PrintElevatorStatus(elevatorId, elevatorStatus);
+		
+		if(elevatorStatus.doorStatus == k_doorOpen)
+		{
+
+			if(elevatorStatus.direction == k_directionUp)
+			{
+				MOVE_CURSOR(0,53-5*elevatorStatus.floorNumber);
+				TEXT_COLOUR(15);
+				printf("%c",30);
+			}
+			else if(elevatorStatus.direction == k_directionDown)
+			{
+				MOVE_CURSOR(0,53-5*elevatorStatus.floorNumber+1);
+				TEXT_COLOUR(15);
+				printf("%c",31);
+			}
+			MOVE_CURSOR(15+23*(elevatorId-1)+2*elevatorStatus.floorNumber,5); //clear inside requests
+			printf("%d",elevatorStatus.floorNumber);
+		}
 		graphicsMtx.Signal();
 		previousFloorNumber = elevatorStatus.floorNumber;	
-		
+
 
 	}while(1);
 
@@ -55,6 +74,8 @@ UINT __stdcall PrintElevatorGraphics (void *args)	// thread function
 UINT __stdcall GetFloorRequests (void *args)	// thread function 
 {	
 	//Need pipeline
+	CPipe IoOutsideRequestsToElevatorGraphics_pipeline("IoOutsideRequestsToElevatorGraphics",1024);/*******************************/
+	UserInputData_t userInput;		
 	graphicsMtx.Wait();
 	MOVE_CURSOR(0,56);
 	printf("____________");
@@ -76,8 +97,29 @@ UINT __stdcall GetFloorRequests (void *args)	// thread function
 	graphicsMtx.Signal();
 
 	do{
-	
+		IoOutsideRequestsToElevatorGraphics_pipeline.Read(&userInput, sizeof(UserInputData_t));
 
+		if(userInput.direction == 'E' && userInput.floor == 'E' )
+			break;
+
+		if(userInput.direction == 'U')
+		{
+			graphicsMtx.Wait();
+			MOVE_CURSOR(0,53-5*(userInput.floor-'0'));
+			TEXT_COLOUR(10);
+			printf("%c",30);
+			TEXT_COLOUR(15);
+			graphicsMtx.Signal();
+		}
+		else if(userInput.direction == 'D')
+		{
+			graphicsMtx.Wait();
+			MOVE_CURSOR(0,53-5*(userInput.floor-'0')+1);
+			TEXT_COLOUR(12);
+			printf("%c",31);
+			TEXT_COLOUR(15);
+			graphicsMtx.Signal();
+		}
 	}while(1);
 
 	return 0 ;
@@ -88,7 +130,10 @@ UINT __stdcall GetInsideRequests (void *args)	// thread function
 
 	
 	//Need pipeline
+	CPipe IoInsideRequestsToElevatorGraphics_pipeline("IoInsideRequestsToElevatorGraphics",1024);/*******************************/
 	int elevatorId = *(int*)args;
+	UserInputData_t userInput;	
+
 	graphicsMtx.Wait();
 	for(int i = 0; i < elevatorId; ++i)
 	{
@@ -98,7 +143,17 @@ UINT __stdcall GetInsideRequests (void *args)	// thread function
 	graphicsMtx.Signal();
 
 	do{
-	
+		IoInsideRequestsToElevatorGraphics_pipeline.Read(&userInput, sizeof(UserInputData_t));
+
+		if(userInput.direction == 'E' && userInput.floor == 'E' )
+			break;
+
+		graphicsMtx.Wait();
+		TEXT_COLOUR(12);
+		MOVE_CURSOR(15+23*(userInput.direction-'0'-1)+2*(userInput.floor-'0'),5);
+		printf("%c",userInput.floor);
+		TEXT_COLOUR(15);
+		graphicsMtx.Signal();
 
 	}while(1);
 
@@ -129,6 +184,9 @@ int main(int argc, char* argv[])
 
 	CURSOR_OFF();
 
+
+	getFloorRequests.WaitForThread();
+	getInsideRequests.WaitForThread();
 	for(int i = 0; i < numberOfElevators; ++i)
 	{
 		Threads[i]->WaitForThread();

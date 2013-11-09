@@ -140,6 +140,9 @@ int IOProgram::CollectElevatorStatus(void* args)
 int IOProgram::main()
 {
 	CPipe IoToDispatcher_pipeline(k_ioToDispatcherPipeline, 1024);	//initialize pipeline to receive data from IO program
+	CPipe IoOutsideRequestsToElevatorGraphics_pipeline("IoOutsideRequestsToElevatorGraphics",1024);/*******************************/
+	CPipe IoInsideRequestsToElevatorGraphics_pipeline("IoInsideRequestsToElevatorGraphics",1024);/*******************************/
+
 	int keys_pressed = 0;											//count of number of keys pressed
 	CMailbox DispatcherToIo_mailbox;								//mailbox for the IOprogram to receive messages from the dispatcher
 
@@ -212,7 +215,16 @@ int IOProgram::main()
 				{
 					printf("Sending commands\n");
 					IoToDispatcher_pipeline.Write(&userInput, sizeof(UserInputData_t));
-			
+					if( userInput.direction == 'U' || userInput.direction == 'D')
+						IoOutsideRequestsToElevatorGraphics_pipeline.Write(&userInput, sizeof(UserInputData_t));
+					else if( userInput.direction <= '9' && userInput.direction >= '1')
+						IoInsideRequestsToElevatorGraphics_pipeline.Write(&userInput,sizeof(UserInputData_t));
+					else if( userInput.direction == 'E' && userInput.floor == 'E') //terminate the threads processing requests in graphics
+					{
+						IoOutsideRequestsToElevatorGraphics_pipeline.Write(&userInput, sizeof(UserInputData_t));
+						IoInsideRequestsToElevatorGraphics_pipeline.Write(&userInput,sizeof(UserInputData_t));
+					}
+					
 				}
 				else
 				{

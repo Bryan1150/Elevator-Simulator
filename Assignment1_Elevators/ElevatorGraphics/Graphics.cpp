@@ -3,6 +3,7 @@
 
 Graphics::Graphics()
 {
+	
 	screenMutex = new CMutex("Screen Mutex");
 }
 Graphics::~Graphics()
