@@ -200,6 +200,7 @@ int Dispatcher::main()
 	
 	FloorRequestVect_t floorRequestQueue;
 	ElevatorStatusVect_t elevatorStatusVect;
+	bool bGlobalFRQueueNeedsUpdate = false;
 
 	do{
 		elevatorStatusVect.clear();
@@ -254,6 +255,9 @@ int Dispatcher::main()
 
 			floorRequestVectProtector_producer.Wait();
 			
+			if(bGlobalFRQueueNeedsUpdate)
+				m_floorRequestVect = floorRequestQueue;
+
 			floorRequestQueue = m_floorRequestVect;
 			OutputDebugString("Dispatcher Main has read from queue\n");
 			
@@ -261,12 +265,16 @@ int Dispatcher::main()
 			m_floorRequestVect = floorRequestQueue; // update class-wide QUEUE
 
 			floorRequestVectProtector_consumer.Signal();
+			bGlobalFRQueueNeedsUpdate = false;
 		}
 		else
 		{
 			OutputDebugString("Dispatcher Main has read from queue\n");
 			
 			outputDispatcher = FSAlgorithm::DispatcherFsCalculator(elevatorStatusVect, floorRequestQueue, bIsStartUp);
+			
+			if(!bIsStartUp)
+				bGlobalFRQueueNeedsUpdate = true;
 		}
 
 		
