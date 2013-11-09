@@ -16,12 +16,15 @@ Elevator::Elevator()
 {
 	m_pDispatcherToElevator_consumer = new CSemaphore("dispatcherToElevator_consumer",1,1);
 	m_pDispatcherToElevator_producer = new CSemaphore("dispatcherToElevator_consumer",0,1);
-	m_pElevatorToIO_consumer = new CSemaphore("elevatorToIO_consumer",1,1);
-	m_pElevatorToIO_producer = new CSemaphore("elevatorToIO_producer",0,1);
-	m_pElevatorDatapool = new CDataPool("dataPool",sizeof(ElevatorStatus_t));
-	m_pElevatorCommands = new CPipe("elevatorCommands", 1024);
 	m_pChildToMainElev_consumer = new CSemaphore("ChildToMainElevConsumer",1,1);
 	m_pChildToMainElev_producer = new CSemaphore("ChildToMainElevProducer",0,1);
+	m_pElevatorToIO_consumer = new CSemaphore("elevatorToIO_consumer",1,1);
+	m_pElevatorToIO_producer = new CSemaphore("elevatorToIO_producer",0,1);
+
+	m_pElevatorDatapool = new CDataPool("dataPool",sizeof(ElevatorStatus_t));
+	m_pElevatorCommands = new CPipe("elevatorCommands", 1024);
+	m_pDispatcherFloorRequest = new CMutex("DispatcherFloorRequest");
+	m_pScreenMutex = new CMutex("PrintToScreen");
 } 
 
 Elevator::Elevator(int num) 
@@ -44,7 +47,6 @@ Elevator::Elevator(int num)
 	m_pElevatorCommands = new CPipe("Elevator"+elevatorNumber+"Commands", 1024);
 	m_pDispatcherFloorRequest = new CMutex("DispatcherFloorRequest");
 	m_pScreenMutex = new CMutex("PrintToScreen");
-	
 }
 
 Elevator::~Elevator()
@@ -101,37 +103,28 @@ int Elevator::main()
 	FloorRequest_t floorRequest(0, k_directionUp);
 	FloorRequest_t lastRequest(0, k_directionUp);
 		
-	Sleep(1000);
+//	Sleep(500);
 
 	// very first time only
-//	OutputDebugString("Elevator Main attempting to write new ElevatorStatus to DP\n");
 	m_pDispatcherToElevator_consumer->Wait();
 	m_pElevatorToIO_consumer->Wait(); 
-//	OutputDebugString("dispatcherToElevator_consumer.Wait() finished call\n");
+	
 	OutputDebugString("Elevator Main writing new ElevatorStatus to DP\n");
+	
 	pElevatorStatusDP->direction = m_elevatorStatus.direction;
 	pElevatorStatusDP->doorStatus = m_elevatorStatus.doorStatus;
 	pElevatorStatusDP->floorNumber = m_elevatorStatus.floorNumber;
+	
 	m_pDispatcherToElevator_producer->Signal();
 	m_pElevatorToIO_producer-> Signal();
-//	OutputDebugString("dispatcherToElevator_producer.Signal() finished call\n");
-//	OutputDebugString("Elevator Main finished writing new ElevatorStatus to DP\n");
 
 	do { 
-//		OutputDebugString("Elevator Main is waiting for FR from DispatcherToElevatorPipeline\n");
 		m_pChildToMainElev_producer->Wait();
-// 		if(m_pChildToMainElev_producer->Wait(5000) == WAIT_TIMEOUT)
-// 		{
-// 			if(lastRequest != FloorRequest_t())
-// 				floorRequest = lastRequest;
-// 		}
-// 		else
-// 		{
-			floorRequest = m_floorReqFromDispatcher;
-// 			lastRequest = floorRequest;
-// 		}
-		m_pChildToMainElev_consumer->Signal();
+
+		floorRequest = m_floorReqFromDispatcher;
 		OutputDebugString("Elevator Main has received FR from DispatcherToElevatorPipeline\n");
+		
+		m_pChildToMainElev_consumer->Signal();
 		
 		// We send a default FR to an elevator with the following condition below, when
 		// it doesn't need to move. It will stay in place until the highest FS of a new FR matches this elevator
@@ -176,22 +169,21 @@ int Elevator::main()
 			m_pScreenMutex->Signal();
 		}
 		
-//		OutputDebugString("Elevator Main attempting to write new ElevatorStatus to DP\n");
 		m_pDispatcherToElevator_consumer->Wait();
 		m_pElevatorToIO_consumer->Wait(); 
-//		OutputDebugString("dispatcherToElevator_consumer.Wait() finished call\n");
+
 		pElevatorStatusDP->direction = m_elevatorStatus.direction;
 		pElevatorStatusDP->doorStatus = m_elevatorStatus.doorStatus;
 		pElevatorStatusDP->floorNumber = m_elevatorStatus.floorNumber;
+
 		OutputDebugString("Elevator Main writing new ElevatorStatus to DP\n");
+
 		m_pDispatcherToElevator_producer->Signal();
 		m_pElevatorToIO_producer-> Signal();
-//		OutputDebugString("dispatcherToElevator_producer.Signal() finished call\n");
-//		OutputDebugString("Elevator Main finished writing new ElevatorStatus to DP\n");
 
-		Sleep(800);
+		Sleep(400);
+
 	} while(1);
-	//delete elevator1Status;
-	//delete elevator2Status;
+
 	return 0;
 }

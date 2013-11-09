@@ -140,7 +140,8 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 	
 				FloorRequest_t idleFloorReq(
 					itElevatorStatus->floorNumber,
-					itElevatorStatus->direction);
+					itElevatorStatus->direction,
+					k_idleFReqIdStr);
 
 				floorRequestVect.push_back(idleFloorReq);
 			}
@@ -288,17 +289,13 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 				assert(false);
 		}
 
-		//for(auto itPrinter = outputDispatcher.begin(); itPrinter != outputDispatcher.end(); ++itPrinter)
-		//{
-		//	std::cout << std::endl << itPrinter->fReqId << std::endl;
-		//}
-
 		return outputDispatcher;
 	}
 	else
 	{
 		FloorRequestVect_t outputDispatcher;
 		outputDispatcher.reserve(10);
+
 		FloorRequest_t startOnGroundLvl(0, k_directionUp);
 		for(int i = 0; i < elevatorStatusVect.size(); ++i)
 		{

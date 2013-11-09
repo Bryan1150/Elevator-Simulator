@@ -29,7 +29,6 @@ Dispatcher::Dispatcher(IOProgramPtr_t pIoProgram, int numberOfElevators)
 		m_pElevatorDataPool[i-1] = new CDataPool("Elevator"+elevatorNumber+"Status",sizeof(ElevatorStatus_t)); 
 		m_pElevatorCommands[i-1] = new CPipe("Elevator"+elevatorNumber+"Commands",1024);
 		ss.str("");
-//		printf("Created %d datapools in IO Program\n", i);
 	}
 
 	for(int i = 0; i < m_numberOfElevators; ++i)
@@ -59,22 +58,6 @@ Dispatcher::~Dispatcher()
 	delete m_pExitFromQueue;
 	delete m_pQueueEmpty;
 	delete m_pQueueFull;
-}
-
-//testing to see if dispatcher is getting the right information from the data pools
-void Dispatcher::UpdateElevatorStatus(ElevatorStatus_t elevatorStatus, int elevatorNumber) const
-{
-	m_screenMutex->Wait();	
-		MOVE_CURSOR(25,elevatorNumber*5+5);
-
-	printf("Elevator %d from Dispatcher\n", elevatorNumber);
-	MOVE_CURSOR(25,elevatorNumber*5+6);
-	printf("Direction: %d\n",elevatorStatus.direction);
-	MOVE_CURSOR(25,elevatorNumber*5+7);
-	printf("Door Status: %d\n",elevatorStatus.doorStatus);
-	MOVE_CURSOR(25,elevatorNumber*5+8);
-	printf("Floor Number: %d\n", elevatorStatus.floorNumber);
-	m_screenMutex->Signal();
 }
 
 //Thread that receives the updated information from the elevator data pools

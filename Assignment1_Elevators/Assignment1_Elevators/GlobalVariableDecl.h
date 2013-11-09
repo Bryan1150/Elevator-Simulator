@@ -27,6 +27,8 @@ static int const k_down = 2;
 static int const k_maxFloorNumber = 9;
 static int const k_minFloorNumber = 0;
 
+static std::string const k_idleFReqIdStr("Idle"); 
+
 static int const k_terminateSimulation = 3000;
 
 static std::string const k_ioToDispatcherPipeline = "IoToDispatcherPipeline";
@@ -93,6 +95,14 @@ struct FloorRequest_t{
 		ss << floorNumber;
 		fReqId += ss.str(); // ex. "U1","D9", etc.		
 	}
+
+		FloorRequest_t(int floor, int dir, std::string frId)
+		: bInsideRequest(false)
+		, floorNumber(floor)
+		, direction(dir)
+		, fReqId(frId)
+		, elevatorId(INT_MAX)
+	{}
 
 	bool operator>(FloorRequest_t const& other) const
 	{ return fReqId > other.fReqId; }
