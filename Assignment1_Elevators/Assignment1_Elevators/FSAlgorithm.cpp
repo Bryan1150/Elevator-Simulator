@@ -46,7 +46,7 @@ void FSAlgorithm::InsertFsIntoMap(
 	FigureOfSuitability_t const& fs,
 	FloorRequest_t const& floorReq,
 	ElevatorStatus_t& lift)
-{
+{	
 	auto it = lift.fsToFloorRequestMap.find(fs);
 	if(it == lift.fsToFloorRequestMap.end())
 	{
@@ -193,11 +193,14 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 			{
 				if(itFloorRequest->bInsideRequest)
 				{
-					int elevId = itFloorRequest->elevatorId;
-					assert(elevId > 0 && elevId <= 10);
-					itFloorRequest->direction = elevatorStatusVect[elevId-1].direction;
-
-					FSAlgorithm::InsideRequest(*itFloorRequest, *itElevatorStatus);
+					int elevatorIndex = std::distance(elevatorStatusVect.begin(), itElevatorStatus);
+					assert(elevatorIndex >= 0 && elevatorIndex < 10);
+					
+					if((elevatorIndex + 1) == itFloorRequest->elevatorId) // only add for the proper elevator
+					{
+						itFloorRequest->direction = elevatorStatusVect[elevatorIndex].direction;
+						FSAlgorithm::InsideRequest(*itFloorRequest, *itElevatorStatus);
+					}
 				}
 
 				else if(itElevatorStatus->direction == k_directionIdle)
