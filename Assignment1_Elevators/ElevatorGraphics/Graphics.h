@@ -20,14 +20,14 @@ public:
 	Graphics();
 	~Graphics();
 
-	void DrawElevator(int x, int y);
-	void OpenElevatorDoor(int x, int y);
-	void CloseElevatorDoor(int x, int y);
-	void ClearElevator(int x, int y);
-	void PrintElevatorStatus(int elevatorId, ElevatorStatus_t const& ElevatorStatus);
+	void DrawElevator(int x, int y);			// draws elevator with closed doors
+	void OpenElevatorDoor(int x, int y);		// draws elevator with open doors
+	void DrawFaultElevator(int x, int y);		// draws elevator with faults
+	void ClearElevator(int x, int y);			// clears a previously drawn elevator
+	//void PrintElevatorStatus(int elevatorId, ElevatorStatus_t const& ElevatorStatus);
 
 private:
-	CMutex* screenMutex;
-
+	CMutex* screenMutex;			//mutex for protecting what is being drawn on the screen
+	bool m_fault;					// boolean used to draw flashing colours when there is a fault
 };
 #endif
