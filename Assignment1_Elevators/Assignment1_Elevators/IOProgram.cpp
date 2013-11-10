@@ -228,22 +228,26 @@ int IOProgram::main()
 				printf("Sending commands\n");
 				IoToDispatcher_pipeline.Write(&userInput, sizeof(UserInputData_t));
 				
-				if( userInput.direction == 'U' || userInput.direction == 'D')
+				// send floor request to corresponding graphics pipline if it is an outside request
+				if( userInput.direction == 'U' || userInput.direction == 'D') 
 				{
 					IoOutsideRequestsToElevatorGraphics_pipeline.Write(&userInput, sizeof(UserInputData_t));
 				}
 
-				else if( userInput.direction <= m_numberOfElevators+'0' && userInput.direction >= 0 +'0')
+				// send floor request to corresponding graphics pipline if it is an insde request
+				else if( userInput.direction <= m_numberOfElevators+'0' && userInput.direction >= 0 +'0') 
 				{
 					IoLocalElevatorStatus.Wait();
 					
-					if(m_localElevatorStatus[userInput.direction-'0'-1].bFault == false)
+					// check to see if there is a fault in this elevator; if there is, do not send the request
+					if(m_localElevatorStatus[userInput.direction-'0'-1].bFault == false) 
 						IoInsideRequestsToElevatorGraphics_pipeline.Write(&userInput, sizeof(UserInputData_t));
 					
 					IoLocalElevatorStatus.Signal();				
 				}
 
-				else if( userInput.direction == 'E' && userInput.floor == 'E') //terminate the threads processing requests in graphics
+				//terminate the threads processing requests in graphics
+				else if( userInput.direction == 'E' && userInput.floor == 'E') 
 				{
 					IoOutsideRequestsToElevatorGraphics_pipeline.Write(&userInput, sizeof(UserInputData_t));
 					IoInsideRequestsToElevatorGraphics_pipeline.Write(&userInput, sizeof(UserInputData_t));
@@ -251,7 +255,7 @@ int IOProgram::main()
 			}
 			else
 			{
-				printf("Error: invalid command\n");
+				printf("Error: invalid command\n"); // display error message for invalid commands
 			}
 			keys_pressed = 0; //reset the number of keys pressed value
 			Sleep(500);
@@ -265,7 +269,7 @@ int IOProgram::main()
 		{		
 			UINT message = DispatcherToIo_mailbox.GetMessage() ;	
 			printf("Message = %d\n", message);
-			if(message == k_terminateSimulation)	
+			if(message == k_terminateSimulation) // if message matches termination flag, set necessary conditions	
 			{			
 				m_screenMutex->Wait();
 				MOVE_CURSOR(0,3);
@@ -278,16 +282,18 @@ int IOProgram::main()
 		
 	} while(!m_exit);
 
+	// Wait for child threads to terminate
 	p1.WaitForProcess();
 	for( int i = 0; i < m_numberOfElevators; i++)
 	{
 		collectElevatorStatusVect[i]->WaitForThread();
 	}
 	
+	// deletes pointers for child threads
 	for( int i = 0; i < m_numberOfElevators; i++)
 	{
 		delete collectElevatorStatusVect[i];
 	}
-
+	printf("Exiting  IO.....\n") ;
 	return 0;
 }

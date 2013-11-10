@@ -50,6 +50,6 @@ int main()
 		elevatorVect[i]->EndChildThread();
 		elevatorVect[i]->TerminateThread();	
 	}
-	
+	printf("Deleted child elevator threads in Main.cpp .\n") ;
 	return 0;
 }
