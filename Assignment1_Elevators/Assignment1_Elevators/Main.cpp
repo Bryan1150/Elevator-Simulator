@@ -19,8 +19,12 @@
 int main()
 {
 	CMutex screenMutex("PrintToScreen");
+	
 	int numberOfElevators;
+	std::string path;
 
+	std::cout << "Enter path for executable: ";
+	std::cin >> path;
 	std::cout << "Enter number of elevators: ";
 	std::cin >> numberOfElevators;
 	int i;
@@ -34,7 +38,7 @@ int main()
 	}
 
 	Sleep(1000);
-	IOProgramPtr_t pIoProgram = std::make_shared<IOProgram>(numberOfElevators);
+	IOProgramPtr_t pIoProgram = std::make_shared<IOProgram>(numberOfElevators, path);
 	Dispatcher dispatcher(pIoProgram,numberOfElevators);
 
 	pIoProgram->ClearLines(3);

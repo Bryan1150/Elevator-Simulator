@@ -18,9 +18,10 @@ IOProgram::IOProgram() : m_exit(FALSE)
 	m_screenMutex = new CMutex("PrintToScreen");
 }
 
-IOProgram::IOProgram(int numberOfElevators) 
+IOProgram::IOProgram(int numberOfElevators, std::string path) 
 	: m_exit(FALSE)
 	, m_numberOfElevators(numberOfElevators)
+	, m_path(path)
 {
 	// mutex to protect writing to the console
 	m_screenMutex = new CMutex("PrintToScreen");
@@ -158,8 +159,9 @@ int IOProgram::main()
 	ss << m_numberOfElevators;
 	std::string elevatorNumberStr = ss.str();
 
-	
-	CProcess p1("Z:\\RTExamples\\EECE314\\Assignment1_Elevators\\Debug\\ElevatorGraphics.exe "+elevatorNumberStr,	// pathlist to child program executable				
+	static const std::string k_defaultPath("Z:\\RTExamples\\EECE314\\Assignment1_Elevators\\Debug\\ElevatorGraphics.exe");
+	std::string elevatorGraphicsPath = m_path == "def" ? k_defaultPath : m_path;
+	CProcess p1(elevatorGraphicsPath+" "+elevatorNumberStr,	// pathlist to child program executable				
 			NORMAL_PRIORITY_CLASS,			// priority
 			OWN_WINDOW,						// process has its own window					
 			ACTIVE							// process is active immediately

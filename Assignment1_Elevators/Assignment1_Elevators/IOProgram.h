@@ -26,7 +26,7 @@ class IOProgram : public ActiveClass
 public:
 	IOProgram(); //default constructor
 
-	IOProgram(int numberOfElevators);
+	IOProgram(int numberOfElevators, std::string path);
 	~IOProgram();
 	
 	//int ReadFromMailbox(void* args);							//Not being used currently
@@ -45,6 +45,7 @@ private:
 	bool m_exit;											//termination flag
 	int m_numberOfElevators;								//stores number of elevators							
 	int main();
+	std::string m_path;
 
 };
 #endif
