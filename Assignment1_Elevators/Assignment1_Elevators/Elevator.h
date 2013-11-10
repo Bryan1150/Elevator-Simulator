@@ -43,6 +43,7 @@ public:
 	void ChangeDoorStatus(ElevatorStatusPtr_t elevatorStatus, int doorStatus) const;
 	void ChangeFloorNumber(ElevatorStatusPtr_t elevatorStatus, int direction) const;
 	void SetElevatorDirection(ElevatorStatusPtr_t elevatorStatus, int direction) const;
+	void EndChildThread();
 
 private:
 	int main();
@@ -63,5 +64,7 @@ private:
 	ElevatorStatus_t m_elevatorStatus;
 	int m_elevatorNumber;
 	
+	ClassThread<Elevator>* m_pdispatcherToElevatorPipelineThread;
+
 };
 #endif
