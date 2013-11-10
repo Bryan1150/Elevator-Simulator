@@ -58,6 +58,7 @@ struct FloorRequest_t{
 	int direction;
 	int elevatorId;
 	bool bInsideRequest;
+	bool bDuplicateFloor;
 
 	FloorRequest_t()
 		: bInsideRequest(false)
@@ -65,6 +66,7 @@ struct FloorRequest_t{
 		, direction(INT_MAX)
 		, elevatorId(INT_MAX)
 		, fReqId("Idle")
+		, bDuplicateFloor(false)
 	{}
 	
 	FloorRequest_t(int floor, int dir)
@@ -72,6 +74,7 @@ struct FloorRequest_t{
 		, floorNumber(floor)
 		, direction(dir)
 		, elevatorId(INT_MAX)
+		, bDuplicateFloor(false)
 	{
 		if(dir == k_up)
 			fReqId = "U";
@@ -87,7 +90,8 @@ struct FloorRequest_t{
 		: floorNumber(floor)
 		, direction(dir) // if dir == INT_MAX, must set dir of given elevId
 		, elevatorId(elevId)
-		, bInsideRequest(elevId != INT_MAX ? true : false) 
+		, bInsideRequest(elevId != INT_MAX ? true : false)
+		, bDuplicateFloor(false) 
 	{
 		if(dir == k_up)
 			fReqId = "U";
@@ -105,6 +109,7 @@ struct FloorRequest_t{
 		, direction(dir)
 		, fReqId(frId)
 		, elevatorId(INT_MAX)
+		, bDuplicateFloor(false)
 	{}
 
 	bool operator>(FloorRequest_t const& other) const

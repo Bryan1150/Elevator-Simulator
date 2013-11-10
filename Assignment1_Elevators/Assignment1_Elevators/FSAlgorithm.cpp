@@ -59,7 +59,7 @@ void FSAlgorithm::InsertFsIntoMap(
 			if(floorReq.bInsideRequest) // next entry is an INSIDE request
 			{
 				if(((floorReq.direction == it->second.direction) && (abs(lift.floorNumber - it->second.floorNumber) > abs(lift.floorNumber - floorReq.floorNumber))) ||
-					((floorReq.direction != it->second.direction && (abs(lift.floorNumber - it->second.floorNumber) < abs(lift.floorNumber - floorReq.floorNumber)))))
+					((floorReq.direction != it->second.direction) && (abs(lift.floorNumber - it->second.floorNumber) < abs(lift.floorNumber - floorReq.floorNumber))))
 				{
 					// only remove the previous outside FR if it is further away than the next inside FR
 					lift.fsToFloorRequestMap.erase(it);
@@ -90,8 +90,10 @@ void FSAlgorithm::InsertFsIntoMap(
 			}
 			else // next entry is an OUTSIDE request
 			{
-				if((floorReq.direction == it->second.direction) &&
-					(abs(lift.floorNumber - it->second.floorNumber) > abs(lift.floorNumber - floorReq.floorNumber)))
+				if(((floorReq.direction == it->second.direction) &&
+					(abs(lift.floorNumber - it->second.floorNumber) > abs(lift.floorNumber - floorReq.floorNumber))) || 
+					((floorReq.direction != it->second.direction) &&
+					(abs(lift.floorNumber - it->second.floorNumber) < abs(lift.floorNumber - floorReq.floorNumber))))
 				{
 					// erase the inside FR that is already in map since the next FR is in the same direction
 					// and is closer to the elevator, so the inside FR would eventually be reached later on anyways
@@ -117,6 +119,8 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 			itElevatorStatus != elevatorStatusVect.end(); 
 			++itElevatorStatus)
 		{
+			FloorRequest_t tempHolder;
+			std::map<int/*floor*/,FloorRequest_t> duplicateFloorsList;
 			for(auto itDeleteRequest = floorRequestVect.begin();
 				itDeleteRequest != floorRequestVect.end();)
 			{
@@ -126,7 +130,33 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 				{	
 					// if outside request, replace with pseudoFR to keep Elevator at that floor
 					// so that the passenger can send an inside request to continue going in that direction
-					itDeleteRequest = floorRequestVect.erase(itDeleteRequest);
+
+					auto it = duplicateFloorsList.find(itDeleteRequest->floorNumber);
+					if(it == duplicateFloorsList.end())
+					{
+						duplicateFloorsList.insert(std::make_pair(itDeleteRequest->floorNumber,*itDeleteRequest));
+						itDeleteRequest = floorRequestVect.erase(itDeleteRequest);
+						continue;
+					}
+					else if(it->second.direction != itElevatorStatus->direction)
+					{
+						std::replace(floorRequestVect.begin(), floorRequestVect.end(), *itDeleteRequest, it->second);
+					}
+						
+					++itDeleteRequest;					
+					//if(!bDuplicateFloor)
+					//	tempHolder = *itDeleteRequest;
+					//
+					//if(bDuplicateFloor && 
+					//	tempHolder.direction == itElevatorStatus->direction)
+					//{
+					//	std::replace(floorRequestVect.begin(),floorRequestVect.end(), *itDeleteRequest, tempHolder);
+					//	++itDeleteRequest;
+					//	continue;
+					//}
+
+					//itDeleteRequest = floorRequestVect.erase(itDeleteRequest);
+					//bDuplicateFloor = true;
 				}
 				else
 				{
