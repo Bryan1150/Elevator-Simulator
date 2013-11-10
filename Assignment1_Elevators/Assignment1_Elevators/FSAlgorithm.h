@@ -42,5 +42,5 @@ public:
 	static FloorRequestVect_t DispatcherFsCalculator(
 		ElevatorStatusVect_t& elevatorStatusVect,
 		FloorRequestVect_t& floorRequestVect,
-		bool& bIsStartUp);
+		bool bIsStartUp);
 };

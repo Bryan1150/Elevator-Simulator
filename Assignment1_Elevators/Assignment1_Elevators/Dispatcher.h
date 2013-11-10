@@ -49,8 +49,10 @@ private:
 	CSemaphore* m_pExitFromQueue;
 	CSemaphore* m_pQueueEmpty;
 	CSemaphore* m_pQueueFull;
+	CMutex* m_pQueueMutex;
 
 	bool m_bExit;
+	bool m_bIsStartUp;
 
 };
 #endif

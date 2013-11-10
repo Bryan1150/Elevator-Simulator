@@ -15,7 +15,8 @@ Dispatcher::Dispatcher()
 
 Dispatcher::Dispatcher(IOProgramPtr_t pIoProgram, int numberOfElevators)
 	: m_pIoProgram(pIoProgram)  // have a pointer to the IOProgram object so that the dispatcher can post to its mailbox
-	, m_bExit(FALSE)
+	, m_bExit(false)
+	, m_bIsStartUp(true)
 	, m_numberOfElevators(numberOfElevators)
 {
 	m_getCommandFromIO = new CMutex("GetCommandFromIO");;
@@ -41,6 +42,8 @@ Dispatcher::Dispatcher(IOProgramPtr_t pIoProgram, int numberOfElevators)
 	m_pExitFromQueue = new CSemaphore("ExitFromQueue", 0, m_numberOfElevators); // exit
 	m_pQueueEmpty = new CSemaphore("QueueEmpty", 0, m_numberOfElevators); // empty
 	m_pQueueFull = new CSemaphore("QueueFull", 0, m_numberOfElevators); // full
+
+	m_pQueueMutex = new CMutex("QueueMutex");
 }
 
 Dispatcher::~Dispatcher()
@@ -110,6 +113,7 @@ int Dispatcher::ReadFromIoToDispatcherPipeline(void *args)
 
 		if(IoToDispatcher_pipeline.TestForData() >= sizeof(UserInputData_t))
 		{
+			m_bIsStartUp = false;
 			IoToDispatcher_pipeline.Read(&userInput, sizeof(UserInputData_t));	//Read commands from IO 
 			OutputDebugString("Dispatcher reading UserInputData_t from IO\n");
 
@@ -156,9 +160,11 @@ int Dispatcher::ReadFromIoToDispatcherPipeline(void *args)
 
 			
 
-			floorRequestVectProtector_consumer.Wait();
+//			floorRequestVectProtector_consumer.Wait();
+			m_pQueueMutex->Wait();
 			m_floorRequestVect.push_back(floorReq);
-			floorRequestVectProtector_producer.Signal();
+			m_pQueueMutex->Signal();
+//			floorRequestVectProtector_producer.Signal();
 			OutputDebugString("Dispatcher Child adding FR to queue\n");
 		}
 	} while(1);
@@ -168,8 +174,6 @@ int Dispatcher::ReadFromIoToDispatcherPipeline(void *args)
 
 int Dispatcher::main()
 {
-	
-	CPipe IoToDispatcher_pipeline("DispatcherCommands", 1024);
 	std::vector<ClassThread<Dispatcher>*> collectElevatorStatusVect;
 	std::vector<ClassThread<Dispatcher>*> dispatcherToElevatorVect;
 	std::vector<CSemaphore*> dispatcherLocalElevatorStatusConsumerVect;
@@ -200,10 +204,20 @@ int Dispatcher::main()
 	
 	FloorRequestVect_t floorRequestQueue;
 	ElevatorStatusVect_t elevatorStatusVect;
-	bool bGlobalFRQueueNeedsUpdate = false;
 
 	do{
 		elevatorStatusVect.clear();
+
+		//if(floorRequestVectProtector_producer.Read() > 0) //Check to see if there is a new command
+		//{
+		//	if(bIsStartUp)
+		//		bIsStartUp = false;
+		//	floorRequestVectProtector_producer.Wait();
+		//	
+		//	floorRequestQueue = m_floorRequestVect;
+
+		//	floorRequestVectProtector_consumer.Signal();
+		//}
 
 		for(int i = 0; i < m_numberOfElevators; ++i)
 		{
@@ -248,41 +262,16 @@ int Dispatcher::main()
 
 		FloorRequest_t tempFloorRequest;
 		FloorRequestVect_t outputDispatcher;
-		if(floorRequestVectProtector_producer.Read() > 0) //Check to see if there is a new command
-		{
-			if(bIsStartUp)
-				bIsStartUp = false;
-
-			floorRequestVectProtector_producer.Wait();
-			
-			if(bGlobalFRQueueNeedsUpdate)
-				m_floorRequestVect = floorRequestQueue;
-
-			floorRequestQueue = m_floorRequestVect;
-			OutputDebugString("Dispatcher Main has read from queue\n");
-			
-			outputDispatcher = FSAlgorithm::DispatcherFsCalculator(elevatorStatusVect, floorRequestQueue, bIsStartUp);
-			m_floorRequestVect = floorRequestQueue; // update class-wide QUEUE
-
-			floorRequestVectProtector_consumer.Signal();
-			bGlobalFRQueueNeedsUpdate = false;
-		}
-		else
-		{
-			OutputDebugString("Dispatcher Main has read from queue\n");
-			
-			outputDispatcher = FSAlgorithm::DispatcherFsCalculator(elevatorStatusVect, floorRequestQueue, bIsStartUp);
-			
-			if(!bIsStartUp)
-				bGlobalFRQueueNeedsUpdate = true;
-		}
-
 		
+		m_pQueueMutex->Wait();
+		outputDispatcher = FSAlgorithm::DispatcherFsCalculator(elevatorStatusVect, m_floorRequestVect, m_bIsStartUp);
+		m_pQueueMutex->Signal();
+
 		for(auto iter = outputDispatcher.begin(); iter != outputDispatcher.end(); ++iter)
 		{
 			int elevatorId = std::distance(outputDispatcher.begin(), iter);
 			tempFloorRequest = *iter;
-			m_pElevatorCommands[elevatorId]->Write(&tempFloorRequest,sizeof(FloorRequest_t)); // send FR to elevator
+			m_pElevatorCommands[elevatorId]->Write(&tempFloorRequest, sizeof(FloorRequest_t)); // send FR to elevator
 			OutputDebugString("Dispatcher Main has sent FR to each Elevator Pipeline\n");
 		}
 

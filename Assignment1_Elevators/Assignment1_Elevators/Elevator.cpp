@@ -103,7 +103,7 @@ int Elevator::main()
 	FloorRequest_t floorRequest(0, k_directionUp);
 	FloorRequest_t lastRequest(0, k_directionUp);
 		
-//	Sleep(500);
+	bool bIsStartUp = true;
 
 	// very first time only
 	m_pDispatcherToElevator_consumer->Wait();

@@ -58,7 +58,8 @@ void FSAlgorithm::InsertFsIntoMap(
 		{	// INT_MAX is the default
 			if(floorReq.bInsideRequest) // next entry is an INSIDE request
 			{
-				if((floorReq.direction == it->second.direction) && (abs(lift.floorNumber - it->second.floorNumber) > abs(floorReq.floorNumber - floorReq.floorNumber)))
+				if(((floorReq.direction == it->second.direction) && (abs(lift.floorNumber - it->second.floorNumber) > abs(lift.floorNumber - floorReq.floorNumber))) ||
+					((floorReq.direction != it->second.direction && (abs(lift.floorNumber - it->second.floorNumber) < abs(lift.floorNumber - floorReq.floorNumber)))))
 				{
 					// only remove the previous outside FR if it is further away than the next inside FR
 					lift.fsToFloorRequestMap.erase(it);
@@ -92,7 +93,7 @@ void FSAlgorithm::InsertFsIntoMap(
 				if((floorReq.direction == it->second.direction) &&
 					(abs(lift.floorNumber - it->second.floorNumber) > abs(lift.floorNumber - floorReq.floorNumber)))
 				{
-					// erase the inside FR that is already in map since the next the next FR is in the same direction
+					// erase the inside FR that is already in map since the next FR is in the same direction
 					// and is closer to the elevator, so the inside FR would eventually be reached later on anyways
 					lift.fsToFloorRequestMap.erase(it);
 					lift.fsToFloorRequestMap.insert(std::make_pair(fs, floorReq));
@@ -107,7 +108,7 @@ void FSAlgorithm::InsertFsIntoMap(
 FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 		ElevatorStatusVect_t& elevatorStatusVect,
 		FloorRequestVect_t& floorRequestVect,
-		bool& bIsStartUp)
+		bool bIsStartUp)
 {
 	if(!bIsStartUp)
 	{
@@ -119,27 +120,13 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 			for(auto itDeleteRequest = floorRequestVect.begin();
 				itDeleteRequest != floorRequestVect.end();)
 			{
+				// only rm from queue if FR is on same floor, door is open
 				if((itDeleteRequest->floorNumber == itElevatorStatus->floorNumber) && 
-					(itElevatorStatus->doorStatus == k_doorOpen) /*&&
-					(itDeleteRequest->direction == itElevatorStatus->direction)*/)
-				{	// only rm from queue if FR is on same floor, door is open
-				
+					(itElevatorStatus->doorStatus == k_doorOpen))
+				{	
 					// if outside request, replace with pseudoFR to keep Elevator at that floor
 					// so that the passenger can send an inside request to continue going in that direction
-// 					if(!itDeleteRequest->bInsideRequest) 
-// 					{
-// 						FloorRequest_t pseudoFR(itDeleteRequest->floorNumber, 
-// 							itDeleteRequest->direction,
-// 							std::distance(elevatorStatusVect.begin(), itElevatorStatus));
-// 
-// 						std::replace(floorRequestVect.begin(), floorRequestVect.end(), *itDeleteRequest, pseudoFR);
-// 
-// 						++itDeleteRequest;
-// 					}
-// 					else
-// 					{
-						itDeleteRequest = floorRequestVect.erase(itDeleteRequest);
-//					}
+					itDeleteRequest = floorRequestVect.erase(itDeleteRequest);
 				}
 				else
 				{
