@@ -13,25 +13,24 @@
 #include "Dispatcher.h" //include active classes header files
 #include "Elevator.h"
 #include "IOProgram.h"
+#include "GlobalVariableDecl.h"
 
 
 int main()
 {
-	CMutex	screenMutex("PrintToScreen");
+	CMutex screenMutex("PrintToScreen");
 	int numberOfElevators;
 
 	std::cout << "Enter number of elevators: ";
 	std::cin >> numberOfElevators;
 	int i;
-	std::vector<Elevator*> elevatorVect;
+	std::vector<ElevatorSharedPtr_t> elevatorVect;
 
 	for( int i = 0; i < numberOfElevators; i++)
 	{
-		
-			Elevator* elevator= new Elevator(i+1);
-			elevatorVect.push_back(elevator);
-			elevatorVect[i]->Resume();
-		// FIXME add delete in for the pointers in the vectors; add WaitForThread() at the end
+		ElevatorSharedPtr_t pElevator = std::make_shared<Elevator>(i+1);
+		elevatorVect.push_back(pElevator);
+		elevatorVect[i]->Resume();
 	}
 
 	Sleep(1000);
@@ -51,14 +50,6 @@ int main()
 		elevatorVect[i]->EndChildThread();
 		elevatorVect[i]->TerminateThread();	
 	}
-
-	// FIXME use shared pointers for elevator threads
-	
-	//for( int i = 0; i < numberOfElevators; i++)
-	//{
-	//	delete elevatorVect[i];	
-	//	//printf("Deleted elevatorVect %d in Main\n",i+1);
-	//}
 	
 	return 0;
 }

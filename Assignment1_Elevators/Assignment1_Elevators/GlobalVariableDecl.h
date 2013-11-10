@@ -167,3 +167,6 @@ struct ElevatorStatus_t {
 typedef std::vector<ElevatorStatus_t> ElevatorStatusVect_t;
 typedef std::vector<FloorRequest_t> FloorRequestVect_t;
 
+class Elevator;
+typedef std::shared_ptr<Elevator> ElevatorSharedPtr_t;
+

@@ -144,19 +144,6 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 					}
 						
 					++itDeleteRequest;					
-					//if(!bDuplicateFloor)
-					//	tempHolder = *itDeleteRequest;
-					//
-					//if(bDuplicateFloor && 
-					//	tempHolder.direction == itElevatorStatus->direction)
-					//{
-					//	std::replace(floorRequestVect.begin(),floorRequestVect.end(), *itDeleteRequest, tempHolder);
-					//	++itDeleteRequest;
-					//	continue;
-					//}
-
-					//itDeleteRequest = floorRequestVect.erase(itDeleteRequest);
-					//bDuplicateFloor = true;
 				}
 				else
 				{
@@ -320,9 +307,8 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 
 		// Now that we have the FR with the highest FS linked to each elevator, we can tell each elevator where it needs to go next.
 		// The floorReqToFsMap will contain n FRs (n <= number of elevators) with a mapped pair containing an "elevatorId". Sometimes,
-		// there might not be a FR for a certain elevator, so we send it a blank FR, telling it to remain in the same spot.
-		// Elevator statuses from the DPs to the dispatcher are stored in order of "elevatorId".
-		// Create a final vector containing the FR for each elevator in order; return this vector instead of the ElevatorStatus_t().
+		// there might not be a FR for a certain elevator, so we send it an idle FR, telling it to remain in the same spot.
+		// Elevator statuses from the DPs to the dispatcher are always stored in order of "elevatorId"
 
 		FloorRequestVect_t outputDispatcher;
 		outputDispatcher.reserve(10);

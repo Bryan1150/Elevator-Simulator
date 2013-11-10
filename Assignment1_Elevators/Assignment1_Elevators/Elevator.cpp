@@ -81,17 +81,12 @@ int  Elevator::ReadCommandsFromPipeline(void* args)
 			elevatorCommands.Read(&floorRequest,sizeof(FloorRequest_t));
 
 			m_pChildToMainElev_consumer->Wait();
+			
 			m_floorReqFromDispatcher = floorRequest;
 			OutputDebugString("Elevator Child finished reading FR from DispatcherToElevator Pipeline and sending to Elevator Main\n");
+			
 			m_pChildToMainElev_producer->Signal();
 		}
-
-		//m_pScreenMutex->Wait();
-		//MOVE_CURSOR(0,2);
-		//std::cout << "                                                   ";
-		//MOVE_CURSOR(0,2);
-		//std::cout << floorRequest.fReqId << std::endl;
-		//m_pScreenMutex->Signal();
 
 	} while(1);
 	return 0;
@@ -105,8 +100,6 @@ void Elevator::EndChildThread()
 int Elevator::main()
 {
 	ElevatorStatusPtr_t	pElevatorStatusDP = (ElevatorStatusPtr_t)(m_pElevatorDatapool->LinkDataPool());
-
-	//ClassThread<Elevator> dispatcherToElevatorPipelineThread(this, &Elevator::ReadCommandsFromPipeline,	ACTIVE, NULL);
 
 	FloorRequest_t floorRequest(0, k_directionUp);
 	FloorRequest_t lastRequest(0, k_directionUp);

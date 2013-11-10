@@ -9,24 +9,7 @@
 
 Graphics Display;
 CMutex graphicsMtx("Mutex for Drawing");
-//
-//typedef struct {
-//	int floorNumber;
-//	int direction;
-//	int elevatorId;
-//
-//} FloorRequest_t;
-//typedef int FigureOfSuitability_t;
-//typedef std::map<FigureOfSuitability_t, FloorRequest_t> FsToFloorRequestMap_t;
-//typedef struct {		
-//
-//	//status for elevator struct
-//	int doorStatus;
-//	int direction;
-//	int floorNumber;
-//	FsToFloorRequestMap_t fsToFloorRequestMap;
-//
-//} ElevatorStatus_t;
+
 
 UINT __stdcall PrintElevatorGraphics (void *args)	// thread function 
 {	

@@ -79,20 +79,18 @@ int Dispatcher::CollectElevatorStatus(void* args)
 		{
 			if(elevatorId-1 >= 0)
 			{
-//				OutputDebugString("Dispatcher Child reading from Elevator DP and copying to Dispatcher Main\n");
 				dispatcherToElevator_producer.Wait();
-//				OutputDebugString("dispatcherToElevator_producer.Wait() finished call. Waiting at 'enter roller coaster' semaphores.\n");
+
 				m_pEntryToQueue->Wait();
 				m_pQueueFull->Signal();
 				
 				m_localElevatorStatus[elevatorId-1] = *m_pElevatorStatus[elevatorId-1];
 				OutputDebugString("Dispatcher Child reading from Elevator DP and copying to Dispatcher Main. Waiting at 'exit roller coaster' semaphores\n");
+				
 				m_pExitFromQueue->Wait();
 				m_pQueueEmpty->Signal();
 				
 				dispatcherToElevator_consumer.Signal();
-//				OutputDebugString("dispatcherToElevator_consumer.Signal() finished call\n");
-//				OutputDebugString("Dispatcher Child has read from Elevator DP and copied to Dispatcher Main\n");
 			}
 		}
 	} while(!m_bExit);
@@ -105,8 +103,6 @@ int Dispatcher::ReadFromIoToDispatcherPipeline(void *args)
 	CPipe IoToDispatcher_pipeline(k_ioToDispatcherPipeline, 1024);
 	CSemaphore dispatcherUserInput_consumer("DispatcherUserInputConsumer",1,1);
 	CSemaphore dispatcherUserInput_producer("DispatcherUserInputProducer",0,1);
-	CSemaphore floorRequestVectProtector_consumer("FloorRequestVectProtectorConsumer",1,1);  // semaphores to protect floor requests
-	CSemaphore floorRequestVectProtector_producer("FloorRequestVectProtectorProducer",0,1);
 
 	UserInputData_t userInput;
 	do{
@@ -116,8 +112,6 @@ int Dispatcher::ReadFromIoToDispatcherPipeline(void *args)
 			m_bIsStartUp = false;
 			IoToDispatcher_pipeline.Read(&userInput, sizeof(UserInputData_t));	//Read commands from IO 
 			OutputDebugString("Dispatcher reading UserInputData_t from IO\n");
-
-			// FIXME how are we dealing with INSIDE requests? we temporarily have a boolean "bInsideRequest"
 		
 			// "EE" used to terminate simulation
 			if(userInput.direction == 'E' && userInput.floor == 'E') 
@@ -158,13 +152,9 @@ int Dispatcher::ReadFromIoToDispatcherPipeline(void *args)
 				floorReq = outsideFR;
 			}
 
-			
-
-//			floorRequestVectProtector_consumer.Wait();
 			m_pQueueMutex->Wait();
 			m_floorRequestVect.push_back(floorReq);
 			m_pQueueMutex->Signal();
-//			floorRequestVectProtector_producer.Signal();
 			OutputDebugString("Dispatcher Child adding FR to queue\n");
 		}
 	} while(1);
@@ -199,7 +189,7 @@ int Dispatcher::main()
 		{	
 			ClassThread<Dispatcher>* pCollectElevatorStatus= new ClassThread<Dispatcher>(this,&Dispatcher::CollectElevatorStatus, ACTIVE, &xArray[i-1]);
 			collectElevatorStatusVect.push_back(pCollectElevatorStatus);
-		}// FIXME add delete in for the pointers in the vectors //add waitfor thread at the end
+		}
 	}
 	
 	FloorRequestVect_t floorRequestQueue;
@@ -207,17 +197,6 @@ int Dispatcher::main()
 
 	do{
 		elevatorStatusVect.clear();
-
-		//if(floorRequestVectProtector_producer.Read() > 0) //Check to see if there is a new command
-		//{
-		//	if(bIsStartUp)
-		//		bIsStartUp = false;
-		//	floorRequestVectProtector_producer.Wait();
-		//	
-		//	floorRequestQueue = m_floorRequestVect;
-
-		//	floorRequestVectProtector_consumer.Signal();
-		//}
 
 		for(int i = 0; i < m_numberOfElevators; ++i)
 		{
@@ -227,7 +206,7 @@ int Dispatcher::main()
 		{
 			if(m_bExit)
 			{
-				printf("breaking from dispatcher loop\n");
+				OutputDebugString("breaking from dispatcher loop\n");
 				break; 
 			}
 			if(m_pQueueFull->Wait(200) == WAIT_TIMEOUT)
@@ -252,7 +231,7 @@ int Dispatcher::main()
 		{
 			if(m_bExit)
 			{
-				printf("breaking from dispatcher loop\n");
+				OutputDebugString("breaking from dispatcher loop\n");
 				break; 
 			}
 			if(m_pQueueEmpty->Wait(200) == WAIT_TIMEOUT)
@@ -275,26 +254,9 @@ int Dispatcher::main()
 			OutputDebugString("Dispatcher Main has sent FR to each Elevator Pipeline\n");
 		}
 
-		/** debugging **/
-		//m_screenMutex->Wait();
-		//MOVE_CURSOR(0,50);
-		//std::cout << "                                                               ";
-		//m_screenMutex->Signal();
-
-		//int i = 0;
-		//for(auto itQueue = floorRequestQueue.begin(); itQueue != floorRequestQueue.end(); ++itQueue)
-		//{
-		//	m_screenMutex->Wait(); 
-		//	MOVE_CURSOR(i,50);
-		//	std::cout << itQueue->fReqId;
-		//	m_screenMutex->Signal();
-		//	i += 3;
-		//}
-		/** end debugging **/
-
 		if(m_bExit)
 		{
-			printf("breaking from dispatcher loop\n");
+			OutputDebugString("breaking from dispatcher loop\n");
 			break; 
 		}
 
@@ -307,6 +269,6 @@ int Dispatcher::main()
 		delete collectElevatorStatusVect[i];
 	}
 	
-	printf("Exiting dispatcher\n");
+	OutputDebugString("Exiting dispatcher\n");
 	return 0;
 }
