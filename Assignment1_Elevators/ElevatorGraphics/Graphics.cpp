@@ -112,7 +112,7 @@ void Graphics::ClearElevator(int x, int y)
 	screenMutex->Wait();
 	MOVE_CURSOR(x+1,y-1);
 	printf("     ");
-	for(int i = 0; i < 4; ++i)
+	for(int i = 0; i < 5; ++i)
 	{
 		MOVE_CURSOR(x,y+i);
 		for(int i = 0; i < 10; ++i)
@@ -131,7 +131,7 @@ void Graphics::DrawFaultElevator(int x, int y)
 	MOVE_CURSOR(x+1,y-1);
 	
 	// display the current level of the elevator in alternating colours to indicate its fault
-	!m_fault ? TEXT_COLOUR(11,4) : TEXT_COLOUR(11,14);
+	!m_fault ? TEXT_COLOUR(14) : TEXT_COLOUR(12);
 	printf("LVL %d", (y-k_heightOfBuilding)/(-5));
 	TEXT_COLOUR(7,0);
 	MOVE_CURSOR(x,y);
@@ -187,7 +187,7 @@ void Graphics::DrawFaultElevator(int x, int y)
 			printf("%c",219);
 		}
 
-	MOVE_CURSOR(x,y+4);
+	MOVE_CURSOR(x+1,y+4);
 
 	// flash the word "FAULT" underneath the elevator
 	!m_fault ? TEXT_COLOUR(12) : TEXT_COLOUR(14);
