@@ -143,9 +143,20 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 				if((itDeleteRequest->floorNumber == itElevatorStatus->floorNumber) && 
 					(itElevatorStatus->doorStatus == k_doorOpen))
 				{	
+					if(itDeleteRequest->bInsideRequest)
+					{
+						int elevIndex = std::distance(elevatorStatusVect.begin(), itElevatorStatus);
+						
+						if((itDeleteRequest->elevatorId - 1) == elevIndex)
+							itDeleteRequest = floorRequestVect.erase(itDeleteRequest);
+						else
+							++itDeleteRequest;
+						
+						continue;
+					}
+
 					// if outside request, replace with pseudoFR to keep Elevator at that floor
 					// so that the passenger can send an inside request to continue going in that direction
-
 					auto it = duplicateFloorsList.find(itDeleteRequest->floorNumber);
 					if(it == duplicateFloorsList.end())
 					{
@@ -160,6 +171,7 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 						
 					++itDeleteRequest;					
 				}
+				
 				else
 				{
 					++itDeleteRequest;
@@ -207,7 +219,7 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 					int elevatorIndex = std::distance(elevatorStatusVect.begin(), itElevatorStatus);
 					assert(elevatorIndex >= 0 && elevatorIndex < 10);
 					
-					if((elevatorIndex + 1) == itFloorRequest->elevatorId) // only add for the proper elevator
+					if((itFloorRequest->elevatorId - 1) == elevatorIndex) // only add for the proper elevator
 					{
 						itFloorRequest->direction = elevatorStatusVect[elevatorIndex].direction;
 						FSAlgorithm::InsideRequest(*itFloorRequest, *itElevatorStatus);
@@ -285,8 +297,17 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 		for(auto itLift = elevatorStatusVect.begin(); itLift != elevatorStatusVect.end(); ++itLift)
 		{	
 			if(itLift->bFault)
+			{
+				int elevId = std::distance(elevatorStatusVect.begin(), itLift) + 1; // elevId is equal to elevIndex+1
+				std::stringstream ss;
+				ss << elevId;
+				std::string elevIdStr = ss.str();
+				FloorRequest_t faultFR(k_faultFReqIdStr+elevIdStr, elevId);
+				floorReqToFsMap.insert(
+					std::make_pair(faultFR,	std::make_pair(11/*fs*/, faultFR.elevatorId)));
 				continue;
-
+			}
+			
 			for(auto itFs = itLift->fsToFloorRequestMap.rbegin();
 				itFs != itLift->fsToFloorRequestMap.rend();
 				++itFs)
@@ -294,15 +315,15 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 				auto itMap = floorReqToFsMap.find(itFs->second/*floorRequest*/);
 				if(itMap == floorReqToFsMap.end())
 				{
-					int elevatorId = std::distance(elevatorStatusVect.begin(), itLift); // NOTE: elevatorId is the index beginning from 0
+					int elevatorId = std::distance(elevatorStatusVect.begin(), itLift) + 1; // NOTE: elevatorId equal to elevIndex+1
 					floorReqToFsMap.insert(std::make_pair(itFs->second/*floorRequest*/, std::make_pair(itFs->first/*fs*/, elevatorId)));
 					break;
 				}
 				else if(itFs->first > itMap->second.first/*fs*/) // floorRequest already in map, so if this next one has a larger FS, then replace the old one
 				{	
-					int elevatorRemovalId = itMap->second.second;
+					int elevRemovalIndex = itMap->second.second - 1;
 				
-					int elevatorId = std::distance(elevatorStatusVect.begin(), itLift);
+					int elevatorId = std::distance(elevatorStatusVect.begin(), itLift) + 1;
 
 					// erase then add new FR with the higher FS value
 					floorReqToFsMap.erase(itMap);
@@ -311,15 +332,15 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 						std::make_pair(itLift->fsToFloorRequestMap.rbegin()->first/*fs*/, elevatorId)));
 				
 					// go through the remaining FR/FS for this elevator to find the next highest that is not in floorReqToFsMap
-					for(auto itRemoval = elevatorStatusVect[elevatorRemovalId].fsToFloorRequestMap.rbegin();
-						itRemoval != elevatorStatusVect[elevatorRemovalId].fsToFloorRequestMap.rend();
+					for(auto itRemoval = elevatorStatusVect[elevRemovalIndex].fsToFloorRequestMap.rbegin();
+						itRemoval != elevatorStatusVect[elevRemovalIndex].fsToFloorRequestMap.rend();
 						++itRemoval)
 					{
 						if(floorReqToFsMap.find(itRemoval->second/*floorRequest*/) == floorReqToFsMap.end()) // if FR not yet in map, then insert
 						{
 							floorReqToFsMap.insert(
 								std::make_pair(itRemoval->second/*floorRequest*/,
-								std::make_pair(itRemoval->first/*fs*/, elevatorRemovalId)));
+								std::make_pair(itRemoval->first/*fs*/, elevRemovalIndex+1)));
 						
 							break;
 						}
@@ -347,9 +368,9 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 
 		for(auto iter = floorReqToFsMap.begin(); iter != floorReqToFsMap.end(); ++iter)
 		{
-			int elevatorId = iter->second.second;
-			if(elevatorId < outputDispatcher.size() && elevatorId >= 0) // safety check for index range
-				outputDispatcher[elevatorId] = iter->first;
+			int elevIndex = iter->second.second - 1;
+			if(elevIndex < outputDispatcher.size() && elevIndex >= 0) // safety check for index range
+				outputDispatcher[elevIndex] = iter->first;
 			else
 				assert(false);
 		}

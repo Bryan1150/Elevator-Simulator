@@ -170,6 +170,11 @@ int Elevator::main()
 			m_pScreenMutex->Signal();
 			Sleep(500); /*****REMOVE*****/
 		}
+
+		if(floorRequest.fReqId.find(k_faultFReqIdStr) != std::string::npos)
+			m_elevatorStatus.bFault = true;
+		else
+			m_elevatorStatus.bFault = false;
 		
 		m_pDispatcherToElevator_consumer->Wait();
 		m_pElevatorToIO_consumer->Wait(); 
@@ -177,6 +182,7 @@ int Elevator::main()
 		pElevatorStatusDP->direction = m_elevatorStatus.direction;
 		pElevatorStatusDP->doorStatus = m_elevatorStatus.doorStatus;
 		pElevatorStatusDP->floorNumber = m_elevatorStatus.floorNumber;
+		pElevatorStatusDP->bFault = m_elevatorStatus.bFault;
 
 		OutputDebugString("Elevator Main writing new ElevatorStatus to DP\n");
 

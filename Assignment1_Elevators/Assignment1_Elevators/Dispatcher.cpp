@@ -295,9 +295,9 @@ int Dispatcher::main()
 
 		for(auto iter = outputDispatcher.begin(); iter != outputDispatcher.end(); ++iter)
 		{
-			int elevatorId = std::distance(outputDispatcher.begin(), iter);
+			int elevIndex = std::distance(outputDispatcher.begin(), iter);
 			tempFloorRequest = *iter;
-			m_pElevatorCommands[elevatorId]->Write(&tempFloorRequest, sizeof(FloorRequest_t)); // send FR to elevator
+			m_pElevatorCommands[elevIndex]->Write(&tempFloorRequest, sizeof(FloorRequest_t)); // send FR to elevator
 			OutputDebugString("Dispatcher Main has sent FR to each Elevator Pipeline\n");
 		}
 

@@ -54,7 +54,10 @@ struct UserInputData_t {
 };
 
 struct FloorRequest_t{
-	
+/**
+ * NOTE: elevatorId is always one int value
+ * greater than the elevator vector index
+ */
 	std::string fReqId;
 	int floorNumber;
 	int direction;

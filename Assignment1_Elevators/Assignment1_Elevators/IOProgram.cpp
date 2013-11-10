@@ -136,8 +136,6 @@ int IOProgram::CollectElevatorStatus(void* args)
 				OutputDebugString("IO Program has read incoming Elevator Status\n");
 				elevatorToIO_consumer.Signal();
 				IoLocalElevatorStatus.Signal();
-				
-				//UpdateElevatorStatus(m_localElevatorStatus[elevatorId-1],elevatorId);	//update visual for elevator 1
 
 				IoToElevatorGraphics_pipeline.Write(&m_localElevatorStatus[elevatorId-1], sizeof(ElevatorStatus_t));/****************/
 			}

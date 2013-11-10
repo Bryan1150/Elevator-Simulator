@@ -51,5 +51,6 @@ int main()
 		elevatorVect[i]->TerminateThread();	
 	}
 	
+	system("PAUSE");
 	return 0;
 }
