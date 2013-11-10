@@ -11,7 +11,7 @@
 #include <algorithm>
 
 #include "GlobalVariableDecl.h"
-#include "..\..\..\rt.h"
+#include "rt.h"
 
 #pragma once
 

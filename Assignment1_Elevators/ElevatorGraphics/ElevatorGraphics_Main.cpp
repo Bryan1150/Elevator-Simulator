@@ -5,7 +5,7 @@
 #include <map>
 #include "Graphics.h"
 #include "..\Assignment1_Elevators\GlobalVariableDecl.h"
-#include "..\..\..\rt.h"
+#include "..\Assignment1_Elevators\rt.h"
 
 Graphics Display;
 CMutex graphicsMtx("Mutex for Drawing");

@@ -74,11 +74,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\rt.h" />
+    <ClInclude Include="..\Assignment1_Elevators\rt.h" />
     <ClInclude Include="Graphics.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\rt.cpp" />
+    <ClCompile Include="..\Assignment1_Elevators\rt.cpp" />
     <ClCompile Include="ElevatorGraphics_Main.cpp" />
     <ClCompile Include="Graphics.cpp" />
   </ItemGroup>

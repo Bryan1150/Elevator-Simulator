@@ -7,7 +7,7 @@
  *****************************************************/
 #include <iostream>
 
-#include "..\..\..\rt.h"
+#include "rt.h"
 #include "GlobalVariableDecl.h"
 #include "IOProgram.h"
 #include "Elevator.h"

@@ -9,7 +9,7 @@
 #include <memory>
 #include <vector>
 
-#include "..\..\..\rt.h"
+#include "rt.h"
 #include "Dispatcher.h" //include active classes header files
 #include "Elevator.h"
 #include "IOProgram.h"
@@ -50,14 +50,15 @@ int main()
 	{
 		elevatorVect[i]->EndChildThread();
 		elevatorVect[i]->TerminateThread();	
-	//printf("Deleted elevatorVect %d in Main\n",i+1);
 	}
+
+	// FIXME use shared pointers for elevator threads
+	
 	//for( int i = 0; i < numberOfElevators; i++)
 	//{
 	//	delete elevatorVect[i];	
 	//	//printf("Deleted elevatorVect %d in Main\n",i+1);
 	//}
 	
-	system("PAUSE");
 	return 0;
 }

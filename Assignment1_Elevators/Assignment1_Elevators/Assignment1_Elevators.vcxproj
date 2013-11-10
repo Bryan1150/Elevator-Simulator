@@ -74,20 +74,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\rt.h" />
     <ClInclude Include="Dispatcher.h" />
     <ClInclude Include="Elevator.h" />
     <ClInclude Include="FSAlgorithm.h" />
     <ClInclude Include="GlobalVariableDecl.h" />
     <ClInclude Include="IOProgram.h" />
+    <ClInclude Include="rt.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\rt.cpp" />
     <ClCompile Include="Dispatcher.cpp" />
     <ClCompile Include="Elevator.cpp" />
     <ClCompile Include="FSAlgorithm.cpp" />
     <ClCompile Include="IOProgram.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="rt.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

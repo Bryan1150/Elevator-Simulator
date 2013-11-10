@@ -8,7 +8,7 @@
 #include <iostream>
 #include <memory>
 
-#include "..\..\..\rt.h"
+#include "rt.h"
 #include "GlobalVariableDecl.h"
 #include "FSAlgorithm.h"
 
