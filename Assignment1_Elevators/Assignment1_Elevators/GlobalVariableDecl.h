@@ -31,6 +31,7 @@ static int const k_heightOfBuilding = 47;
 static int const k_numFloorsMinusOne = 9;
 
 static std::string const k_idleFReqIdStr("Idle"); 
+static std::string const k_faultFReqIdStr("Fault");
 
 static int const k_terminateSimulation = 3000;
 
@@ -103,12 +104,21 @@ struct FloorRequest_t{
 		fReqId += ss.str(); // ex. "U1","D9", etc.		
 	}
 
-		FloorRequest_t(int floor, int dir, std::string frId)
+	FloorRequest_t(int floor, int dir, std::string frId)
 		: bInsideRequest(false)
 		, floorNumber(floor)
 		, direction(dir)
 		, fReqId(frId)
 		, elevatorId(INT_MAX)
+		, bDuplicateFloor(false)
+	{}
+
+	FloorRequest_t(std::string frId, int elevId)
+		: bInsideRequest(false)
+		, floorNumber(INT_MAX)
+		, direction(INT_MAX)
+		, fReqId(frId)
+		, elevatorId(elevId)
 		, bDuplicateFloor(false)
 	{}
 

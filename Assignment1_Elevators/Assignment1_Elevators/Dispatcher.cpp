@@ -105,6 +105,8 @@ int Dispatcher::ReadFromIoToDispatcherPipeline(void *args)
 	CSemaphore dispatcherUserInput_producer("DispatcherUserInputProducer",0,1);
 
 	UserInputData_t userInput;
+	bool bFault = false;
+
 	do{
 
 		if(IoToDispatcher_pipeline.TestForData() >= sizeof(UserInputData_t))
@@ -127,7 +129,7 @@ int Dispatcher::ReadFromIoToDispatcherPipeline(void *args)
 			FloorRequest_t floorReq;
 			int direction, floorNumber, elevId;
 			bool bInsideRequest;
-			if(userInput.direction != 'U' && userInput.direction != 'D') // inside request
+			if(userInput.direction >= '0' && userInput.direction <= '9') // inside request
 			{
 				elevId = userInput.direction - '0';
 				floorNumber = userInput.floor - '0';
@@ -135,9 +137,8 @@ int Dispatcher::ReadFromIoToDispatcherPipeline(void *args)
 				FloorRequest_t insideFR(floorNumber, INT_MAX, elevId);
 				floorReq = insideFR;
 			}
-			else // outside request
+			else if(userInput.direction == 'U' || userInput.direction == 'D') // outside request
 			{
-				assert(userInput.direction == 'U' || userInput.direction == 'D');
 				if(userInput.direction == 'U')
 					direction = k_directionUp;
 
@@ -151,11 +152,25 @@ int Dispatcher::ReadFromIoToDispatcherPipeline(void *args)
 				FloorRequest_t outsideFR(floorNumber, direction);
 				floorReq = outsideFR;
 			}
+			else if(userInput.direction == 'F')
+			{
+				elevId = userInput.floor - '0';
+				FloorRequest_t faultFR(k_faultFReqIdStr, elevId);
+				floorReq = faultFR;
+				bFault = true;
+			}
 
 			m_pQueueMutex->Wait();
-			m_floorRequestVect.push_back(floorReq);
-			m_pQueueMutex->Signal();
+
 			OutputDebugString("Dispatcher Child adding FR to queue\n");
+			if(bFault)
+				m_floorRequestVect.insert(m_floorRequestVect.begin(),floorReq);
+			else
+				m_floorRequestVect.push_back(floorReq);
+			
+			m_pQueueMutex->Signal();
+
+			bFault = false;
 		}
 	} while(1);
 

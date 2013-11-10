@@ -112,6 +112,18 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 		FloorRequestVect_t& floorRequestVect,
 		bool bIsStartUp)
 {
+	auto itCheckForFault = floorRequestVect.begin();
+	for(auto itCheckForFault = floorRequestVect.begin(); 
+		itCheckForFault != floorRequestVect.end(); 
+		++itCheckForFault)
+	{
+		if(itCheckForFault->fReqId != k_faultFReqIdStr)
+			break; // Faults are always at the front of the vector, so break once a non-fault FR is found
+
+		int elevatorIndex = itCheckForFault->elevatorId - 1;
+		elevatorStatusVect[elevatorIndex].bFault = true;
+	}
+
 	if(!bIsStartUp)
 	{
 		// remove a floor request from the queue if it has already been serviced
@@ -119,12 +131,15 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 			itElevatorStatus != elevatorStatusVect.end(); 
 			++itElevatorStatus)
 		{
+			if(itElevatorStatus->bFault)
+				continue; // we do nothing for an elevator if it has been signalled with a FAULT
+
 			FloorRequest_t tempHolder;
 			std::map<int/*floor*/,FloorRequest_t> duplicateFloorsList;
 			for(auto itDeleteRequest = floorRequestVect.begin();
 				itDeleteRequest != floorRequestVect.end();)
 			{
-				// only rm from queue if FR is on same floor, door is open
+				// remove from queue if FR is on same floor, door is open
 				if((itDeleteRequest->floorNumber == itElevatorStatus->floorNumber) && 
 					(itElevatorStatus->doorStatus == k_doorOpen))
 				{	
@@ -152,11 +167,13 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 			}
 		}
 
-
 		for(ElevatorStatusVect_t::iterator itElevatorStatus = elevatorStatusVect.begin();
 			itElevatorStatus != elevatorStatusVect.end();
 			++itElevatorStatus)
 		{
+			if(itElevatorStatus->bFault)
+				continue;
+
 			if(floorRequestVect.empty())
 			{
 				if(itElevatorStatus->floorNumber == 0)
@@ -258,9 +275,11 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 
 		std::map<FloorRequest_t, std::pair<FigureOfSuitability_t,int/*elevatorId*/>> floorReqToFsMap;
 		std::vector<int> reorderQueue;
-		auto itLift = elevatorStatusVect.begin();
-		for(itLift; itLift != elevatorStatusVect.end(); ++itLift)
+		for(auto itLift = elevatorStatusVect.begin(); itLift != elevatorStatusVect.end(); ++itLift)
 		{	
+			if(itLift->bFault)
+				continue;
+
 			for(auto itFs = itLift->fsToFloorRequestMap.rbegin();
 				itFs != itLift->fsToFloorRequestMap.rend();
 				++itFs)

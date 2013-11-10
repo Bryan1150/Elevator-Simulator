@@ -227,21 +227,27 @@ int IOProgram::main()
 			{ 
 				printf("Sending commands\n");
 				IoToDispatcher_pipeline.Write(&userInput, sizeof(UserInputData_t));
+				
 				if( userInput.direction == 'U' || userInput.direction == 'D')
+				{
 					IoOutsideRequestsToElevatorGraphics_pipeline.Write(&userInput, sizeof(UserInputData_t));
+				}
+
 				else if( userInput.direction <= m_numberOfElevators+'0' && userInput.direction >= 0 +'0')
 				{
 					IoLocalElevatorStatus.Wait();
+					
 					if(m_localElevatorStatus[userInput.direction-'0'-1].bFault == false)
-						IoInsideRequestsToElevatorGraphics_pipeline.Write(&userInput,sizeof(UserInputData_t));
-					IoLocalElevatorStatus.Signal();				}
+						IoInsideRequestsToElevatorGraphics_pipeline.Write(&userInput, sizeof(UserInputData_t));
+					
+					IoLocalElevatorStatus.Signal();				
+				}
+
 				else if( userInput.direction == 'E' && userInput.floor == 'E') //terminate the threads processing requests in graphics
 				{
 					IoOutsideRequestsToElevatorGraphics_pipeline.Write(&userInput, sizeof(UserInputData_t));
-					IoInsideRequestsToElevatorGraphics_pipeline.Write(&userInput,sizeof(UserInputData_t));
-					
+					IoInsideRequestsToElevatorGraphics_pipeline.Write(&userInput, sizeof(UserInputData_t));
 				}
-					
 			}
 			else
 			{

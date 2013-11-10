@@ -168,6 +168,7 @@ int Elevator::main()
 			MOVE_CURSOR(0,30);
 			std::cout << "Elevator is at floor " << m_elevatorStatus.floorNumber << std::endl;
 			m_pScreenMutex->Signal();
+			Sleep(500); /*****REMOVE*****/
 		}
 		
 		m_pDispatcherToElevator_consumer->Wait();
