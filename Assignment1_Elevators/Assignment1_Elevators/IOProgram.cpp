@@ -121,6 +121,8 @@ int IOProgram::CollectElevatorStatus(void* args)
 
 	CSemaphore elevatorToIO_consumer("Elevator"+elevatorNumberStr+"ToIOConsumer",1,1);
 	CSemaphore elevatorToIO_producer("Elevator"+elevatorNumberStr+"ToIOProducer",0,1);
+	CMutex IoLocalElevatorStatus("IoLocalElevatorStatus");
+	ElevatorStatus_t commandStatus;
 	CPipe IoToElevatorGraphics_pipeline("IoToElevatorGraphics"+elevatorNumberStr, 1024);/*******************************/
 	
 	do{
@@ -129,19 +131,23 @@ int IOProgram::CollectElevatorStatus(void* args)
 			if(elevatorId-1 >= 0)
 			{
 				elevatorToIO_producer.Wait();
-
+				IoLocalElevatorStatus.Wait();
 				m_localElevatorStatus[elevatorId-1] = *m_pElevatorStatus[elevatorId-1];
 				OutputDebugString("IO Program has read incoming Elevator Status\n");
-
 				elevatorToIO_consumer.Signal();
+				IoLocalElevatorStatus.Signal();
 				
-				UpdateElevatorStatus(m_localElevatorStatus[elevatorId-1],elevatorId);	//update visual for elevator 1
+				//UpdateElevatorStatus(m_localElevatorStatus[elevatorId-1],elevatorId);	//update visual for elevator 1
 
 				IoToElevatorGraphics_pipeline.Write(&m_localElevatorStatus[elevatorId-1], sizeof(ElevatorStatus_t));/****************/
 			}
 		}
 	} while(!m_exit);
 	
+	//commandStatus.direction = 1000;
+	//commandStatus.doorStatus = 2000;
+	//IoToElevatorGraphics_pipeline.Write(&commandStatus, sizeof(ElevatorStatus_t));/****************/
+
 	return 0;
 }
 int IOProgram::main()
@@ -149,6 +155,8 @@ int IOProgram::main()
 	CPipe IoToDispatcher_pipeline(k_ioToDispatcherPipeline, 1024);	//initialize pipeline to receive data from IO program
 	CPipe IoOutsideRequestsToElevatorGraphics_pipeline("IoOutsideRequestsToElevatorGraphics",1024);/*******************************/
 	CPipe IoInsideRequestsToElevatorGraphics_pipeline("IoInsideRequestsToElevatorGraphics",1024);/*******************************/
+	CMutex IoLocalElevatorStatus("IoLocalElevatorStatus");
+
 
 	int keys_pressed = 0;											//count of number of keys pressed
 	CMailbox DispatcherToIo_mailbox;								//mailbox for the IOprogram to receive messages from the dispatcher
@@ -216,17 +224,22 @@ int IOProgram::main()
 			printf("\nReceived two values\n");
 
 			if(IsValidCommand(userInput))		//Check if the command was valid
-			{
+			{ 
 				printf("Sending commands\n");
 				IoToDispatcher_pipeline.Write(&userInput, sizeof(UserInputData_t));
 				if( userInput.direction == 'U' || userInput.direction == 'D')
 					IoOutsideRequestsToElevatorGraphics_pipeline.Write(&userInput, sizeof(UserInputData_t));
-				else if( userInput.direction <= '9' && userInput.direction >= '1')
-					IoInsideRequestsToElevatorGraphics_pipeline.Write(&userInput,sizeof(UserInputData_t));
+				else if( userInput.direction <= m_numberOfElevators+'0' && userInput.direction >= 0 +'0')
+				{
+					IoLocalElevatorStatus.Wait();
+					if(m_localElevatorStatus[userInput.direction-'0'-1].bFault == false)
+						IoInsideRequestsToElevatorGraphics_pipeline.Write(&userInput,sizeof(UserInputData_t));
+					IoLocalElevatorStatus.Signal();				}
 				else if( userInput.direction == 'E' && userInput.floor == 'E') //terminate the threads processing requests in graphics
 				{
 					IoOutsideRequestsToElevatorGraphics_pipeline.Write(&userInput, sizeof(UserInputData_t));
 					IoInsideRequestsToElevatorGraphics_pipeline.Write(&userInput,sizeof(UserInputData_t));
+					
 				}
 					
 			}
@@ -259,7 +272,7 @@ int IOProgram::main()
 		
 	} while(!m_exit);
 
-
+	p1.WaitForProcess();
 	for( int i = 0; i < m_numberOfElevators; i++)
 	{
 		collectElevatorStatusVect[i]->WaitForThread();

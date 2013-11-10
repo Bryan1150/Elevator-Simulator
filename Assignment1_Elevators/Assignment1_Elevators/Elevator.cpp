@@ -47,6 +47,8 @@ Elevator::Elevator(int num)
 	m_pElevatorCommands = new CPipe("Elevator"+elevatorNumber+"Commands", 1024);
 	m_pDispatcherFloorRequest = new CMutex("DispatcherFloorRequest");
 	m_pScreenMutex = new CMutex("PrintToScreen");
+
+	m_pdispatcherToElevatorPipelineThread = new ClassThread<Elevator>(this, &Elevator::ReadCommandsFromPipeline,ACTIVE, NULL);
 }
 
 Elevator::~Elevator()
@@ -58,6 +60,7 @@ Elevator::~Elevator()
 	delete m_pElevatorDatapool;
 	delete m_pElevatorCommands;
 	delete m_pDispatcherFloorRequest;
+	delete m_pdispatcherToElevatorPipelineThread;
 }
 
 //
@@ -94,11 +97,16 @@ int  Elevator::ReadCommandsFromPipeline(void* args)
 	return 0;
 }
 
+void Elevator::EndChildThread()
+{
+	m_pdispatcherToElevatorPipelineThread->TerminateThread();
+}
+
 int Elevator::main()
 {
 	ElevatorStatusPtr_t	pElevatorStatusDP = (ElevatorStatusPtr_t)(m_pElevatorDatapool->LinkDataPool());
 
-	ClassThread<Elevator> dispatcherToElevatorPipelineThread(this, &Elevator::ReadCommandsFromPipeline,	ACTIVE, NULL);
+	//ClassThread<Elevator> dispatcherToElevatorPipelineThread(this, &Elevator::ReadCommandsFromPipeline,	ACTIVE, NULL);
 
 	FloorRequest_t floorRequest(0, k_directionUp);
 	FloorRequest_t lastRequest(0, k_directionUp);
@@ -185,5 +193,7 @@ int Elevator::main()
 
 	} while(1);
 
+
+	
 	return 0;
 }

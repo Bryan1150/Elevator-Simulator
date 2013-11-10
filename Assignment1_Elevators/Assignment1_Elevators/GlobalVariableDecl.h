@@ -135,12 +135,14 @@ struct ElevatorStatus_t {
 	int doorStatus;
 	int direction;
 	int floorNumber;
+	bool bFault;
 	FsToFloorRequestMap_t fsToFloorRequestMap;
 
 	ElevatorStatus_t()
 		: doorStatus(k_open)
 		, direction(k_directionUp)
 		, floorNumber(0)
+		, bFault(false)
 	{}
 
 	ElevatorStatus_t& operator=(ElevatorStatus_t const& other)
@@ -148,6 +150,7 @@ struct ElevatorStatus_t {
 		doorStatus = other.doorStatus;
 		direction = other.direction;
 		floorNumber = other.floorNumber;
+		bFault = other.bFault;
 		if(!other.fsToFloorRequestMap.empty())
 			fsToFloorRequestMap = other.fsToFloorRequestMap;
 

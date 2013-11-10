@@ -16,7 +16,7 @@ void Graphics::DrawElevator(int x, int y)
 {
 	screenMutex->Wait();
 	MOVE_CURSOR(x+1,y-1);
-	TEXT_COLOUR(3);
+	TEXT_COLOUR(11);
 	printf("LVL %d", (y-k_heightOfBuilding)/(-5));
 	TEXT_COLOUR(7);
 	for(int i = 0; i < 4; ++i)
@@ -41,7 +41,7 @@ void Graphics::OpenElevatorDoor(int x, int y)
 {
 	screenMutex->Wait();
 	MOVE_CURSOR(x+1,y-1);
-	TEXT_COLOUR(3);
+	TEXT_COLOUR(11);
 	printf("LVL %d", (y-k_heightOfBuilding)/(-5));
 	TEXT_COLOUR(7);
 	MOVE_CURSOR(x,y);

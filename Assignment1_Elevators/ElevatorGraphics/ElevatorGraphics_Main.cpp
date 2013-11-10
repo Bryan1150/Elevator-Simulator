@@ -36,36 +36,46 @@ UINT __stdcall PrintElevatorGraphics (void *args)	// thread function
 	std::string elevatorNumberStr = ss.str();
 	CPipe IoToElevatorGraphics_pipeline("IoToElevatorGraphics"+elevatorNumberStr, 1024);
 	int previousFloorNumber = 0;
+	bool bexit = false;
 	ElevatorStatus_t elevatorStatus;
 	do{
 		IoToElevatorGraphics_pipeline.Read(&elevatorStatus, sizeof(ElevatorStatus_t));
-		graphicsMtx.Wait();
-		Display.ClearElevator(20+23*(elevatorId-1),k_heightOfBuilding-5*previousFloorNumber);
-		//Display.PrintElevatorStatus(elevatorId, elevatorStatus);
-		
-		if(elevatorStatus.doorStatus == k_doorOpen)
-		{
-			Display.OpenElevatorDoor(20+23*(elevatorId-1),k_heightOfBuilding-5*elevatorStatus.floorNumber);
-			if(elevatorStatus.direction == k_directionUp)
-			{
-				MOVE_CURSOR(0,k_heightOfBuilding-5*elevatorStatus.floorNumber);
-				TEXT_COLOUR(15);
-				printf("%c",30);
-			}
-			else if(elevatorStatus.direction == k_directionDown)
-			{
-				MOVE_CURSOR(0,k_heightOfBuilding-5*elevatorStatus.floorNumber+1);
-				TEXT_COLOUR(15);
-				printf("%c",31);
-			}
-			MOVE_CURSOR(15+23*(elevatorId-1)+2*elevatorStatus.floorNumber,0); //clear inside requests
-			printf("%d",elevatorStatus.floorNumber);
-		}
-		else 
-			Display.DrawElevator(20+23*(elevatorId-1),k_heightOfBuilding-5*elevatorStatus.floorNumber);
-		graphicsMtx.Signal();
-		previousFloorNumber = elevatorStatus.floorNumber;	
 
+		/*if(elevatorStatus.direction == 1000 && elevatorStatus.doorStatus == 2000)
+			break;*/
+
+	/*	if(!bexit)
+		{*/
+			graphicsMtx.Wait();
+			Display.ClearElevator(20+23*(elevatorId-1),k_heightOfBuilding-5*previousFloorNumber);
+			//Display.PrintElevatorStatus(elevatorId, elevatorStatus);
+		
+			if(elevatorStatus.doorStatus == k_doorOpen)
+			{
+				Display.OpenElevatorDoor(20+23*(elevatorId-1),k_heightOfBuilding-5*elevatorStatus.floorNumber);
+				if(elevatorStatus.direction == k_directionUp)
+				{
+					MOVE_CURSOR(0,k_heightOfBuilding-5*elevatorStatus.floorNumber);
+					TEXT_COLOUR(15);
+					printf("%c",30);
+				}
+				else if(elevatorStatus.direction == k_directionDown)
+				{
+					if( elevatorStatus.floorNumber !=9 )
+						MOVE_CURSOR(0,k_heightOfBuilding-5*elevatorStatus.floorNumber+1);
+					else if( elevatorStatus.floorNumber == 9)
+						MOVE_CURSOR(0,k_heightOfBuilding-5*elevatorStatus.floorNumber);
+					TEXT_COLOUR(15);
+					printf("%c",31);
+				}
+				MOVE_CURSOR(15+23*(elevatorId-1)+2*elevatorStatus.floorNumber,0); //clear inside requests
+				printf("%d",elevatorStatus.floorNumber);
+			}
+			else 
+				Display.DrawElevator(20+23*(elevatorId-1),k_heightOfBuilding-5*elevatorStatus.floorNumber);
+			graphicsMtx.Signal();
+			previousFloorNumber = elevatorStatus.floorNumber;	
+		/*}*/
 
 	}while(1);
 
@@ -79,6 +89,7 @@ UINT __stdcall GetFloorRequests (void *args)	// thread function
 	UserInputData_t userInput;		
 	graphicsMtx.Wait();
 	MOVE_CURSOR(0,k_heightOfBuilding+3);
+	TEXT_COLOUR(15);
 	printf("____________");
 	for(int i = 0; i <= 9; ++i)
 	{
@@ -124,7 +135,10 @@ UINT __stdcall GetFloorRequests (void *args)	// thread function
 		else if(userInput.direction == 'D')
 		{
 			graphicsMtx.Wait();
-			MOVE_CURSOR(0,k_heightOfBuilding-5*(userInput.floor-'0')+1);
+			if( userInput.floor-'0' !=9 )
+				MOVE_CURSOR(0,k_heightOfBuilding-5*(userInput.floor-'0')+1);
+			else if( userInput.floor-'0' == 9)
+				MOVE_CURSOR(0,k_heightOfBuilding-5*(userInput.floor-'0'));
 			TEXT_COLOUR(12);
 			printf("%c",31);
 			TEXT_COLOUR(15);
@@ -148,6 +162,7 @@ UINT __stdcall GetInsideRequests (void *args)	// thread function
 	for(int i = 0; i < elevatorId; ++i)
 	{
 		MOVE_CURSOR(15+23*i,0);
+		TEXT_COLOUR(15);
 		printf("0 1 2 3 4 5 6 7 8 9");
 	}
 	graphicsMtx.Signal();
@@ -159,7 +174,7 @@ UINT __stdcall GetInsideRequests (void *args)	// thread function
 			break;
 
 		graphicsMtx.Wait();
-		TEXT_COLOUR(12);
+		TEXT_COLOUR(9);
 		MOVE_CURSOR(15+23*(userInput.direction-'0'-1)+2*(userInput.floor-'0'),0);
 		printf("%c",userInput.floor);
 		TEXT_COLOUR(15);
@@ -181,10 +196,10 @@ int main(int argc, char* argv[])
 	//Threads = (CThread*)malloc(numberOfElevators*sizeof(CThread));
 	int xArray[10];
 	
-	RECT r;
-	HWND console = GetConsoleWindow();
-	GetWindowRect(console, &r); //stores the console's current dimensions
-	MoveWindow(console, r.left, r.top, 800, 600, TRUE);
+	//RECT r;
+	//HWND console = GetConsoleWindow();
+	//GetWindowRect(console, &r); //stores the console's current dimensions
+	//MoveWindow(console, r.left, r.top, 800, 600, TRUE);
 
 	for(int i = 0; i < numberOfElevators; ++i)
 	{
@@ -199,7 +214,7 @@ int main(int argc, char* argv[])
 	getInsideRequests.WaitForThread();
 	for(int i = 0; i < numberOfElevators; ++i)
 	{
-		Threads[i]->WaitForThread();
+		Threads[i]->TerminateThread();
 	}
 
 	for(int i = 0; i < numberOfElevators; ++i)
