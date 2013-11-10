@@ -195,6 +195,13 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 				itFloorRequest != floorRequestVect.end();
 				++itFloorRequest)
 			{
+				if(itFloorRequest->fReqId == k_faultFReqIdStr)
+				{
+					int elevatorIndex = std::distance(elevatorStatusVect.begin(), itElevatorStatus);
+					if((itFloorRequest->elevatorId - 1) != elevatorIndex)
+						continue;
+				}
+				
 				if(itFloorRequest->bInsideRequest)
 				{
 					int elevatorIndex = std::distance(elevatorStatusVect.begin(), itElevatorStatus);

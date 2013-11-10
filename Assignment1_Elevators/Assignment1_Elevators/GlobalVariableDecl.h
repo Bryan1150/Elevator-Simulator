@@ -32,6 +32,7 @@ static int const k_numFloorsMinusOne = 9;
 
 static std::string const k_idleFReqIdStr("Idle"); 
 static std::string const k_faultFReqIdStr("Fault");
+static std::string const k_clearFaultStr("Clear");
 
 static int const k_terminateSimulation = 3000;
 

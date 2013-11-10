@@ -105,9 +105,10 @@ int Dispatcher::ReadFromIoToDispatcherPipeline(void *args)
 	CSemaphore dispatcherUserInput_producer("DispatcherUserInputProducer",0,1);
 
 	UserInputData_t userInput;
-	bool bFault = false;
 
 	do{
+		bool bFault = false;
+		bool bClear = false;
 
 		if(IoToDispatcher_pipeline.TestForData() >= sizeof(UserInputData_t))
 		{
@@ -159,14 +160,45 @@ int Dispatcher::ReadFromIoToDispatcherPipeline(void *args)
 				floorReq = faultFR;
 				bFault = true;
 			}
+			else if(userInput.direction == 'C')
+			{
+				elevId = userInput.floor - '0';
+				FloorRequest_t clearFR(k_clearFaultStr, elevId);
+				floorReq = clearFR;
+				bClear = true;
+			}
 
 			m_pQueueMutex->Wait();
 
 			OutputDebugString("Dispatcher Child adding FR to queue\n");
+			
 			if(bFault)
+			{
+				// remove all inside FRs for the elevator that received a fault
+				for(auto it = m_floorRequestVect.begin(); it != m_floorRequestVect.end();)
+				{
+					if(it->elevatorId == floorReq.elevatorId)
+						it = m_floorRequestVect.erase(it);
+					else
+						++it;
+				}
+				// insert the fault FR into the queue
 				m_floorRequestVect.insert(m_floorRequestVect.begin(),floorReq);
+			}
+			else if(bClear)
+			{	// find the fault FR (AND also any inside FRs for this elevator) in the queue and remove it
+				for(auto it = m_floorRequestVect.begin(); it != m_floorRequestVect.end();)
+				{
+					if(floorReq.elevatorId == it->elevatorId)
+						it = m_floorRequestVect.erase(it);
+					else
+						++it;
+				}
+			}
 			else
+			{
 				m_floorRequestVect.push_back(floorReq);
+			}
 			
 			m_pQueueMutex->Signal();
 
