@@ -7,7 +7,7 @@
 #include "..\Assignment1_Elevators\GlobalVariableDecl.h"
 #include "..\Assignment1_Elevators\rt.h"
 
-Graphics Display;
+
 CMutex graphicsMtx("Mutex for Drawing");
 
 
@@ -23,6 +23,7 @@ UINT __stdcall PrintElevatorGraphics (void *args)	// thread function
 	int previousFloorNumber = 0;				// to hold previous floor number for  clearing graphics
 	ElevatorStatus_t elevatorStatus;			// struct for holding elevator status for drawing
 	bool faultSet = false;
+	Graphics Display;
 
 	do{
 		IoToElevatorGraphics_pipeline.Read(&elevatorStatus, sizeof(ElevatorStatus_t));
@@ -32,18 +33,21 @@ UINT __stdcall PrintElevatorGraphics (void *args)	// thread function
 			graphicsMtx.Wait();
 			if(!faultSet)		// show clearing of the queue for floor requests
 			{
-				MOVE_CURSOR(15+23*elevatorId,0);
+				MOVE_CURSOR(15+23*(elevatorId-1),0);
 				TEXT_COLOUR(15);
 				printf("0 1 2 3 4 5 6 7 8 9");
 				faultSet = true;
+				Display.ClearElevator(20+23*(elevatorId-1),k_heightOfBuilding-5*previousFloorNumber);			// clear previous elevator drawing
 			}
-			Display.ClearElevator(20+23*(elevatorId-1),k_heightOfBuilding-5*previousFloorNumber);			// clear previous elevator drawing
 			Display.DrawFaultElevator(20+23*(elevatorId-1),k_heightOfBuilding-5*elevatorStatus.floorNumber); // print elevator with fault 
 			graphicsMtx.Signal();
 		}
 		else
 		{
-			faultSet = false;
+			if(faultSet)
+			{
+				faultSet = false;
+			}
 			graphicsMtx.Wait();
 			Display.ClearElevator(20+23*(elevatorId-1),k_heightOfBuilding-5*previousFloorNumber); // clear previous elevator
 			//Display.PrintElevatorStatus(elevatorId, elevatorStatus);
@@ -152,8 +156,6 @@ UINT __stdcall GetFloorRequests (void *args)	// thread function
 
 UINT __stdcall GetInsideRequests (void *args)	// thread function 
 {	
-
-	
 	
 	CPipe IoInsideRequestsToElevatorGraphics_pipeline("IoInsideRequestsToElevatorGraphics",1024); // pipeline to receive inside requests from IO
 	int elevatorId = *(int*)args; // store elevator ID number
