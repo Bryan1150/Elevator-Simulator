@@ -127,14 +127,30 @@ int Elevator::main()
 		
 		m_pChildToMainElev_consumer->Signal();
 		
-		// We send a default FR to an elevator with the following condition below, when
-		// it doesn't need to move. It will stay in place until the highest FS of a new FR matches this elevator
-		if(floorRequest.fReqId == "Idle")
+		if(floorRequest.fReqId.find(k_faultFReqIdStr) != std::string::npos)
+			m_elevatorStatus.bFault = true;
+		else
+			m_elevatorStatus.bFault = false;
+
+		if(m_elevatorStatus.bFault)
 		{
 			m_elevatorStatus.doorStatus = k_doorOpen;
 			m_pScreenMutex->Wait();
 			MOVE_CURSOR(0,30);
-			std::cout << "                                                   ";
+			std::cout << "                                                                    ";
+			MOVE_CURSOR(0,30);
+			std::cout << "Elevator has been signalled with a fault at floor " << m_elevatorStatus.floorNumber << std::endl;
+			m_pScreenMutex->Signal();
+		}
+
+		// We send a default FR to an elevator with the following condition below, when
+		// it doesn't need to move. It will stay in place until the highest FS of a new FR matches this elevator
+		else if(floorRequest.fReqId == "Idle")
+		{
+			m_elevatorStatus.doorStatus = k_doorOpen;
+			m_pScreenMutex->Wait();
+			MOVE_CURSOR(0,30);
+			std::cout << "                                                                    ";
 			MOVE_CURSOR(0,30);
 			std::cout << "Elevator is idle at floor " << m_elevatorStatus.floorNumber << std::endl;
 			m_pScreenMutex->Signal();
@@ -146,7 +162,7 @@ int Elevator::main()
 			m_elevatorStatus.doorStatus = k_doorOpen;
 			m_pScreenMutex->Wait();
 			MOVE_CURSOR(0,30);
-			std::cout << "                                                   ";
+			std::cout << "                                                                    ";
 			MOVE_CURSOR(0,30);
 			std::cout << "Elevator has reached its FR at floor " << floorRequest.floorNumber << std::endl;
 			m_pScreenMutex->Signal();
@@ -157,24 +173,21 @@ int Elevator::main()
 			m_elevatorStatus.doorStatus = k_doorClosed;
 
 			m_elevatorStatus.floorNumber - floorRequest.floorNumber > 0 ? m_elevatorStatus.direction = k_directionDown : m_elevatorStatus.direction = k_directionUp;
-			if(m_elevatorStatus.direction == k_directionDown)
+			if(m_elevatorStatus.direction == k_directionDown && m_elevatorStatus.floorNumber > 0)
 				m_elevatorStatus.floorNumber--;
-			else if(m_elevatorStatus.direction == k_directionUp)
+			else if(m_elevatorStatus.direction == k_directionUp && m_elevatorStatus.floorNumber < 9)
 				m_elevatorStatus.floorNumber++;
 
 			m_pScreenMutex->Wait();
 			MOVE_CURSOR(0,30);
-			std::cout << "                                                   ";
+			std::cout << "                                                                    ";
 			MOVE_CURSOR(0,30);
 			std::cout << "Elevator is at floor " << m_elevatorStatus.floorNumber << std::endl;
 			m_pScreenMutex->Signal();
 			Sleep(500); /*****REMOVE*****/
 		}
 
-		if(floorRequest.fReqId.find(k_faultFReqIdStr) != std::string::npos)
-			m_elevatorStatus.bFault = true;
-		else
-			m_elevatorStatus.bFault = false;
+
 		
 		m_pDispatcherToElevator_consumer->Wait();
 		m_pElevatorToIO_consumer->Wait(); 

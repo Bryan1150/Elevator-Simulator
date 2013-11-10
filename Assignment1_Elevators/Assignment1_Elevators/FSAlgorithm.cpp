@@ -114,14 +114,20 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 {
 	auto itCheckForFault = floorRequestVect.begin();
 	for(auto itCheckForFault = floorRequestVect.begin(); 
-		itCheckForFault != floorRequestVect.end(); 
-		++itCheckForFault)
+		itCheckForFault != floorRequestVect.end(); )
 	{
-		if(itCheckForFault->fReqId != k_faultFReqIdStr)
-			break; // Faults are always at the front of the vector, so break once a non-fault FR is found
-
 		int elevatorIndex = itCheckForFault->elevatorId - 1;
-		elevatorStatusVect[elevatorIndex].bFault = true;
+		if(itCheckForFault->fReqId == k_faultFReqIdStr)
+		{
+			elevatorStatusVect[elevatorIndex].bFault = true;
+		}
+		else if(itCheckForFault->fReqId == k_clearFaultStr)
+		{
+			elevatorStatusVect[elevatorIndex].bFault = false;
+			itCheckForFault = floorRequestVect.erase(itCheckForFault);
+			continue;
+		}
+		++itCheckForFault;
 	}
 
 	if(!bIsStartUp)

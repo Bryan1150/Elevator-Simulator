@@ -194,6 +194,8 @@ int Dispatcher::ReadFromIoToDispatcherPipeline(void *args)
 					else
 						++it;
 				}
+				// insert the clear FR into the queue
+				m_floorRequestVect.insert(m_floorRequestVect.begin(), floorReq);
 			}
 			else
 			{
