@@ -196,13 +196,13 @@ int main(int argc, char* argv[])
 	CThread *Threads[10]; // array with pointers to threads that update elevator drawings
 	CThread getFloorRequests(GetFloorRequests,ACTIVE,NULL); // thread to receive outside floor requests
 	CThread getInsideRequests(GetInsideRequests,ACTIVE,&numberOfElevators); // thread to receive inside floor requests
-	int xArray[10]; // an array to store elevator IDs
+	int elevatorNumberArray[10]; // an array to store elevator IDs
 	
 	// initialize threads for drawing elevators
 	for(int i = 0; i < numberOfElevators; ++i)
 	{
-		xArray[i] = i+1;
-		Threads[i] = new CThread(PrintElevatorGraphics, ACTIVE, &xArray[i]);
+		elevatorNumberArray[i] = i+1;
+		Threads[i] = new CThread(PrintElevatorGraphics, ACTIVE, &elevatorNumberArray[i]);
 	}
 
 	CURSOR_OFF(); // turns cursor off

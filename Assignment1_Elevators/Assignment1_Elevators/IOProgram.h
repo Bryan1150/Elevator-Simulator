@@ -34,7 +34,7 @@ public:
 	void ClearLines(int lines) const;							//clear lines in console
 
 	int CollectElevatorStatus(void* args);						//gather elevator status from the data pools
-	void UpdateElevatorStatus(ElevatorStatus_t elevatorStatus, int elevatorNumber) const;	//Print elevator statuses on the console
+	//void UpdateElevatorStatus(ElevatorStatus_t elevatorStatus, int elevatorNumber) const;	//Print elevator statuses on the console
 	
 private:
 

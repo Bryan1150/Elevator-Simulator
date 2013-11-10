@@ -22,9 +22,12 @@ IOProgram::IOProgram(int numberOfElevators)
 	: m_exit(FALSE)
 	, m_numberOfElevators(numberOfElevators)
 {
+	// mutex to protect writing to the console
 	m_screenMutex = new CMutex("PrintToScreen");
 	std::stringstream ss;
 	std::string elevatorNumber;
+
+	// intialized data pools to link with elevator status data pools
 	for(int i = 1; i <= m_numberOfElevators; ++i)
 	{
 		ss << i;
@@ -48,6 +51,7 @@ IOProgram::~IOProgram()
 	delete m_screenMutex;
 }
 
+// This function checks to see if the user input is valid, Return true if it is valid and false if it is not valid
 bool IOProgram::IsValidCommand(UserInputData_t userInput) const
 {
 	int numberDirection = userInput.direction - '0'; 
@@ -98,38 +102,40 @@ void IOProgram::ClearLines(int lines) const
 	m_screenMutex->Signal();
 }
 
-void IOProgram::UpdateElevatorStatus(ElevatorStatus_t elevatorStatus, int elevatorNumber) const
-{
-	m_screenMutex->Wait();	
-		MOVE_CURSOR(0,elevatorNumber*5+5);
-
-	printf("Elevator %d from IO\nDirection: %d\nDoor Status: %d\nFloor Number: %d\n", 
-		elevatorNumber,
-		elevatorStatus.direction,
-		elevatorStatus.doorStatus,
-		elevatorStatus.floorNumber);
-	m_screenMutex->Signal();
-
-}
+//void IOProgram::UpdateElevatorStatus(ElevatorStatus_t elevatorStatus, int elevatorNumber) const
+//{
+//	m_screenMutex->Wait();	
+//		MOVE_CURSOR(0,elevatorNumber*5+5);
+//
+//	printf("Elevator %d from IO\nDirection: %d\nDoor Status: %d\nFloor Number: %d\n", 
+//		elevatorNumber,
+//		elevatorStatus.direction,
+//		elevatorStatus.doorStatus,
+//		elevatorStatus.floorNumber);
+//	m_screenMutex->Signal();
+//
+//}
 
 int IOProgram::CollectElevatorStatus(void* args)
 {
+	// store elevator ID as a string in order to match the associating producer/consumer semaphores
 	std::stringstream ss;
 	int elevatorId = *(int*)args;
 	ss << elevatorId;
 	std::string elevatorNumberStr = ss.str();
 
+	// producer/consumer semaphores for elevator status data pools
 	CSemaphore elevatorToIO_consumer("Elevator"+elevatorNumberStr+"ToIOConsumer",1,1);
 	CSemaphore elevatorToIO_producer("Elevator"+elevatorNumberStr+"ToIOProducer",0,1);
-	CMutex IoLocalElevatorStatus("IoLocalElevatorStatus");
-	ElevatorStatus_t commandStatus;
-	CPipe IoToElevatorGraphics_pipeline("IoToElevatorGraphics"+elevatorNumberStr, 1024);/*******************************/
+	CMutex IoLocalElevatorStatus("IoLocalElevatorStatus"); // mutex to protect local elevator status structure
+	CPipe IoToElevatorGraphics_pipeline("IoToElevatorGraphics"+elevatorNumberStr, 1024);// pipeline to send elevator statuses to graphics process
 	
 	do{
-		if(elevatorToIO_producer.Read() > 0) // elevator 1 produced data
+		if(elevatorToIO_producer.Read() > 0) // elevator produced data
 		{
 			if(elevatorId-1 >= 0)
 			{
+				// store elevator statuses into local structures
 				elevatorToIO_producer.Wait();
 				IoLocalElevatorStatus.Wait();
 				m_localElevatorStatus[elevatorId-1] = *m_pElevatorStatus[elevatorId-1];
@@ -137,40 +143,37 @@ int IOProgram::CollectElevatorStatus(void* args)
 				elevatorToIO_consumer.Signal();
 				IoLocalElevatorStatus.Signal();
 				
-				//UpdateElevatorStatus(m_localElevatorStatus[elevatorId-1],elevatorId);	//update visual for elevator 1
-
-				IoToElevatorGraphics_pipeline.Write(&m_localElevatorStatus[elevatorId-1], sizeof(ElevatorStatus_t));/****************/
+				// send elevator statuses to the graphics to update
+				IoToElevatorGraphics_pipeline.Write(&m_localElevatorStatus[elevatorId-1], sizeof(ElevatorStatus_t));
+		
 			}
 		}
 	} while(!m_exit);
-	
-	//commandStatus.direction = 1000;
-	//commandStatus.doorStatus = 2000;
-	//IoToElevatorGraphics_pipeline.Write(&commandStatus, sizeof(ElevatorStatus_t));/****************/
 
 	return 0;
 }
+
 int IOProgram::main()
 {
 	CPipe IoToDispatcher_pipeline(k_ioToDispatcherPipeline, 1024);	//initialize pipeline to receive data from IO program
-	CPipe IoOutsideRequestsToElevatorGraphics_pipeline("IoOutsideRequestsToElevatorGraphics",1024);/*******************************/
-	CPipe IoInsideRequestsToElevatorGraphics_pipeline("IoInsideRequestsToElevatorGraphics",1024);/*******************************/
-	CMutex IoLocalElevatorStatus("IoLocalElevatorStatus");
+	CPipe IoOutsideRequestsToElevatorGraphics_pipeline("IoOutsideRequestsToElevatorGraphics",1024); // pipeline to send outside floor requests to graphics process
+	CPipe IoInsideRequestsToElevatorGraphics_pipeline("IoInsideRequestsToElevatorGraphics",1024); // pipeline to send inside floor requests to graphics process
+	CMutex IoLocalElevatorStatus("IoLocalElevatorStatus");			// mutex to protect local structure of elevator statuses
 
 
 	int keys_pressed = 0;											//count of number of keys pressed
 	CMailbox DispatcherToIo_mailbox;								//mailbox for the IOprogram to receive messages from the dispatcher
 
-	UserInputData_t userInput;										
+	UserInputData_t userInput;										// struct for holding user input
 	
 	std::vector<ClassThread<IOProgram>*> collectElevatorStatusVect; //vector to hold pointers for threads collecting elevator statuses
 	int elevatorNumberArray[10];												//used to pass in elevator number to the threads
 
-	std::stringstream ss;
+	std::stringstream ss;						// convert number of elevators into a string							
 	ss << m_numberOfElevators;
 	std::string elevatorNumberStr = ss.str();
 
-	/*******************************/
+	
 	CProcess p1("Z:\\RTExamples\\EECE314\\Assignment1_Elevators\\Debug\\ElevatorGraphics.exe "+elevatorNumberStr,	// pathlist to child program executable				
 			NORMAL_PRIORITY_CLASS,			// priority
 			OWN_WINDOW,						// process has its own window					
