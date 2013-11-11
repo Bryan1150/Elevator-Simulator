@@ -106,7 +106,7 @@ void IOProgram::ClearLines(int lines) const
 void IOProgram::UpdateElevatorStatus(ElevatorStatus_t elevatorStatus, int elevatorNumber) const
 {
 	m_screenMutex->Wait();	
-		MOVE_CURSOR(0,elevatorNumber*6+5);
+		MOVE_CURSOR(0,elevatorNumber*6+m_numberOfElevators);
 
 	printf("Elevator %d\n", elevatorNumber);
 	printf("Status: ");
@@ -153,11 +153,14 @@ int IOProgram::CollectElevatorStatus(void* args)
 				// store elevator statuses into local structures
 				elevatorToIO_producer.Wait();
 				IoLocalElevatorStatus.Wait();
+
 				m_localElevatorStatus[elevatorId-1] = *m_pElevatorStatus[elevatorId-1];
-				OutputDebugString("IO Program has read incoming Elevator Status\n");
+
 				elevatorToIO_consumer.Signal();
 				IoLocalElevatorStatus.Signal();
+
 				UpdateElevatorStatus(m_localElevatorStatus[elevatorId-1],elevatorId);	//update text information for elevator
+
 				// send elevator statuses to the graphics to update
 				IoToElevatorGraphics_pipeline.Write(&m_localElevatorStatus[elevatorId-1], sizeof(ElevatorStatus_t)); /****************/
 			}
@@ -203,7 +206,7 @@ int IOProgram::main()
 		{	
 			ClassThread<IOProgram>* pCollectElevatorStatus= new ClassThread<IOProgram>(this,&IOProgram::CollectElevatorStatus, ACTIVE, &elevatorNumberArray[i-1]);
 			collectElevatorStatusVect.push_back(pCollectElevatorStatus);
-		} // FIXME add delete in for the pointers in the vectors //add waitfor thread at the end
+		} 
 	}
 	
 	

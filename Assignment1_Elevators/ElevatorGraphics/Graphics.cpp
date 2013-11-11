@@ -1,9 +1,15 @@
+/*****************************************************
+ * EECE 314 Assignment #1
+ * Date: October 2013
+ * Authors: 
+ *	 Kieren Wou	54724117
+ *	 Ryan Wong	47307103
+ *****************************************************/
 #include "Graphics.h"
 
 
 Graphics::Graphics()
 {
-	
 	screenMutex = new CMutex("Screen Mutex");
 	m_fault = 0;
 }

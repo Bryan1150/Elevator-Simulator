@@ -11,7 +11,7 @@
 #include "IOProgram.h"
 
 Elevator::Elevator() 
-	: m_elevatorNumber(0) // FIXME kwou: change default value
+	: m_elevatorNumber(0) 
 	, m_elevatorStatus(ElevatorStatus_t())
 {
 	m_pDispatcherToElevator_consumer = new CSemaphore("dispatcherToElevator_consumer",1,1);
@@ -83,7 +83,6 @@ int  Elevator::ReadCommandsFromPipeline(void* args)
 			m_pChildToMainElev_consumer->Wait();
 			
 			m_floorReqFromDispatcher = floorRequest;
-			OutputDebugString("Elevator Child finished reading FR from DispatcherToElevator Pipeline and sending to Elevator Main\n");
 			
 			m_pChildToMainElev_producer->Signal();
 		}
@@ -110,8 +109,6 @@ int Elevator::main()
 	m_pDispatcherToElevator_consumer->Wait();
 	m_pElevatorToIO_consumer->Wait(); 
 	
-	OutputDebugString("Elevator Main writing new ElevatorStatus to DP\n");
-	
 	pElevatorStatusDP->direction = m_elevatorStatus.direction;
 	pElevatorStatusDP->doorStatus = m_elevatorStatus.doorStatus;
 	pElevatorStatusDP->floorNumber = m_elevatorStatus.floorNumber;
@@ -124,7 +121,6 @@ int Elevator::main()
 		m_pChildToMainElev_producer->Wait();
 
 		floorRequest = m_floorReqFromDispatcher;
-		OutputDebugString("Elevator Main has received FR from DispatcherToElevatorPipeline\n");
 		
 		m_pChildToMainElev_consumer->Signal();
 		
@@ -137,10 +133,10 @@ int Elevator::main()
 		{
 			m_elevatorStatus.doorStatus = k_doorOpen;
 			m_pScreenMutex->Wait();
-			MOVE_CURSOR(0,30);
+			MOVE_CURSOR(0,1+m_elevatorNumber);
 			std::cout << "                                                                    ";
-			MOVE_CURSOR(0,30);
-			std::cout << "Elevator has been signalled with a fault at floor " << m_elevatorStatus.floorNumber << std::endl;
+			MOVE_CURSOR(0,1+m_elevatorNumber);
+			std::cout << "Elevator " << m_elevatorNumber << " has been signalled with a fault at floor " << m_elevatorStatus.floorNumber << std::endl;
 			m_pScreenMutex->Signal();
 		}
 
@@ -151,10 +147,10 @@ int Elevator::main()
 			m_elevatorStatus.doorStatus = k_doorOpen;
 			m_elevatorStatus.direction = k_directionIdle;
 			m_pScreenMutex->Wait();
-			MOVE_CURSOR(0,30);
+			MOVE_CURSOR(0,1+m_elevatorNumber);
 			std::cout << "                                                                    ";
-			MOVE_CURSOR(0,30);
-			std::cout << "Elevator is idle at floor " << m_elevatorStatus.floorNumber << std::endl;
+			MOVE_CURSOR(0,1+m_elevatorNumber);
+			std::cout << "Elevator "<< m_elevatorNumber << " is idle at floor " << m_elevatorStatus.floorNumber << std::endl;
 			m_pScreenMutex->Signal();
 		}
 
@@ -163,10 +159,10 @@ int Elevator::main()
 			m_elevatorStatus.direction = floorRequest.direction;
 			m_elevatorStatus.doorStatus = k_doorOpen;
 			m_pScreenMutex->Wait();
-			MOVE_CURSOR(0,30);
+			MOVE_CURSOR(0,1+m_elevatorNumber);
 			std::cout << "                                                                    ";
-			MOVE_CURSOR(0,30);
-			std::cout << "Elevator has reached its FR at floor " << floorRequest.floorNumber << std::endl;
+			MOVE_CURSOR(0,1+m_elevatorNumber);
+			std::cout << "Elevator "<< m_elevatorNumber << " has reached its FR at floor " << floorRequest.floorNumber << std::endl;
 			m_pScreenMutex->Signal();
 			Sleep(2000);
 		}
@@ -181,12 +177,12 @@ int Elevator::main()
 				m_elevatorStatus.floorNumber++;
 
 			m_pScreenMutex->Wait();
-			MOVE_CURSOR(0,30);
+			MOVE_CURSOR(0,1+m_elevatorNumber);
 			std::cout << "                                                                    ";
-			MOVE_CURSOR(0,30);
-			std::cout << "Elevator is at floor " << m_elevatorStatus.floorNumber << std::endl;
+			MOVE_CURSOR(0,1+m_elevatorNumber);
+			std::cout << "Elevator "<< m_elevatorNumber << " is at floor " << m_elevatorStatus.floorNumber << std::endl;
 			m_pScreenMutex->Signal();
-			Sleep(500); /*****REMOVE*****/
+			Sleep(500); /*****FIXME change delay*****/
 		}
 
 
@@ -198,8 +194,6 @@ int Elevator::main()
 		pElevatorStatusDP->doorStatus = m_elevatorStatus.doorStatus;
 		pElevatorStatusDP->floorNumber = m_elevatorStatus.floorNumber;
 		pElevatorStatusDP->bFault = m_elevatorStatus.bFault;
-
-		OutputDebugString("Elevator Main writing new ElevatorStatus to DP\n");
 
 		m_pDispatcherToElevator_producer->Signal();
 		m_pElevatorToIO_producer-> Signal();

@@ -85,7 +85,6 @@ int Dispatcher::CollectElevatorStatus(void* args)
 				m_pQueueFull->Signal();
 				
 				m_localElevatorStatus[elevatorId-1] = *m_pElevatorStatus[elevatorId-1];
-				OutputDebugString("Dispatcher Child reading from Elevator DP and copying to Dispatcher Main. Waiting at 'exit roller coaster' semaphores\n");
 				
 				m_pExitFromQueue->Wait();
 				m_pQueueEmpty->Signal();
@@ -114,7 +113,6 @@ int Dispatcher::ReadFromIoToDispatcherPipeline(void *args)
 		{
 			m_bIsStartUp = false;
 			IoToDispatcher_pipeline.Read(&userInput, sizeof(UserInputData_t));	//Read commands from IO 
-			OutputDebugString("Dispatcher reading UserInputData_t from IO\n");
 		
 			// "EE" used to terminate simulation
 			if(userInput.direction == 'E' && userInput.floor == 'E') 
@@ -173,8 +171,6 @@ int Dispatcher::ReadFromIoToDispatcherPipeline(void *args)
 
 			m_pQueueMutex->Wait();
 
-			OutputDebugString("Dispatcher Child adding FR to queue\n");
-			
 			if(bFault)
 			{
 				// remove all inside FRs for the elevator that received a fault
@@ -257,10 +253,7 @@ int Dispatcher::main()
 		for(int i = 0; i < m_numberOfElevators; )
 		{
 			if(m_bExit)
-			{
-				OutputDebugString("breaking from dispatcher loop\n");
 				break; 
-			}
 			if(m_pQueueFull->Wait(200) == WAIT_TIMEOUT)
 				continue;
 			++i;
@@ -272,8 +265,6 @@ int Dispatcher::main()
 			elevatorStatusVect.push_back(m_localElevatorStatus[i]);
 		}
 		
-		OutputDebugString("Dispatcher Main has read each of the Elevator Statuses\n");
-
 		// release semaphores
 		for(int i = 0; i < m_numberOfElevators; ++i)
 		{
@@ -282,10 +273,7 @@ int Dispatcher::main()
 		for(int i = 0; i < m_numberOfElevators;)
 		{
 			if(m_bExit)
-			{
-				OutputDebugString("breaking from dispatcher loop\n");
 				break; 
-			}
 			if(m_pQueueEmpty->Wait(200) == WAIT_TIMEOUT)
 				continue;
 			++i;
@@ -303,14 +291,10 @@ int Dispatcher::main()
 			int elevIndex = std::distance(outputDispatcher.begin(), iter);
 			tempFloorRequest = *iter;
 			m_pElevatorCommands[elevIndex]->Write(&tempFloorRequest, sizeof(FloorRequest_t)); // send FR to elevator
-			OutputDebugString("Dispatcher Main has sent FR to each Elevator Pipeline\n");
 		}
 
 		if(m_bExit)
-		{
-			OutputDebugString("breaking from dispatcher loop\n");
 			break; 
-		}
 
 	} while(1);
 
@@ -321,6 +305,5 @@ int Dispatcher::main()
 		delete collectElevatorStatusVect[i];
 	}
 	
-	OutputDebugString("Exiting dispatcher\n");
 	return 0;
 }

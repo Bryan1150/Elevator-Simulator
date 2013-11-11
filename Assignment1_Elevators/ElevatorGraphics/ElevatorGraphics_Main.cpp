@@ -1,3 +1,10 @@
+/*****************************************************
+ * EECE 314 Assignment #1
+ * Date: October 2013
+ * Authors: 
+ *	 Kieren Wou	54724117
+ *	 Ryan Wong	47307103
+ *****************************************************/
 #include <stdio.h>
 #include <stdlib.h>
 #include <sstream>
