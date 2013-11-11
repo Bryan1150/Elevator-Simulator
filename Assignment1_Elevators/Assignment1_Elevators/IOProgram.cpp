@@ -270,24 +270,33 @@ int IOProgram::main()
 			}
 			else
 			{
+				m_screenMutex->Wait();
+				MOVE_CURSOR(0,1);
 				printf("Error: invalid command\n"); // display error message for invalid commands
+				m_screenMutex->Signal();
 			}
 			keys_pressed = 0; //reset the number of keys pressed value
 			Sleep(500);
 			ClearLines(5);
+
+			m_screenMutex->Wait();
 			MOVE_CURSOR(0,0);
 			printf("Enter Commands: ");
+			m_screenMutex->Signal();
 		}	
 
 
 		if(DispatcherToIo_mailbox.TestForMessage()) //Check mailbox for messages from dispatcher
 		{		
-			UINT message = DispatcherToIo_mailbox.GetMessage() ;	
+			UINT message = DispatcherToIo_mailbox.GetMessage() ;
+			m_screenMutex->Wait();
+			MOVE_CURSOR(0,1);
 			printf("Message = %d\n", message);
+			m_screenMutex->Signal();
 			if(message == k_terminateSimulation) // if message matches termination flag, set necessary conditions	
 			{			
 				m_screenMutex->Wait();
-				MOVE_CURSOR(0,3);
+				MOVE_CURSOR(0,2);
 				printf("Received TERMINATE Message in IO.....\n") ;
 				m_exit = TRUE;
 				m_screenMutex->Signal();
@@ -309,6 +318,9 @@ int IOProgram::main()
 	{
 		delete collectElevatorStatusVect[i];
 	}
+	m_screenMutex->Wait();
+	MOVE_CURSOR(0,3);
 	printf("Exiting  IO.....\n") ;
+	m_screenMutex->Signal();
 	return 0;
 }

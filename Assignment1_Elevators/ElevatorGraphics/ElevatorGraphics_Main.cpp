@@ -21,62 +21,72 @@ UINT __stdcall PrintElevatorGraphics (void *args)	// thread function
 
 	CPipe IoToElevatorGraphics_pipeline("IoToElevatorGraphics"+elevatorNumberStr, 1024); // pipeline to receive elevator statuses from IO
 	int previousFloorNumber = 0;				// to hold previous floor number for  clearing graphics
-	ElevatorStatus_t elevatorStatus;			// struct for holding elevator status for drawing
+	ElevatorStatus_t elevatorStatus, previousElevatorStatus;			// struct for holding elevator status for drawing
+	bool initialize = false;
 	bool faultSet = false;
 	Graphics Display;
 
 	do{
 		IoToElevatorGraphics_pipeline.Read(&elevatorStatus, sizeof(ElevatorStatus_t));
-
-		if( elevatorStatus.bFault)
+		if( previousElevatorStatus.bFault != elevatorStatus.bFault ||
+			previousElevatorStatus.direction != elevatorStatus.direction ||
+			previousElevatorStatus.doorStatus != elevatorStatus.doorStatus ||
+			previousElevatorStatus.floorNumber != elevatorStatus.floorNumber ||
+			elevatorStatus.bFault == true ||
+			initialize == false)
 		{
-			graphicsMtx.Wait();
-			if(!faultSet)		// show clearing of the queue for floor requests
+			initialize = true;
+			if( elevatorStatus.bFault)
 			{
-				MOVE_CURSOR(15+23*(elevatorId-1),0);
-				TEXT_COLOUR(15);
-				printf("0 1 2 3 4 5 6 7 8 9");
-				faultSet = true;
-				Display.ClearElevator(20+23*(elevatorId-1),k_heightOfBuilding-5*previousFloorNumber);			// clear previous elevator drawing
+				graphicsMtx.Wait();
+				if(!faultSet)		// show clearing of the queue for floor requests
+				{
+					MOVE_CURSOR(15+23*(elevatorId-1),0);
+					TEXT_COLOUR(15);
+					printf("0 1 2 3 4 5 6 7 8 9");
+					faultSet = true;
+					Display.ClearElevator(20+23*(elevatorId-1),k_heightOfBuilding-5*previousElevatorStatus.floorNumber);			// clear previous elevator drawing
+				}
+				Display.DrawFaultElevator(20+23*(elevatorId-1),k_heightOfBuilding-5*elevatorStatus.floorNumber); // print elevator with fault 
+				graphicsMtx.Signal();
+				previousElevatorStatus = elevatorStatus;	// store current elevator status for comparison in the next update
 			}
-			Display.DrawFaultElevator(20+23*(elevatorId-1),k_heightOfBuilding-5*elevatorStatus.floorNumber); // print elevator with fault 
-			graphicsMtx.Signal();
-		}
-		else
-		{
-			if(faultSet)
+			else
 			{
-				faultSet = false;
-			}
-			graphicsMtx.Wait();
-			Display.ClearElevator(20+23*(elevatorId-1),k_heightOfBuilding-5*previousFloorNumber); // clear previous elevator
-			//Display.PrintElevatorStatus(elevatorId, elevatorStatus);
+				if(faultSet)
+				{
+					faultSet = false;
+				}
+				graphicsMtx.Wait();
+				Display.ClearElevator(20+23*(elevatorId-1),k_heightOfBuilding-5*previousElevatorStatus.floorNumber); // clear previous elevator
+				//Display.PrintElevatorStatus(elevatorId, elevatorStatus);
 		
-			if(elevatorStatus.doorStatus == k_doorOpen) // if the door is open, it has reached a floor request
-			{
-				Display.OpenElevatorDoor(20+23*(elevatorId-1),k_heightOfBuilding-5*elevatorStatus.floorNumber); // draw elevator with open doors
-				if(elevatorStatus.direction == k_directionUp)		// clear up arrows for outside requests
+				if(elevatorStatus.doorStatus == k_doorOpen) // if the door is open, it has reached a floor request
 				{
-					MOVE_CURSOR(0,k_heightOfBuilding-5*elevatorStatus.floorNumber);
-					TEXT_COLOUR(15);
-					printf("%c",30);
-				}
-				else if(elevatorStatus.direction == k_directionDown)   // clear down arrows for outside requests
-				{
-					if( elevatorStatus.floorNumber !=9 )
-						MOVE_CURSOR(0,k_heightOfBuilding-5*elevatorStatus.floorNumber+1);
-					else if( elevatorStatus.floorNumber == 9)
+					Display.OpenElevatorDoor(20+23*(elevatorId-1),k_heightOfBuilding-5*elevatorStatus.floorNumber); // draw elevator with open doors
+					if(elevatorStatus.direction == k_directionUp)		// clear up arrows for outside requests
+					{
 						MOVE_CURSOR(0,k_heightOfBuilding-5*elevatorStatus.floorNumber);
-					TEXT_COLOUR(15);
-					printf("%c",31);
+						TEXT_COLOUR(15);
+						printf("%c",30);
+					}
+					else if(elevatorStatus.direction == k_directionDown)   // clear down arrows for outside requests
+					{
+						if( elevatorStatus.floorNumber !=9 )
+							MOVE_CURSOR(0,k_heightOfBuilding-5*elevatorStatus.floorNumber+1);
+						else if( elevatorStatus.floorNumber == 9)
+							MOVE_CURSOR(0,k_heightOfBuilding-5*elevatorStatus.floorNumber);
+						TEXT_COLOUR(15);
+						printf("%c",31);
+					}
+					MOVE_CURSOR(15+23*(elevatorId-1)+2*elevatorStatus.floorNumber,0); //clear inside requests
+					printf("%d",elevatorStatus.floorNumber);
 				}
-				MOVE_CURSOR(15+23*(elevatorId-1)+2*elevatorStatus.floorNumber,0); //clear inside requests
-				printf("%d",elevatorStatus.floorNumber);
+				else 
+					Display.DrawElevator(20+23*(elevatorId-1),k_heightOfBuilding-5*elevatorStatus.floorNumber); // draw updated elevator
+				graphicsMtx.Signal();
+				previousElevatorStatus = elevatorStatus;	// store current elevator status for comparison in the next update
 			}
-			else 
-				Display.DrawElevator(20+23*(elevatorId-1),k_heightOfBuilding-5*elevatorStatus.floorNumber); // draw updated elevator
-			graphicsMtx.Signal();
-			previousFloorNumber = elevatorStatus.floorNumber;	// store current floor number as previous number for clearing the drawing
 		}
 
 	}while(1);

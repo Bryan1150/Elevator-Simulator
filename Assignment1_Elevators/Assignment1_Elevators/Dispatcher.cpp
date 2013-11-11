@@ -120,7 +120,10 @@ int Dispatcher::ReadFromIoToDispatcherPipeline(void *args)
 			if(userInput.direction == 'E' && userInput.floor == 'E') 
 			{ 
 				BOOL bPostSuccessful = m_pIoProgram->Post(k_terminateSimulation);
+				m_screenMutex->Wait();
+				MOVE_CURSOR(0,0);
 				printf("Posting Message. Status: %d\n", bPostSuccessful); 
+				m_screenMutex->Signal();
 				if(bPostSuccessful)
 				{
 					m_bExit = true;
