@@ -217,7 +217,7 @@ int Dispatcher::main()
 	std::vector<CSemaphore*> dispatcherLocalElevatorStatusConsumerVect;
 	std::vector<CSemaphore*> dispatcherLocalElevatorStatusProducerVect;
 
-	int elevatorNumberArray[10];
+	int elevatorNumberArray[k_maximumElevators];
 
 	CSemaphore floorRequestVectProtector_consumer("FloorRequestVectProtectorConsumer",1,1);  // semaphores to protect floor requests
 	CSemaphore floorRequestVectProtector_producer("FloorRequestVectProtectorProducer",0,1);

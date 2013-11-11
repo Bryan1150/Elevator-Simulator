@@ -214,10 +214,10 @@ UINT __stdcall GetInsideRequests (void *args)	// thread function
 int main(int argc, char* argv[])
 {
 	int numberOfElevators = atoi(argv[1]);
-	CThread *Threads[10]; // array with pointers to threads that update elevator drawings
+	CThread *Threads[k_maximumElevators]; // array with pointers to threads that update elevator drawings
 	CThread getFloorRequests(GetFloorRequests,ACTIVE,NULL); // thread to receive outside floor requests
 	CThread getInsideRequests(GetInsideRequests,ACTIVE,&numberOfElevators); // thread to receive inside floor requests
-	int elevatorNumberArray[10]; // an array to store elevator IDs
+	int elevatorNumberArray[k_maximumElevators]; // an array to store elevator IDs
 	
 	// initialize threads for drawing elevators
 	for(int i = 0; i < numberOfElevators; ++i)

@@ -37,7 +37,7 @@ void FSAlgorithm::InsideRequest(
 	FloorRequest_t const& floorReq,
 	ElevatorStatus_t& lift)
 {
-	FigureOfSuitability_t fs = 10;
+	FigureOfSuitability_t fs = k_maximumElevators;
 
 	InsertFsIntoMap(fs, floorReq, lift);
 }
@@ -394,7 +394,7 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 		// Elevator statuses from the DPs to the dispatcher are always stored in order of "elevatorId"
 
 		FloorRequestVect_t outputDispatcher;
-		outputDispatcher.reserve(10);
+		outputDispatcher.reserve(k_maximumElevators);
 
 		// initialize the outputDispatcher vector to have 10 default ElevatorStatus_t()
 		for(int i = 0; i < elevatorStatusVect.size(); ++i)
@@ -416,7 +416,7 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 	else
 	{
 		FloorRequestVect_t outputDispatcher;
-		outputDispatcher.reserve(10);
+		outputDispatcher.reserve(k_maximumElevators);
 
 		FloorRequest_t startOnGroundLvl(0, k_directionUp);
 		for(int i = 0; i < elevatorStatusVect.size(); ++i)

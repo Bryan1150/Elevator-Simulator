@@ -13,6 +13,8 @@
 
 #pragma once
 
+static int const k_maximumElevators = 10;
+
 static int const k_doorOpen = 1;
 static int const k_doorClosed = 0;
 static int const k_directionDown = 2;
@@ -24,7 +26,7 @@ static int const k_closed = 0;
 static int const k_idle = 0;
 static int const k_up = 1;
 static int const k_down = 2;
-static int const k_maxFloorNumber = 9;
+static int const k_maxFloorNumber = k_maximumElevators - 1;
 static int const k_minFloorNumber = 0;
 
 static bool const k_inService = false;

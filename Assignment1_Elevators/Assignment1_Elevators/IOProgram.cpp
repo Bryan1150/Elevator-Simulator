@@ -184,7 +184,7 @@ int IOProgram::main()
 	UserInputData_t userInput;										// struct for holding user input
 	
 	std::vector<ClassThread<IOProgram>*> collectElevatorStatusVect; //vector to hold pointers for threads collecting elevator statuses
-	int elevatorNumberArray[10];												//used to pass in elevator number to the threads
+	int elevatorNumberArray[k_maximumElevators];												//used to pass in elevator number to the threads
 
 	std::stringstream ss;						// convert number of elevators into a string							
 	ss << m_numberOfElevators;
