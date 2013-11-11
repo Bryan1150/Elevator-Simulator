@@ -55,7 +55,7 @@ void FSAlgorithm::InsertFsIntoMap(
 	else
 	{
 		if(!it->second.bInsideRequest) // map has an OUTSIDE request
-		{	// INT_MAX is the default
+		{	
 			if(floorReq.bInsideRequest) // next entry is an INSIDE request
 			{
 				if(((floorReq.direction == it->second.direction) && (abs(lift.floorNumber - it->second.floorNumber) > abs(lift.floorNumber - floorReq.floorNumber))) ||
@@ -81,12 +81,42 @@ void FSAlgorithm::InsertFsIntoMap(
 		{
 			if(floorReq.bInsideRequest) // next entry is an INSIDE request, so take the FR closest to the elevator's current floor
 			{
-				if(abs(lift.floorNumber - it->second.floorNumber) > abs(lift.floorNumber - floorReq.floorNumber))
+				if(lift.direction == k_directionUp)
 				{
-					lift.fsToFloorRequestMap.erase(it);
-					lift.fsToFloorRequestMap.insert(std::make_pair(fs, floorReq));
+					if(it->second.floorNumber > lift.floorNumber && floorReq.floorNumber > lift.floorNumber)
+					{	
+						if(abs(lift.floorNumber - it->second.floorNumber) > abs(lift.floorNumber - floorReq.floorNumber))
+						{
+							// take the closer inside FR if both are in the same direction a the elevator
+							lift.fsToFloorRequestMap.erase(it);
+							lift.fsToFloorRequestMap.insert(std::make_pair(fs, floorReq));
+						}
+					}
+					else if(it->second.floorNumber < lift.floorNumber)
+					{
+						// one of the two are in the opposite direction, so if the one in the map is below the elevator, then replace it
+						lift.fsToFloorRequestMap.erase(it);
+						lift.fsToFloorRequestMap.insert(std::make_pair(fs, floorReq));
+					}
 				}
-				// else, do nothing if the elevator is closer to the request that is already in the map
+				else if(lift.direction == k_directionDown)
+				{
+					if(it->second.floorNumber < lift.floorNumber && floorReq.floorNumber < lift.floorNumber)
+					{
+						if(abs(lift.floorNumber - it->second.floorNumber) > abs(lift.floorNumber - floorReq.floorNumber))
+						{
+							// take the closer inside FR if both are in the same direction a the elevator
+							lift.fsToFloorRequestMap.erase(it);
+							lift.fsToFloorRequestMap.insert(std::make_pair(fs, floorReq));
+						}
+					}
+					else if(it->second.floorNumber > lift.floorNumber)
+					{
+						// one of the two are in the opposite direction, so if the one in the map is above the elevator, then replace it
+						lift.fsToFloorRequestMap.erase(it);
+						lift.fsToFloorRequestMap.insert(std::make_pair(fs, floorReq));
+					}
+				}
 			}
 			else // next entry is an OUTSIDE request
 			{
