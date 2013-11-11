@@ -24,7 +24,7 @@ public:
 	void OpenElevatorDoor(int x, int y);		// draws elevator with open doors
 	void DrawFaultElevator(int x, int y);		// draws elevator with faults
 	void ClearElevator(int x, int y);			// clears a previously drawn elevator
-	//void PrintElevatorStatus(int elevatorId, ElevatorStatus_t const& ElevatorStatus);
+	
 
 private:
 	CMutex* screenMutex;			//mutex for protecting what is being drawn on the screen

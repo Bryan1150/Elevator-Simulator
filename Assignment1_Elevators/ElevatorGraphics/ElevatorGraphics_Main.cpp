@@ -15,7 +15,7 @@
 #include "..\Assignment1_Elevators\rt.h"
 
 
-CMutex graphicsMtx("Mutex for Drawing");
+CMutex graphicsMtx("Mutex for Drawing"); // mutex for displaying graphics on the screen
 
 
 UINT __stdcall PrintElevatorGraphics (void *args)	// thread function 
@@ -58,7 +58,7 @@ UINT __stdcall PrintElevatorGraphics (void *args)	// thread function
 				}
 				graphicsMtx.Wait();
 				Display.ClearElevator(20+23*(elevatorId-1),k_heightOfBuilding-5*previousElevatorStatus.floorNumber); // clear previous elevator
-				//Display.PrintElevatorStatus(elevatorId, elevatorStatus);
+				
 		
 				if(elevatorStatus.doorStatus == k_doorOpen) // if the door is open, it has reached a floor request
 				{

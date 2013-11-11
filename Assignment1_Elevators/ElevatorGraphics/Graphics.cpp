@@ -10,7 +10,7 @@
 
 Graphics::Graphics()
 {
-	screenMutex = new CMutex("Screen Mutex");
+	screenMutex = new CMutex("Screen Mutex"); // protect drawing on the console
 	m_fault = 0;
 }
 Graphics::~Graphics()
@@ -203,31 +203,3 @@ void Graphics::DrawFaultElevator(int x, int y)
 	screenMutex->Signal();
 }
 
-
-
-//void Graphics::PrintElevatorStatus(int elevatorId, ElevatorStatus_t const& ElevatorStatus)
-//{
-//	screenMutex->Wait();
-//	MOVE_CURSOR(15+23*(elevatorId-1),0);
-//	printf("Elevator %d", elevatorId);
-//	MOVE_CURSOR(15+23*(elevatorId-1),1);
-//	printf("Floor Number: %d", ElevatorStatus.floorNumber);
-//
-//	MOVE_CURSOR(15+23*(elevatorId-1),2);
-//	printf("Direction: ");
-//	if( ElevatorStatus.direction == 0)
-//		 printf("Idle");
-//	else if( ElevatorStatus.direction == 1)
-//		printf("Up  ");
-//	else if( ElevatorStatus.direction == 2)
-//		printf("Down");
-//
-//	MOVE_CURSOR(15+23*(elevatorId-1),3);
-//	printf("Door Status: ");
-//	if( ElevatorStatus.doorStatus == 0)
-//		 printf("Closed");
-//	else if( ElevatorStatus.doorStatus == 1)
-//		printf("Open  ");
-//	
-//	screenMutex->Signal();
-//}
