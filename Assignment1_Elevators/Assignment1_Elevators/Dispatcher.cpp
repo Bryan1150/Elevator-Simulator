@@ -218,7 +218,7 @@ int Dispatcher::main()
 	std::vector<CSemaphore*> dispatcherLocalElevatorStatusConsumerVect;
 	std::vector<CSemaphore*> dispatcherLocalElevatorStatusProducerVect;
 
-	int xArray[100];
+	int elevatorNumberArray[10];
 
 	CSemaphore floorRequestVectProtector_consumer("FloorRequestVectProtectorConsumer",1,1);  // semaphores to protect floor requests
 	CSemaphore floorRequestVectProtector_producer("FloorRequestVectProtectorProducer",0,1);
@@ -232,11 +232,11 @@ int Dispatcher::main()
 	{
 		ss << i;
 		elevatorNumberStr = ss.str();
-		xArray[i-1] = i;
+		elevatorNumberArray[i-1] = i;
 
 		if(i - 1 >= 0)
 		{	
-			ClassThread<Dispatcher>* pCollectElevatorStatus= new ClassThread<Dispatcher>(this,&Dispatcher::CollectElevatorStatus, ACTIVE, &xArray[i-1]);
+			ClassThread<Dispatcher>* pCollectElevatorStatus= new ClassThread<Dispatcher>(this,&Dispatcher::CollectElevatorStatus, ACTIVE, &elevatorNumberArray[i-1]);
 			collectElevatorStatusVect.push_back(pCollectElevatorStatus);
 		}
 	}

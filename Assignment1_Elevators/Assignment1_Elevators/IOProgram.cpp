@@ -103,6 +103,34 @@ void IOProgram::ClearLines(int lines) const
 	m_screenMutex->Signal();
 }
 
+void IOProgram::UpdateElevatorStatus(ElevatorStatus_t elevatorStatus, int elevatorNumber) const
+{
+	m_screenMutex->Wait();	
+		MOVE_CURSOR(0,elevatorNumber*6+5);
+
+	printf("Elevator %d\n", elevatorNumber);
+	printf("Status: ");
+	if( elevatorStatus.bFault)
+		printf("Out of Service\n");
+	else if( !elevatorStatus.bFault)
+		printf("In Service    \n");
+	printf("Direction: ");
+	if(elevatorStatus.direction == k_directionIdle)
+		printf("Idle\n");
+	else if( elevatorStatus.direction == k_directionUp)
+		printf("Up  \n");
+	else if( elevatorStatus.direction == k_directionDown)
+		printf("Down\n");
+	printf("Door Status: ");
+	if( elevatorStatus.doorStatus == k_doorOpen)
+		printf("Open  \n");
+	else if( elevatorStatus.doorStatus == k_doorClosed)
+		printf("Closed\n");
+	printf("Floor Number: %d\n",elevatorStatus.floorNumber);
+	m_screenMutex->Signal();
+
+}
+
 int IOProgram::CollectElevatorStatus(void* args)
 {
 	// store elevator ID as a string in order to match the associating producer/consumer semaphores
@@ -129,7 +157,7 @@ int IOProgram::CollectElevatorStatus(void* args)
 				OutputDebugString("IO Program has read incoming Elevator Status\n");
 				elevatorToIO_consumer.Signal();
 				IoLocalElevatorStatus.Signal();
-
+				UpdateElevatorStatus(m_localElevatorStatus[elevatorId-1],elevatorId);	//update text information for elevator
 				// send elevator statuses to the graphics to update
 				IoToElevatorGraphics_pipeline.Write(&m_localElevatorStatus[elevatorId-1], sizeof(ElevatorStatus_t)); /****************/
 			}
@@ -209,13 +237,10 @@ int IOProgram::main()
 
 		if(keys_pressed == 2)
 		{
-			printf("\nEntered Test\n");
-		
-			printf("\nReceived two values\n");
 
 			if(IsValidCommand(userInput))		//Check if the command was valid
 			{ 
-				printf("Sending commands\n");
+			
 				IoToDispatcher_pipeline.Write(&userInput, sizeof(UserInputData_t));
 				
 				// send floor request to corresponding graphics pipline if it is an outside request

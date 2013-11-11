@@ -115,7 +115,8 @@ int Elevator::main()
 	pElevatorStatusDP->direction = m_elevatorStatus.direction;
 	pElevatorStatusDP->doorStatus = m_elevatorStatus.doorStatus;
 	pElevatorStatusDP->floorNumber = m_elevatorStatus.floorNumber;
-	
+	pElevatorStatusDP->bFault = m_elevatorStatus.bFault;
+
 	m_pDispatcherToElevator_producer->Signal();
 	m_pElevatorToIO_producer-> Signal();
 

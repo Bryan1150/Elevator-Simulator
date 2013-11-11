@@ -27,6 +27,9 @@ static int const k_down = 2;
 static int const k_maxFloorNumber = 9;
 static int const k_minFloorNumber = 0;
 
+static bool const k_inService = false;
+static bool const k_outOfService = true;
+
 static int const k_heightOfBuilding = 47;
 static int const k_numFloorsMinusOne = 9;
 
