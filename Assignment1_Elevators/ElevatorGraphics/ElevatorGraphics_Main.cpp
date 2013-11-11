@@ -68,7 +68,8 @@ UINT __stdcall PrintElevatorGraphics (void *args)	// thread function
 					{
 						MOVE_CURSOR(0,k_heightOfBuilding-5*elevatorStatus.floorNumber);
 						TEXT_COLOUR(15);
-						printf("%c",30);
+						if( elevatorStatus.floorNumber != 9)
+							printf("%c",30);
 					}
 					else if(elevatorStatus.direction == k_directionDown)   // clear down arrows for outside requests
 					{
@@ -77,7 +78,8 @@ UINT __stdcall PrintElevatorGraphics (void *args)	// thread function
 						else if( elevatorStatus.floorNumber == 9)
 							MOVE_CURSOR(0,k_heightOfBuilding-5*elevatorStatus.floorNumber);
 						TEXT_COLOUR(15);
-						printf("%c",31);
+						if( elevatorStatus.floorNumber != 0)
+							printf("%c",31);
 					}
 					MOVE_CURSOR(15+23*(elevatorId-1)+2*elevatorStatus.floorNumber,0); //clear inside requests
 					printf("%d",elevatorStatus.floorNumber);
