@@ -275,8 +275,10 @@ int IOProgram::main()
 			keys_pressed = 0; //reset the number of keys pressed value
 			Sleep(500);
 			ClearLines(5);
+			m_screenMutex->Wait();
 			MOVE_CURSOR(0,0);
 			printf("Enter Commands: ");
+			m_screenMutex->Signal();
 		}	
 
 

@@ -149,6 +149,7 @@ int Elevator::main()
 		else if(floorRequest.fReqId == "Idle")
 		{
 			m_elevatorStatus.doorStatus = k_doorOpen;
+			m_elevatorStatus.direction = k_directionIdle;
 			m_pScreenMutex->Wait();
 			MOVE_CURSOR(0,30);
 			std::cout << "                                                                    ";
