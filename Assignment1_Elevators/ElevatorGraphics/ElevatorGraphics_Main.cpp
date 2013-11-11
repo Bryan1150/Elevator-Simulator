@@ -22,20 +22,12 @@ UINT __stdcall PrintElevatorGraphics (void *args)	// thread function
 	CPipe IoToElevatorGraphics_pipeline("IoToElevatorGraphics"+elevatorNumberStr, 1024); // pipeline to receive elevator statuses from IO
 	int previousFloorNumber = 0;				// to hold previous floor number for  clearing graphics
 	ElevatorStatus_t elevatorStatus, previousElevatorStatus;			// struct for holding elevator status for drawing
-	bool initialize = false;
 	bool faultSet = false;
 	Graphics Display;
 
 	do{
 		IoToElevatorGraphics_pipeline.Read(&elevatorStatus, sizeof(ElevatorStatus_t));
-		if( previousElevatorStatus.bFault != elevatorStatus.bFault ||
-			previousElevatorStatus.direction != elevatorStatus.direction ||
-			previousElevatorStatus.doorStatus != elevatorStatus.doorStatus ||
-			previousElevatorStatus.floorNumber != elevatorStatus.floorNumber ||
-			elevatorStatus.bFault == true ||
-			initialize == false)
-		{
-			initialize = true;
+
 			if( elevatorStatus.bFault)
 			{
 				graphicsMtx.Wait();
@@ -64,14 +56,14 @@ UINT __stdcall PrintElevatorGraphics (void *args)	// thread function
 				if(elevatorStatus.doorStatus == k_doorOpen) // if the door is open, it has reached a floor request
 				{
 					Display.OpenElevatorDoor(20+23*(elevatorId-1),k_heightOfBuilding-5*elevatorStatus.floorNumber); // draw elevator with open doors
-					if(elevatorStatus.direction == k_directionUp)		// clear up arrows for outside requests
+					if(elevatorStatus.direction == k_directionUp || elevatorStatus.direction == k_directionIdle)		// clear up arrows for outside requests
 					{
 						MOVE_CURSOR(0,k_heightOfBuilding-5*elevatorStatus.floorNumber);
 						TEXT_COLOUR(15);
 						if( elevatorStatus.floorNumber != 9)
 							printf("%c",30);
 					}
-					else if(elevatorStatus.direction == k_directionDown)   // clear down arrows for outside requests
+					else if(elevatorStatus.direction == k_directionDown || elevatorStatus.direction == k_directionIdle)   // clear down arrows for outside requests
 					{
 						if( elevatorStatus.floorNumber !=9 )
 							MOVE_CURSOR(0,k_heightOfBuilding-5*elevatorStatus.floorNumber+1);
@@ -89,7 +81,7 @@ UINT __stdcall PrintElevatorGraphics (void *args)	// thread function
 				graphicsMtx.Signal();
 				previousElevatorStatus = elevatorStatus;	// store current elevator status for comparison in the next update
 			}
-		}
+		
 
 	}while(1);
 
