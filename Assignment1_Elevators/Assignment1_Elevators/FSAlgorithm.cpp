@@ -354,10 +354,16 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 				continue;
 			}
 			
-			for(auto itFs = itLift->fsToFloorRequestMap.rbegin();
+			for(FsToFloorRequestMap_t::reverse_iterator itFs = itLift->fsToFloorRequestMap.rbegin();
 				itFs != itLift->fsToFloorRequestMap.rend();
 				++itFs)
 			{
+				if(((itLift->direction == k_directionUp) && (itFs->second.floorNumber < itLift->floorNumber)) || 
+					((itLift->direction == k_directionDown) && (itFs->second.floorNumber > itLift->floorNumber)))
+				{
+					continue;
+				}
+
 				auto itMap = floorReqToFsMap.find(itFs->second/*floorRequest*/);
 				if(itMap == floorReqToFsMap.end())
 				{
@@ -387,11 +393,9 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 							floorReqToFsMap.insert(
 								std::make_pair(itRemoval->second/*floorRequest*/,
 								std::make_pair(itRemoval->first/*fs*/, elevRemovalIndex+1)));
-						
 							break;
 						}
 					}
-				
 					break;
 				}
 				// we don't break from loop if a FR still needs to be added to the map for the current elevator
