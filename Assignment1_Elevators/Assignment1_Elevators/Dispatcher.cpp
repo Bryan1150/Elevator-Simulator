@@ -296,6 +296,17 @@ int Dispatcher::main()
 		if(m_bExit)
 			break; 
 
+		m_screenMutex->Wait();
+		MOVE_CURSOR(0, 2+m_numberOfElevators);
+		std::cout << "                                                                      ";
+		MOVE_CURSOR(0, 2+m_numberOfElevators);
+		std::cout << "Floor Request Queue: ";
+		for(int i = 0; i < m_floorRequestVect.size(); ++i)
+		{
+			std::cout << m_floorRequestVect[i].fReqId << " ";	
+		}
+		m_screenMutex->Signal();
+
 	} while(1);
 
 	IoToDispatcherPipeline.WaitForThread();

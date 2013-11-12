@@ -191,6 +191,16 @@ FloorRequestVect_t FSAlgorithm::DispatcherFsCalculator(
 						continue;
 					}
 
+					// elevator door would be open if an inside request was made on the same floor (ie. D3, 13) but
+					// D3 should not be cleared if there are more floor requests in the elevator's current UP direction
+					if(!itDeleteRequest->bInsideRequest && 
+						(itDeleteRequest->direction != itElevatorStatus->direction) &&
+						(itDeleteRequest->fReqId != k_idleFReqIdStr))
+					{
+						++itDeleteRequest;
+						continue;
+					}
+
 					// if outside request, replace with pseudoFR to keep Elevator at that floor
 					// so that the passenger can send an inside request to continue going in that direction
 					auto it = duplicateFloorsList.find(itDeleteRequest->floorNumber);

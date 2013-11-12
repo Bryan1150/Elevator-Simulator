@@ -104,14 +104,26 @@ struct FloorRequest_t{
 		, bInsideRequest(elevId != INT_MAX ? true : false)
 		, bDuplicateFloor(false) 
 	{
-		if(dir == k_up)
-			fReqId = "U";
-		else if(dir == k_down)
-			fReqId = "D";
-
 		std::stringstream ss;
-		ss << floorNumber;
-		fReqId += ss.str(); // ex. "U1","D9", etc.		
+
+		if(!bInsideRequest)
+		{
+			if(dir == k_up)
+				fReqId = "U";
+			else if(dir == k_down)
+				fReqId = "D";
+			
+			ss << floorNumber;
+			fReqId += ss.str(); // ex. "U1","D9", etc.		
+		}
+		else
+		{
+			ss << elevId;
+			ss << floorNumber;
+			fReqId = ss.str();
+		}
+		
+		
 	}
 
 	FloorRequest_t(int floor, int dir, std::string frId)
