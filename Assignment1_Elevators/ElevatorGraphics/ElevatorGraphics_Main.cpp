@@ -63,15 +63,30 @@ UINT __stdcall PrintElevatorGraphics (void *args)	// thread function
 				if(elevatorStatus.doorStatus == k_doorOpen) // if the door is open, it has reached a floor request
 				{
 					Display.OpenElevatorDoor(20+23*(elevatorId-1),k_heightOfBuilding-5*elevatorStatus.floorNumber); // draw elevator with open doors
-					if(elevatorStatus.direction == k_directionUp || elevatorStatus.direction == k_directionIdle)		// clear up arrows for outside requests
+					if(elevatorStatus.direction == k_directionUp )		// clear up arrows for outside requests
 					{
 						MOVE_CURSOR(0,k_heightOfBuilding-5*elevatorStatus.floorNumber);
 						TEXT_COLOUR(15);
 						if( elevatorStatus.floorNumber != 9)
 							printf("%c",30);
 					}
-					else if(elevatorStatus.direction == k_directionDown || elevatorStatus.direction == k_directionIdle)   // clear down arrows for outside requests
+					else if(elevatorStatus.direction == k_directionDown )   // clear down arrows for outside requests
 					{
+						if( elevatorStatus.floorNumber !=9 )
+							MOVE_CURSOR(0,k_heightOfBuilding-5*elevatorStatus.floorNumber+1);
+						else if( elevatorStatus.floorNumber == 9)
+							MOVE_CURSOR(0,k_heightOfBuilding-5*elevatorStatus.floorNumber);
+						TEXT_COLOUR(15);
+						if( elevatorStatus.floorNumber != 0)
+							printf("%c",31);
+					}
+					else if( elevatorStatus.direction == k_directionIdle) // clear up and down arrows if outside request are being called from the floor the elevator is idle at
+					{
+						MOVE_CURSOR(0,k_heightOfBuilding-5*elevatorStatus.floorNumber);
+						TEXT_COLOUR(15);
+						if( elevatorStatus.floorNumber != 9)
+							printf("%c",30);
+
 						if( elevatorStatus.floorNumber !=9 )
 							MOVE_CURSOR(0,k_heightOfBuilding-5*elevatorStatus.floorNumber+1);
 						else if( elevatorStatus.floorNumber == 9)
