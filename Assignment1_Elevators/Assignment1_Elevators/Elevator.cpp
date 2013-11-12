@@ -164,7 +164,7 @@ int Elevator::main()
 			MOVE_CURSOR(0,1+m_elevatorNumber);
 			std::cout << "Elevator "<< m_elevatorNumber << " has reached its FR at floor " << floorRequest.floorNumber << std::endl;
 			m_pScreenMutex->Signal();
-			Sleep(2000);
+			Sleep(2500);
 		}
 		else
 		{
