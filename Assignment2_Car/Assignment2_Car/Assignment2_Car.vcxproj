@@ -77,6 +77,8 @@
     <ClCompile Include="AirFilter.cpp" />
     <ClCompile Include="Car.cpp" />
     <ClCompile Include="Filter.cpp" />
+    <ClCompile Include="Item.cpp" />
+    <ClCompile Include="JobSheet.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Oil.cpp" />
     <ClCompile Include="OilFilter.cpp" />
@@ -89,6 +91,8 @@
     <ClInclude Include="Car.h" />
     <ClInclude Include="Filter.h" />
     <ClInclude Include="Garbage.h" />
+    <ClInclude Include="Item.h" />
+    <ClInclude Include="JobSheet.h" />
     <ClInclude Include="Oil.h" />
     <ClInclude Include="OilFilter.h" />
     <ClInclude Include="Recycling.h" />
