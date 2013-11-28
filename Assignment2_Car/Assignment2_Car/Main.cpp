@@ -12,17 +12,32 @@
 #include "Filter.h"
 #include "Car.h"
 #include "Tire.h"
-
+#include "Store.h"
+#include "Recycling.h"
+#include "Garbage.h"
 
 int main()
 {
-	Car fastCar("NFS", false);
-	fastCar.SwapAirFilter(AirFilter());
-	fastCar.SwapOil(Oil());
-	fastCar.SwapOilFilter(OilFilter());
+	Car fastCar("NFS", true);
+
+	AirFilter oldAirFilter = fastCar.SwapAirFilter(Store::GetAirFilter());
+	Garbage::Dispose(oldAirFilter);
+
+	Oil oldOil = fastCar.SwapOil(Store::GetOil());
+	Recycling::Recycle(oldOil);
+	
+	OilFilter oldOilFilter = fastCar.SwapOilFilter(Store::GetOilFilter());
+	Garbage::Dispose(oldOilFilter);
+
 	if(fastCar.CheckTiresForWear())
-		fastCar.SwapTires(Tire());
+	{
+		TireVect_t oldTires = fastCar.SwapTires(Store::GetTire());
+		Recycling::Recycle(*oldTires.begin());
+	}
 	else
+	{
 		fastCar.RotateTires();
+	}
+
 	return 0;
 }

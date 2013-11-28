@@ -11,11 +11,14 @@
 
 #pragma once
 
-static std::string const k_genericAirFilter("NoNameAirFilter");
+static std::string const k_genericAirFilter("\"NoNameAirFilter\"");
+
 
 class AirFilter : public Filter {
 public:
 	AirFilter();
+
+	std::string ToString() const;
 
 private:
 	std::string m_brand;

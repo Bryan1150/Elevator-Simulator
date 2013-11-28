@@ -12,9 +12,9 @@
 static unsigned int const k_small = 16;
 static unsigned int const k_medium = 20;
 static unsigned int const k_large = 24;
-static std::string const k_goodWrench("Goodwrench");
-static std::string const k_bridgestone("Bridgestone");
-static std::string const k_goodyear("Goodyear");
+static std::string const k_goodWrench("\"Goodwrench\"");
+static std::string const k_bridgestone("\"Bridgestone\"");
+static std::string const k_goodyear("\"Goodyear\"");
 
 class Tire {
 public:
@@ -22,6 +22,8 @@ public:
 	Tire(std::string brand, unsigned int size, bool bIsWorn = true);
 
 	bool IsTireWorn() const;
+	
+	std::string ToString() const;
 
 private:
 	std::string m_brand;

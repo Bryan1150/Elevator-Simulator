@@ -12,3 +12,10 @@ Oil::Oil()
 	, m_lastChanged(0) // FIXME to time 
 	, m_bIsDisposed(false)
 {}
+
+std::string Oil::ToString() const
+{
+	std::string oilStr = "100mL of ";
+	oilStr += m_brand;
+	return oilStr;
+}

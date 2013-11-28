@@ -7,19 +7,20 @@
  *****************************************************/
 #include <iostream>
 
-#include "Filter.h"
-
 #pragma once
 
-static std::string const k_genericOilFilter("\"NoNameOilFilter\"");
-
-class OilFilter : public Filter {
+class Garbage {
 public:
-	OilFilter();
+	template<class T>
+	static void Dispose(T item)
+	{
+		std::cout << "Disposing of " << item.ToString();
+		for(int i = 0; i < 4; ++i)
+		{
+			Sleep(k_delay);
+			std::cout << ".";
+		}
 
-	std::string ToString() const;
-
-private:
-	std::string m_brand;
-
+		std::cout << "\r" << item.ToString() << " has been disposed.\n";
+	}
 };

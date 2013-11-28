@@ -11,3 +11,8 @@ OilFilter::OilFilter()
 	: Filter(0/*time*/, false/*bIsDisposed*/)
 	, m_brand(k_genericOilFilter)
 {}
+
+std::string OilFilter::ToString() const
+{
+	return m_brand;
+}

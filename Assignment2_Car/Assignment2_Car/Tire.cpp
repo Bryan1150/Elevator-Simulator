@@ -23,3 +23,10 @@ bool Tire::IsTireWorn() const
 {
 	return m_bIsWorn;
 }
+
+std::string Tire::ToString() const
+{
+	std::string tireStr = m_brand;
+	tireStr += " tires";
+	return tireStr;
+}

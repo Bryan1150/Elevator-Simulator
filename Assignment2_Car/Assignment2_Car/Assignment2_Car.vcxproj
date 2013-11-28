@@ -81,15 +81,19 @@
     <ClCompile Include="Oil.cpp" />
     <ClCompile Include="OilFilter.cpp" />
     <ClCompile Include="rt.cpp" />
+    <ClCompile Include="Store.cpp" />
     <ClCompile Include="Tire.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AirFilter.h" />
     <ClInclude Include="Car.h" />
     <ClInclude Include="Filter.h" />
+    <ClInclude Include="Garbage.h" />
     <ClInclude Include="Oil.h" />
     <ClInclude Include="OilFilter.h" />
+    <ClInclude Include="Recycling.h" />
     <ClInclude Include="rt.h" />
+    <ClInclude Include="Store.h" />
     <ClInclude Include="Tire.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

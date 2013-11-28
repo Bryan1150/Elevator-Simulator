@@ -7,19 +7,19 @@
  *****************************************************/
 #include <iostream>
 
-#include "Filter.h"
+#include "AirFilter.h"
+#include "OilFilter.h"
+#include "Oil.h"
+#include "Tire.h"
 
 #pragma once
 
-static std::string const k_genericOilFilter("\"NoNameOilFilter\"");
+class Store {
 
-class OilFilter : public Filter {
 public:
-	OilFilter();
-
-	std::string ToString() const;
-
-private:
-	std::string m_brand;
+	static AirFilter GetAirFilter();
+	static OilFilter GetOilFilter();
+	static Oil GetOil();
+	static Tire GetTire();
 
 };

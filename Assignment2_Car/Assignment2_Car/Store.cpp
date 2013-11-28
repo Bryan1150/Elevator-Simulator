@@ -5,21 +5,33 @@
  *         Kieren Wou		54724117
  *         Ryan Wong        47307103
  *****************************************************/
-#include <iostream>
+#include "Store.h"
 
-#include "Filter.h"
+AirFilter Store::GetAirFilter()
+{
+	return AirFilter();
+}
 
-#pragma once
+OilFilter Store::GetOilFilter()
+{
+	return OilFilter();
+}
 
-static std::string const k_genericOilFilter("\"NoNameOilFilter\"");
+Oil Store::GetOil()
+{
+	return Oil();
+}
 
-class OilFilter : public Filter {
-public:
-	OilFilter();
+Tire Store::GetTire()
+{
+	return Tire();
+}
 
-	std::string ToString() const;
 
-private:
-	std::string m_brand;
 
-};
+
+
+
+
+
+

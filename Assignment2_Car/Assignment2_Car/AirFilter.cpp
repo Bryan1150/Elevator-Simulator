@@ -11,3 +11,8 @@ AirFilter::AirFilter()
 	: Filter(0/*time*/, false/*bIsDisposed*/)
 	, m_brand(k_genericAirFilter)
 {}
+
+std::string AirFilter::ToString() const
+{
+	return m_brand;
+}

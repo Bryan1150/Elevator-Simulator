@@ -30,13 +30,16 @@
     <ClCompile Include="Filter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="OilFilter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Oil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Store.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OilFilter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -60,6 +63,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Oil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Store.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Recycling.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Garbage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

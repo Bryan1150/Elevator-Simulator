@@ -9,11 +9,13 @@
 
 #pragma once
 
-static std::string const k_genericOil("NoNameOil");
+static std::string const k_genericOil("\"NoNameOil\"");
 
 class Oil {
 public:
 	Oil();
+
+	std::string ToString() const;
 
 private:
 	std::string m_brand;

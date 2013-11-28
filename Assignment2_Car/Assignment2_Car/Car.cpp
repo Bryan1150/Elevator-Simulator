@@ -30,7 +30,7 @@ Oil Car::SwapOil(Oil newOil)
 	std::cout << "Swapping oil";
 	for(int i = 0; i < 4; ++i)
 	{
-		Sleep(800);
+		Sleep(k_delay);
 		std::cout << ".";
 	}
 	std::cout << "\rFinished swapping oil\n";
@@ -46,7 +46,7 @@ AirFilter Car::SwapAirFilter(AirFilter newAirFilter)
 	std::cout << "Swapping air filter";
 	for(int i = 0; i < 4; ++i)
 	{
-		Sleep(800);
+		Sleep(k_delay);
 		std::cout << ".";
 	}
 	std::cout << "\rFinished swapping air filter\n";
@@ -62,7 +62,7 @@ OilFilter Car::SwapOilFilter(OilFilter newOilFilter)
 	std::cout << "Swapping oil filter";
 	for(int i = 0; i < 4; ++i)
 	{
-		Sleep(800);
+		Sleep(k_delay);
 		std::cout << ".";
 	}
 	std::cout << "\rFinished swapping oil filter\n";
@@ -76,7 +76,7 @@ bool Car::CheckTiresForWear() const
 	bool bTiresWorn = false;
 	for(auto it = m_tireVect.begin(); it != m_tireVect.end(); ++it)
 	{
-		Sleep(800);
+		Sleep(k_delay);
 		std::cout << ".";
 
 		bTiresWorn |= it->IsTireWorn(); // if at least one tire is worn, return true
@@ -100,7 +100,7 @@ TireVect_t Car::SwapTires(Tire newTire)
 	for(int i = 0; i < 4; ++i)
 	{
 		m_tireVect.push_back(newTire);
-		Sleep(800);
+		Sleep(k_delay);
 		std::cout << ".";
 	}
 	std::cout << "\rFinished swapping tires.\n";
@@ -112,7 +112,7 @@ void Car::RotateTires()
 	std::cout << "Rotating tires";
 	for(int i = 0; i < 4; ++i)
 	{
-		Sleep(800);
+		Sleep(k_delay);
 		std::cout << ".";
 	}
 	std::cout << "\rFinished rotating tires.\n";
