@@ -8,9 +8,9 @@
 #include <iostream>
 #include <vector>
 
-#include "Item.h"
-
 #pragma once
+
+#include "Item.h"
 
 class JobSheet {
 public:

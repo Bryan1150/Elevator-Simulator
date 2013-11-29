@@ -7,9 +7,9 @@
  *****************************************************/
 #include <iostream>
 
-#include "Filter.h"
-
 #pragma once
+
+#include "Filter.h"
 
 static std::string const k_genericOilFilter("\"NoNameOilFilter\"");
 

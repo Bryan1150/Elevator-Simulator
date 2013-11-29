@@ -6,6 +6,9 @@
  *         Ryan Wong        47307103
  *****************************************************/
 #include <iostream>
+#include <memory>
+
+#pragma once
 
 #include "rt.h"
 #include "Person.h"
@@ -18,8 +21,14 @@
 #include "Recycling.h"
 #include "Garbage.h"
 #include "JobSheet.h"
+#include "Receptionist.h"
 
-#pragma once
+class Receptionist;
+//typedef std::shared_ptr<Receptionist> ReceptionistPtr_t;
+typedef Receptionist* ReceptionistPtr_t;
+
+class Car;
+typedef std::shared_ptr<Car> CarPtr_t;
 
 class Technician 
 	: public Person
@@ -27,11 +36,17 @@ class Technician
 {
 public:
 	Technician(std::string firstName, std::string lastName, int age, Gender_t gender);
+	~Technician();
 
+	ReceptionistPtr_t GetReceptionist();
 	bool AvailableForNextCar() const;
+	void Service(CarPtr_t pNextCar);
 
 private:
 	int main();
 
 	bool m_bAvailableForNextCar;
+	ReceptionistPtr_t m_pReceptionist;
+	CarPtr_t m_pCurrentCar;
+	std::shared_ptr<CSemaphore> m_pCarSemaphore;
 };

@@ -14,13 +14,13 @@ public:
 	template<class T>
 	static void Dispose(T item)
 	{
-		std::cout << "Disposing of " << item.ToString();
+		std::cout << "Technician: Disposing of " << item.ToString();
 		for(int i = 0; i < 4; ++i)
 		{
 			Sleep(k_delay);
 			std::cout << ".";
 		}
 
-		std::cout << "\r" << item.ToString() << " has been disposed.\n";
+		std::cout << "\r" << item.ToString() << " has been disposed.            \n";
 	}
 };

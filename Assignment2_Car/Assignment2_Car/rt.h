@@ -45,7 +45,6 @@ using namespace std ;
 static int const k_delay = 300;
 
 
-
 //	the following describes all the global variables used by this thread
 //	However, we cannot simply use global variables, because if we created two threads based
 //	around this source file, then they would share the same application wide variables, i.e. the

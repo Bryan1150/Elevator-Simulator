@@ -17,7 +17,9 @@ enum Gender_t {
 class Person {
 
 public:
+	Person();
 	Person(std::string firstName, std::string lastName, int age, Gender_t gender);	
+	~Person();
 
 private:
 	std::string m_firstName;

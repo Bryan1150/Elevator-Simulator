@@ -8,6 +8,7 @@
 #include <iostream>
 
 #pragma once
+
 enum ItemTypes_t {
 	itemType_oil,
 	itemType_oilFilter,
