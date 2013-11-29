@@ -18,7 +18,7 @@ void JobSheet::AddItem(Item item)
 
 void JobSheet::PrintJobSheet()
 {
-	std::cout << "=============================================================" << std::endl;
+	std::cout << "Job Sheet:\n=============================================================" << std::endl;
 	for(auto it = m_itemVect.begin();
 		it != m_itemVect.end();
 		++it)

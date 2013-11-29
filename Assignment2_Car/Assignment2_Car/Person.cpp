@@ -5,16 +5,11 @@
  *         Kieren Wou		54724117
  *         Ryan Wong        47307103
  *****************************************************/
-#include <iostream>
+#include "Person.h"
 
-#include "Technician.h"
-#include "rt.h"
-
-int main(void)
-{
-	Technician technician("Bob", "Johnson", 35, gender_male);
-	technician.Resume();
-
-	technician.WaitForThread();
-	return 0;
-}
+Person::Person(std::string firstName, std::string lastName, int age, Gender_t gender)
+	: m_firstName(firstName)
+	, m_lastName(lastName)
+	, m_age(age)
+	, m_gender(gender)
+{}

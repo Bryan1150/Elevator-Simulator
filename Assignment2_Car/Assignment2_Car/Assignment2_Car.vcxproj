@@ -47,7 +47,7 @@
     <ClCompile>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level2</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
@@ -80,6 +80,8 @@
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="JobSheet.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Person.cpp" />
+    <ClCompile Include="Technician.cpp" />
     <ClCompile Include="Oil.cpp" />
     <ClCompile Include="OilFilter.cpp" />
     <ClCompile Include="rt.cpp" />
@@ -95,9 +97,11 @@
     <ClInclude Include="JobSheet.h" />
     <ClInclude Include="Oil.h" />
     <ClInclude Include="OilFilter.h" />
+    <ClInclude Include="Person.h" />
     <ClInclude Include="Recycling.h" />
     <ClInclude Include="rt.h" />
     <ClInclude Include="Store.h" />
+    <ClInclude Include="Technician.h" />
     <ClInclude Include="Tire.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
