@@ -14,8 +14,6 @@
 
 int main(void)
 {
-	//CDataPool dp("CustomerList", sizeof(Customer));
-	//Customer* myDataPool = (Customer*)(dp.LinkDataPool());
 	CPipe queuePipe("queue",1024);
 
 	Technician technician("Bob", "Johnson", 35, gender_male);
@@ -27,16 +25,7 @@ int main(void)
 	Customer customer1("Christian", "Pierce", 23, gender_male, pWeirdCar);
 	queuePipe.Write(&customer0, sizeof(Customer));
 	queuePipe.Write(&customer1, sizeof(Customer));
-	//std::list<Customer> customerList;
-	//customerList.push_back(customer0);
-	//do {
-	//	auto it = customerList.begin();
-	//	if(it != customerList.end())
-	//	{
-	//		queuePipe.Write(&it, sizeof(Customer));
-	//		customerList.erase(it);
-	//	}
-	//} while(!customerList.empty());
+
 	technician.WaitForThread();
 	system("PAUSE");
 	return 0;

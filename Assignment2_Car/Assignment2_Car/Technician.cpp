@@ -13,7 +13,6 @@ Technician::Technician(std::string firstName, std::string lastName, int age, Gen
 {
 	m_pCurrentCar = NULL;
 
-//	m_pReceptionist = std::make_shared<Receptionist>("Katherine", "Appleseed", 29, gender_female, (TechnicianPtr_t)this);
 	m_pReceptionist = new Receptionist("Katherine", "Appleseed", 29, gender_female, (TechnicianPtr_t)this);
 	m_pReceptionist->Resume();
 
@@ -21,9 +20,7 @@ Technician::Technician(std::string firstName, std::string lastName, int age, Gen
 }
 
 Technician::~Technician()
-{
-	//delete m_pCarSemaphore;
-}
+{}
 
 ReceptionistPtr_t Technician::GetReceptionist()
 {
@@ -45,7 +42,6 @@ void Technician::Service(CarPtr_t pNextCar)
 
 int Technician::main()
 {
-//	Car fastCar("NFS", true);
 	CPipe TRPipe("TRPipe",1024);
 
 	while(1)
@@ -97,8 +93,6 @@ int Technician::main()
 				Item item3(itemType_rotation);
 				jobSheet.AddItem(item3);
 			}
-
-			//jobSheet.PrintJobSheet();
 
 			m_bAvailableForNextCar = true;
 			m_pReceptionist->ReturnCar(m_pCurrentCar, jobSheet);

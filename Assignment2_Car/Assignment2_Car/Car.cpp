@@ -7,8 +7,6 @@
  *****************************************************/
 #include "Car.h"
 
-static std::string const k_clearLine("                                              ");
-
 Car::Car(std::string model, bool bWornTires)
 	: m_model(model)
 	, m_airFilter(AirFilter())

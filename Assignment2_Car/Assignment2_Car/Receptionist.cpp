@@ -82,13 +82,6 @@ bool Receptionist::PayBill()
 
 int Receptionist::main()
 {
-	//CPipe TRPipe("TRPipe",1024);
-
-	//CarPtr_t pFastCar = std::make_shared<Car>("Honda Civic", true); // hard coded
-
-	//Car* pTempCarHolder;
-	//JobSheet tempJobSheet;
-
 	CPipe queuePipe("queue",1024);
 	int count = 0;
 	while(1)
@@ -117,9 +110,7 @@ int Receptionist::main()
 			if(m_bCarIsReturned)
 				bExitLoop = true;
 		}
-		//TRPipe.Read(pTempCarHolder, sizeof(Car));
-		//TRPipe.Read(&tempJobSheet, sizeof(JobSheet));
-	
+
 		Invoice receipt = this->GenerateInvoice(11202013, m_currentCarJobSheet.TotalCost());
 		ServiceRecord svcRec = this->StampSvcRecord(m_pCustomer->GetServiceRecord());
 
