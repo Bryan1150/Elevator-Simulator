@@ -23,7 +23,7 @@ class Customer
 {
 public:
 	Customer();
-	Customer(std::string firstName, std::string lastName, int age, Gender_t gender, CarPtr_t car);
+	Customer(std::string firstName, std::string lastName, int age, Gender_t gender, CarPtr_t const& pCar);
 	~Customer();
 
 	void ComeBackLater();

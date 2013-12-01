@@ -19,3 +19,8 @@ Person::Person(std::string firstName, std::string lastName, int age, Gender_t ge
 
 Person::~Person()
 {}
+
+std::string Person::PersonNameToString() const
+{
+	return m_firstName + " " + m_lastName;
+}

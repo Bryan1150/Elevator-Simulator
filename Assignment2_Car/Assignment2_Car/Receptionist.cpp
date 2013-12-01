@@ -7,23 +7,41 @@
  *****************************************************/
 #include "Receptionist.h"
 
-static int const k_numberOfCustomers = 2;
+static int const k_numberOfCustomers = 3;
 
 Receptionist::Receptionist(
 	std::string firstName, 
 	std::string lastName, 
 	int age, 
-	Gender_t gender, 
-	TechnicianPtr_t const& pTechnician)
+	Gender_t gender)
 	: Person(firstName, lastName, age, gender)
-	, m_pTechnician(pTechnician)
 {
+	m_pTechnician = NULL;
 	m_pCarSemaphore = std::make_shared<CSemaphore>("TechRecepSemaphore",1);
+	m_pCustomerSemaphore = std::make_shared<CSemaphore>("CustomerSemaphore",1);
 }
 
 Receptionist::~Receptionist()
+{}
+
+void Receptionist::SetTechnician(TechnicianPtr_t const& pTechnician)
 {
-	//delete m_pCarSemaphore;
+	m_pTechnician = pTechnician;
+}
+
+void Receptionist::SetCurrentCustomer(CustomerPtr_t const& pCustomer)
+{
+	m_pCustomer = pCustomer;
+}
+
+void Receptionist::ReleaseCurrentCustomer()
+{
+	m_pCustomer = NULL;
+}
+
+CustomerPtr_t Receptionist::GetCurrentCustomer() const
+{
+	return m_pCustomer;
 }
 
 Car Receptionist::ServiceCar(Car& car)
@@ -38,17 +56,17 @@ void Receptionist::MakeCoffee()
 	{
 		std::cout << ".";
 	}
-	std::cout << "\rReceptionist: Finished making coffee\n";
+	std::cout << "\rReceptionist: Finished making coffee.\n";
 }
 
 void Receptionist::ReturnCar(CarPtr_t car, JobSheet jobSheet)
 {
-	std::cout << "Technician is handing over car keys to Receptionist";
+	std::cout << "Technician: handing over " << m_pCustomer->PersonNameToString() << "'s car keys to Receptionist";
 	for(int i = 0; i < 4; ++i)
 	{
 		std::cout << ".";
 	}
-	std::cout << "\rCar has been returned to the Receptionist                    \n";
+	std::cout << "\rTechnician: " << m_pCustomer->PersonNameToString() << "'s car keys have been returned to the Receptionist. \n";
 	m_currentCarJobSheet = jobSheet;
 	m_bCarIsReturned = true;
 }
@@ -63,39 +81,35 @@ Invoice Receptionist::GenerateInvoice(unsigned int date, float cost)
 
 ServiceRecord Receptionist::StampSvcRecord(ServiceRecord svcRecord)
 {
-	std::cout << "Receptionist: Service Record has been stamped\n";
+	std::cout << "Receptionist: Service Record has been stamped.\n";
 	svcRecord.UpdateServiceRecord(11212013, m_currentCarJobSheet);
 	return svcRecord;
 }
 
 bool Receptionist::PayBill()
 {
-	std::cout << "Customer is paying bill";
+	std::cout << "Customer(" << this->PersonNameToString() << "): Paying bill";
 	for(int i = 0; i < 4; ++i)
 	{
 		std::cout << ".";
 	}
-	std::cout << "\rBill has been paid            \n";
+	std::cout << "\rCustomer(" << this->GetCurrentCustomer()->PersonNameToString() << "): Bill has been paid.            \n";
 
 	return true;
 }
 
 int Receptionist::main()
 {
-	CPipe queuePipe("queue",1024);
 	int count = 0;
 	while(1)
 	{
-		Customer tempCustomer;
-		if(queuePipe.TestForData() >= sizeof(Customer))
-			queuePipe.Read(&tempCustomer, sizeof(Customer));
-
-		m_pCustomer = &tempCustomer;
 		if(!m_pCustomer)
 			continue;
 
-		m_pCustomer->ComeBackLater();
+		m_pCustomerSemaphore->Wait();
 		
+		std::cout << std::endl;
+
 		if(m_pTechnician->AvailableForNextCar())
 		{
 			m_pTechnician->Service(m_pCustomer->GetCar());
@@ -114,20 +128,21 @@ int Receptionist::main()
 		Invoice receipt = this->GenerateInvoice(11202013, m_currentCarJobSheet.TotalCost());
 		ServiceRecord svcRec = this->StampSvcRecord(m_pCustomer->GetServiceRecord());
 
-		m_pCustomer->ReturnServiceInfo(receipt, m_currentCarJobSheet, svcRec);
+		m_pCustomer->ReturnServiceInfo(receipt, m_currentCarJobSheet, svcRec); // jobSheet is printed
 
 		this->PayBill();
 		m_pCustomer->ReturnCar();
+		this->ReleaseCurrentCustomer();
 
-		CustomerPtr_t pTemp = m_pCustomer;
-		m_pCustomer = NULL;
+		std::cout << std::endl;
+
+		m_pCustomerSemaphore->Signal();
 
 		if(++count == k_numberOfCustomers)
 			break;
 	}
 
 	this->RequestTerminate();
-	Sleep(2000); // delay to allow Technician::main() to exit loop
 
 	return 0;
 }

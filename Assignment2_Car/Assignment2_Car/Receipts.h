@@ -19,7 +19,10 @@ class ServiceRecord {
 public:
 	ServiceRecord();
 	~ServiceRecord();
+	
 	void UpdateServiceRecord(unsigned int date, JobSheet jobSheet);
+	
+	DateToJobSheetMap_t GetSRMap() const;
 
 private:
 	DateToJobSheetMap_t m_dateToJobSheetMap;

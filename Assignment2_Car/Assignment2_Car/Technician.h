@@ -24,8 +24,7 @@
 #include "Receptionist.h"
 
 class Receptionist;
-//typedef std::shared_ptr<Receptionist> ReceptionistPtr_t;
-typedef Receptionist* ReceptionistPtr_t;
+typedef std::shared_ptr<Receptionist> ReceptionistPtr_t;
 
 class Car;
 typedef std::shared_ptr<Car> CarPtr_t;
@@ -39,8 +38,10 @@ public:
 	~Technician();
 
 	ReceptionistPtr_t GetReceptionist();
+	void SetReceptionist(ReceptionistPtr_t const& pReceptionist);
+
 	bool AvailableForNextCar() const;
-	void Service(CarPtr_t pNextCar);
+	void Service(CarPtr_t const& pNextCar);
 
 private:
 	int main();

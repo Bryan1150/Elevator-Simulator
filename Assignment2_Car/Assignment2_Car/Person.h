@@ -6,6 +6,7 @@
  *         Ryan Wong        47307103
  *****************************************************/
 #include <iostream>
+#include <string>
 
 #pragma once
 
@@ -20,6 +21,8 @@ public:
 	Person();
 	Person(std::string firstName, std::string lastName, int age, Gender_t gender);	
 	~Person();
+
+	std::string PersonNameToString() const;
 
 private:
 	std::string m_firstName;

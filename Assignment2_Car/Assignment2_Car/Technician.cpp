@@ -13,8 +13,8 @@ Technician::Technician(std::string firstName, std::string lastName, int age, Gen
 {
 	m_pCurrentCar = NULL;
 
-	m_pReceptionist = new Receptionist("Katherine", "Appleseed", 29, gender_female, (TechnicianPtr_t)this);
-	m_pReceptionist->Resume();
+	//m_pReceptionist = new Receptionist("Katherine", "Appleseed", 29, gender_female, (TechnicianPtr_t)this);
+	//m_pReceptionist->Resume();
 
 	m_pCarSemaphore = std::make_shared<CSemaphore>("TechRecepSemaphore",1);
 }
@@ -27,14 +27,19 @@ ReceptionistPtr_t Technician::GetReceptionist()
 	return m_pReceptionist;
 }
 
+void Technician::SetReceptionist(ReceptionistPtr_t const& pReceptionist)
+{
+	m_pReceptionist = pReceptionist;
+}
+
 bool Technician::AvailableForNextCar() const
 {
 	return m_bAvailableForNextCar;
 }
 
-void Technician::Service(CarPtr_t pNextCar)
+void Technician::Service(CarPtr_t const& pNextCar)
 {
-	std::cout << "Receptionist is passing car keys over to Technician\n";
+	std::cout << "Receptionist: passing " << m_pReceptionist->GetCurrentCustomer()->PersonNameToString() << "'s car keys over to Technician\n";
 	m_pCarSemaphore->Wait();
 	m_pCurrentCar = pNextCar;
 	m_pCarSemaphore->Signal();
@@ -98,13 +103,13 @@ int Technician::main()
 			m_pReceptionist->ReturnCar(m_pCurrentCar, jobSheet);
 			m_pCurrentCar = NULL;
 		}
+
 		if(m_pReceptionist->TerminateStatus())
 			break;
 
 	}
 
 	m_pReceptionist->WaitForThread();
-	delete m_pReceptionist;
 
 	return 0;
 }

@@ -21,6 +21,6 @@ public:
 			std::cout << ".";
 		}
 
-		std::cout << "\r" << item.ToString() << " has been disposed.            \n";
+		std::cout << "\rTechnician: " << item.ToString() << " has been disposed. \n";
 	}
 };

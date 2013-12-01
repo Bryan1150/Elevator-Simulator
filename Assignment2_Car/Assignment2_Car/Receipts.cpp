@@ -23,6 +23,10 @@ void ServiceRecord::UpdateServiceRecord(unsigned int date, JobSheet jobSheet)
 	else
 		m_dateToJobSheetMap[date] = jobSheet;
 }
+DateToJobSheetMap_t ServiceRecord::GetSRMap() const
+{
+	return m_dateToJobSheetMap;
+}
 
 Invoice::Invoice(unsigned int date, float cost)
 	: m_date(date)

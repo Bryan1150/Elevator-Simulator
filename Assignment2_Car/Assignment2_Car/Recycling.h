@@ -25,6 +25,6 @@ public:
 			std::cout << ".";
 		}
 
-		std::cout << "\r" << item.ToString() << " has been recycled.          \n";
+		std::cout << "\rTechnician: " << item.ToString() << " finished being recycled.          \n";
 	}
 };
