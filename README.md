@@ -2,7 +2,7 @@
 
 <h3>Multi-threaded Elevator Simulation Demo</h3>
 
-1. Download Raw copy <b>[ElevatorSimulator.zip](https://github.com/rmawong/EECE314/blob/master/ElevatorSimulation.zip)</b>  
+1. Download Raw copy <b>[ElevatorSimulator.zip](https://github.com/rmawong/EECE314/raw/master/ElevatorSimulation.zip)</b>  
   * There are two executable files: <b>ElevatorSystem.exe</b> and <b>ElevatorGraphics.exe</b>
   * <i>Important:</i> ensure that you keep both these files in the same folder
   
