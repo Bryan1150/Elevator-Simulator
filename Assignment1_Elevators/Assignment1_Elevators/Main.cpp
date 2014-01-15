@@ -23,6 +23,8 @@ HANDLE rHnd;
 
 int main()
 {
+	SetConsoleTitle("Elevator Command Input");
+
 	CMutex screenMutex("PrintToScreen");
 	
 	int numberOfElevators;
@@ -34,7 +36,7 @@ int main()
 	DWORD nChars = GetModuleFileName( NULL, szEXEPath, 2048 );
 
 	pathElevatorExe = szEXEPath;
-	unsigned pos = pathElevatorExe.find("\\Assignment1_Elevators.exe");
+	unsigned pos = pathElevatorExe.find("\\ElevatorSystem.exe");
 	std::string containingDir = pathElevatorExe.substr(0,pos);
 	pathGraphicsExe = containingDir + "\\ElevatorGraphics.exe";
 
