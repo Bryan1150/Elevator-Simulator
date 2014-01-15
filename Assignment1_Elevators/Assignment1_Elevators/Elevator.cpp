@@ -133,9 +133,9 @@ int Elevator::main()
 		{
 			m_elevatorStatus.doorStatus = k_doorOpen;
 			m_pScreenMutex->Wait();
-			MOVE_CURSOR(0,1+m_elevatorNumber);
+			MOVE_CURSOR(0,4+m_elevatorNumber);
 			std::cout << "                                                                    ";
-			MOVE_CURSOR(0,1+m_elevatorNumber);
+			MOVE_CURSOR(0,4+m_elevatorNumber);
 			std::cout << "Elevator " << m_elevatorNumber << " has been signalled with a fault at floor " << m_elevatorStatus.floorNumber << std::endl;
 			m_pScreenMutex->Signal();
 		}
@@ -147,9 +147,9 @@ int Elevator::main()
 			m_elevatorStatus.doorStatus = k_doorOpen;
 			m_elevatorStatus.direction = k_directionIdle;
 			m_pScreenMutex->Wait();
-			MOVE_CURSOR(0,1+m_elevatorNumber);
+			MOVE_CURSOR(0,4+m_elevatorNumber);
 			std::cout << "                                                                    ";
-			MOVE_CURSOR(0,1+m_elevatorNumber);
+			MOVE_CURSOR(0,4+m_elevatorNumber);
 			std::cout << "Elevator "<< m_elevatorNumber << " is idle at floor " << m_elevatorStatus.floorNumber << std::endl;
 			m_pScreenMutex->Signal();
 		}
@@ -159,9 +159,9 @@ int Elevator::main()
 			m_elevatorStatus.direction = floorRequest.direction;
 			m_elevatorStatus.doorStatus = k_doorOpen;
 			m_pScreenMutex->Wait();
-			MOVE_CURSOR(0,1+m_elevatorNumber);
+			MOVE_CURSOR(0,4+m_elevatorNumber);
 			std::cout << "                                                                    ";
-			MOVE_CURSOR(0,1+m_elevatorNumber);
+			MOVE_CURSOR(0,4+m_elevatorNumber);
 			std::cout << "Elevator "<< m_elevatorNumber << " has reached its FR at floor " << floorRequest.floorNumber << std::endl;
 			m_pScreenMutex->Signal();
 			Sleep(2500);
@@ -177,9 +177,9 @@ int Elevator::main()
 				m_elevatorStatus.floorNumber++;
 
 			m_pScreenMutex->Wait();
-			MOVE_CURSOR(0,1+m_elevatorNumber);
+			MOVE_CURSOR(0,4+m_elevatorNumber);
 			std::cout << "                                                                    ";
-			MOVE_CURSOR(0,1+m_elevatorNumber);
+			MOVE_CURSOR(0,4+m_elevatorNumber);
 			std::cout << "Elevator "<< m_elevatorNumber << " is at floor " << m_elevatorStatus.floorNumber << std::endl;
 			m_pScreenMutex->Signal();
 			Sleep(500); /*****FIXME change delay*****/

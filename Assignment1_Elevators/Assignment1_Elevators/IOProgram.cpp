@@ -106,7 +106,7 @@ void IOProgram::ClearLines(int lines) const
 void IOProgram::UpdateElevatorStatus(ElevatorStatus_t elevatorStatus, int elevatorNumber) const
 {
 	m_screenMutex->Wait();	
-		MOVE_CURSOR(0,elevatorNumber*6+m_numberOfElevators);
+		MOVE_CURSOR(0,elevatorNumber*6+3+m_numberOfElevators);
 
 	printf("Elevator %d\n", elevatorNumber);
 	printf("Status: ");
@@ -214,6 +214,8 @@ int IOProgram::main()
 	m_screenMutex->Wait();
 	MOVE_CURSOR(0,0);
 	printf("Enter Commands: ");
+	MOVE_CURSOR(0,2);
+	printf("Legend: U1 - U8 (up), D2 - D9 (down), XY (X = elevator #, Y = floor)\nFX (halt X = elevator #), CX (clear X = elevator #), EE (exit)");
 	m_screenMutex->Signal();
 
 	do{
@@ -281,10 +283,13 @@ int IOProgram::main()
 			keys_pressed = 0; //reset the number of keys pressed value
 			Sleep(500);
 			ClearLines(5);
-
+			std::string enterCmdStr("Enter Commands: ");
 			m_screenMutex->Wait();
 			MOVE_CURSOR(0,0);
-			printf("Enter Commands: ");
+			printf("%s", enterCmdStr);
+			MOVE_CURSOR(0,2);
+			printf("Legend: U1 - U8 (up), D2 - D9 (down), XY (X = elevator #, Y = floor)\nFX (halt X = elevator #), CX (clear X = elevator #), EE (exit)");
+			MOVE_CURSOR(0,enterCmdStr.length());
 			m_screenMutex->Signal();
 		}	
 

@@ -220,6 +220,8 @@ UINT __stdcall GetInsideRequests (void *args)	// thread function
 
 int main(int argc, char* argv[])
 {
+	SetConsoleTitle("Elevator Animation");
+
 	int numberOfElevators = atoi(argv[1]);
 	CThread *Threads[k_maximumElevators]; // array with pointers to threads that update elevator drawings
 	CThread getFloorRequests(GetFloorRequests,ACTIVE,NULL); // thread to receive outside floor requests

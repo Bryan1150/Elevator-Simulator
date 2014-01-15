@@ -297,10 +297,14 @@ int Dispatcher::main()
 			break; 
 
 		m_screenMutex->Wait();
-		MOVE_CURSOR(0, 2+m_numberOfElevators);
+		MOVE_CURSOR(0, 6+m_numberOfElevators);
 		std::cout << "                                                                      ";
-		MOVE_CURSOR(0, 2+m_numberOfElevators);
+		MOVE_CURSOR(0, 6+m_numberOfElevators);
 		std::cout << "Floor Request Queue: ";
+		
+		if(m_floorRequestVect.empty())
+			std::cout << "Idle";
+		
 		for(int i = 0; i < m_floorRequestVect.size(); ++i)
 		{
 			std::cout << m_floorRequestVect[i].fReqId << " ";	

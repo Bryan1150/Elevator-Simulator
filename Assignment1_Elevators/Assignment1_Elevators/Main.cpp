@@ -8,6 +8,9 @@
 #include <iostream>
 #include <memory>
 #include <vector>
+#include <tchar.h>
+#include <windows.h>
+#include <limits>
 
 #include "rt.h"
 #include "Dispatcher.h" //include active classes header files
@@ -15,16 +18,26 @@
 #include "IOProgram.h"
 #include "GlobalVariableDecl.h"
 
+HANDLE wHnd;
+HANDLE rHnd;
 
 int main()
 {
 	CMutex screenMutex("PrintToScreen");
 	
 	int numberOfElevators;
-	std::string path;
+	
+	std::string pathGraphicsExe("");
+	std::string pathElevatorExe("");
 
-	std::cout << "Enter path for executable: ";
-	std::cin >> path;
+	TCHAR szEXEPath[ 2048 ];
+	DWORD nChars = GetModuleFileName( NULL, szEXEPath, 2048 );
+
+	pathElevatorExe = szEXEPath;
+	unsigned pos = pathElevatorExe.find("\\Assignment1_Elevators.exe");
+	std::string containingDir = pathElevatorExe.substr(0,pos);
+	pathGraphicsExe = containingDir + "\\ElevatorGraphics.exe";
+
 	std::cout << "Enter number of elevators: ";
 	std::cin >> numberOfElevators;
 	int i;
@@ -38,7 +51,7 @@ int main()
 	}
 
 	Sleep(1000);
-	IOProgramPtr_t pIoProgram = std::make_shared<IOProgram>(numberOfElevators, path);
+	IOProgramPtr_t pIoProgram = std::make_shared<IOProgram>(numberOfElevators, pathGraphicsExe);
 	Dispatcher dispatcher(pIoProgram,numberOfElevators);
 
 	pIoProgram->ClearLines(3);
@@ -57,6 +70,5 @@ int main()
 
 
 	printf("Deleted child elevator threads in Main.cpp .\n");
-	system("PAUSE");
 	return 0;
 }
