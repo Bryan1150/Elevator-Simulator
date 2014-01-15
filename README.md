@@ -1,5 +1,5 @@
-<h1>EECE 314 : Systems Software Engineering</h1>
-
+<h1>Systems Software Engineering Project</h1>
+   
 <h3>Multi-threaded Elevator Simulation Demo</h3>
 
 1. Download Raw copy <b>[ElevatorSimulator.zip](https://github.com/rmawong/EECE314/raw/master/ElevatorSimulation.zip)</b>  
